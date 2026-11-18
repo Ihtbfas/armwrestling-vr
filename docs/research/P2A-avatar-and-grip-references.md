@@ -21,7 +21,7 @@ P1-E 从 Ch03 中裁出玩家右臂；对手显示纯白人体，双方看起来
 ### 替代候选：MakeHuman Community
 
 - 官方主页：https://www.makehumancommunity.org/
-- 许可：https://www.makehumancommunity.org/about/license.html
+- 许可：https://www.makehumancommunity.org/makehuman/faq/are_makehuman_files_free.html
 - 核心资产是 **CC0**，导出的人体可复用；额外下载的衣服/贴图需分别审核许可。
 - 适合自制较真实的人体及第一人称手臂；实际肤色、衣物、FBX/骨架导入、Humanoid 手指映射需验证。若 Rocketbox 手骨/贴图不适合，可在合理范围内试这个备选，不无限转换人物库。
 
