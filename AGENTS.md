@@ -21,4 +21,4 @@
 
 ## 本阶段
 
-当前分支 `feat/p1-animation-spike`：执行 [P1-A 动画路线对照任务](docs/tasks/P1-animation-ab-comparison.md)。以 P0 已验证的现有 Unity 工程为起点；原始导入背景仍可参阅 [P0](docs/tasks/P0-import-and-run.md)。保留真实运行证据，不因为初步判断就认定 IK 或姿态混合路线胜出。
+当前分支 `feat/p1b-elbow-contact`：执行 [P1-B 肘垫可达性与握持接触优化](docs/tasks/P1B-elbow-reachability-and-contact.md)。以 P1-A 验证通过的 B（身体姿态插值 + 接触 IK）为起点。优先几何可达性与真实的编辑器画面，不假定骨关节原点是网格接触点，也不强制改机械轨迹。
