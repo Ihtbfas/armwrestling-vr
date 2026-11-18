@@ -1,0 +1,10 @@
+{
+  "public_files": 180,
+  "original_file_count": 167,
+  "project_guid_count": 85,
+  "optional_withheld_references": [
+    "Assets/ArmWrestling/Resources/HDRI/SkyboxPanoramic.mat",
+    "Assets/Scenes/ArmWrestlingPreview.unity"
+  ],
+  "errors": []
+}

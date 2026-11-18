@@ -29,3 +29,9 @@ Thumbs.db
 
 # This file intentionally does NOT ignore *.meta, Assets, Packages, or ProjectSettings.
 # Inspect any original-project .gitignore before replacing or merging its rules.
+
+# P0 local evidence, baseline and assets pending redistribution permission
+.p0-local/
+/Assets/ArmWrestling/Resources/ArmWrestlingFont.ttf*
+/Assets/ArmWrestling/Resources/Characters/Ch03.fbx*
+/Assets/ArmWrestling/Resources/HDRI/circus_arena.hdr*

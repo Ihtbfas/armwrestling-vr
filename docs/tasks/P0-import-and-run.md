@@ -1,6 +1,6 @@
 # P0｜接管同学 VR 工程、导入 GitHub、先跑通现有场景
 
-> 状态：**待 Codex 执行**。本任务书制定时，VR 同学交付的正式工程尚未提供给本对话/本仓库。参考架构见 [../architecture-reference.md](../architecture-reference.md)，不是强制实施清单。
+> 状态：**2026-11-18 已完成本轮接管及主场景离线 Editor Play**。本任务书保留为验收依据；实际结果、未通过项和后续建议见 [P0 交接](../P0-handover-result.md)。参考架构见 [../architecture-reference.md](../architecture-reference.md)，不是强制实施清单。
 
 ## 项目目标
 

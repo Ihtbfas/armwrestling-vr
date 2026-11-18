@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4cfa6135f5cf81b4ba1900960fd7fdd9, type: 3}
+  m_Name: ArmWrestlingConfig
+  m_EditorClassIdentifier: 
+  mechanicalZeroDeg: 0
+  mechanicalFullScaleDeg: 34.4
+  mechanicalDirection: 1
+  visualDegPerMechanicalDeg: 1.2
+  visualOffsetDeg: 0
+  visualLimitDeg: 42
+  mechanicalValidMinDeg: -60
+  mechanicalValidMaxDeg: 60
+  playerWinVisualDeg: 30
+  opponentWinVisualDeg: -30
+  holdSeconds: 0.35
+  countdownSeconds: 3
+  readyAutoStartSeconds: 2.5
+  matchTimeLimitSeconds: 60
+  filterTimeConstant: 0.035
+  dataTimeoutSeconds: 0.5
+  linkLostSeconds: 1.5
+  maxExtrapolationSeconds: 0.08
+  enableExtrapolation: 1
+  hostPort: 9102
+  localPort: 0
+  autoDiscoverHost: 0
+  manualHostIp: 127.0.0.1
+  heartbeatIntervalSeconds: 0.2
+  eventRetrySeconds: 0.2
+  eventMaxAttempts: 5
+  defaultDataSource: 0
+  allowKeyboardInSimulation: 1
+  enableSessionLog: 1
+  logIntervalSeconds: 0.05
+  verboseComms: 0
+  desktopMouseLook: 1

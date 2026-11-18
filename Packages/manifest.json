@@ -1,0 +1,23 @@
+{
+  "dependencies": {
+    "com.unity.collab-proxy": "2.7.1",
+    "com.unity.feature.development": "1.0.1",
+    "com.unity.ide.visualstudio": "2.0.22",
+    "com.unity.test-framework": "1.1.33",
+    "com.unity.textmeshpro": "3.0.7",
+    "com.unity.timeline": "1.7.7",
+    "com.unity.ugui": "1.0.0",
+    "com.unity.visualscripting": "1.9.4",
+    "com.unity.xr.interaction.toolkit": "2.6.5",
+    "com.unity.xr.management": "4.7.0",
+    "com.unity.xr.openxr": "1.14.3",
+    "com.unity.xr.openxr.picoxr": "https://github.com/Pico-Developer/PICO-Unity-OpenXR-SDK.git#3aa3e62bff41df618529eeb60ff02c29a515dafe",
+    "com.unity.xr.hands": "1.4.3",
+    "com.unity.modules.androidjni": "1.0.0",
+    "com.unity.modules.imageconversion": "1.0.0",
+    "com.unity.modules.screencapture": "1.0.0",
+    "com.unity.modules.unitywebrequest": "1.0.0",
+    "com.unity.modules.unitywebrequestassetbundle": "1.0.0",
+    "com.unity.modules.unitywebrequesttexture": "1.0.0"
+  }
+}

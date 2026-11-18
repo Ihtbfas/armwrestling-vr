@@ -1,0 +1,11 @@
+PASS
+Editor=2022.3.62f3c1
+Scene=ArmWrestlingMain
+States=DeviceCheck;Calibration;Lobby;Ready;Countdown;Fighting;Paused;Fighting;Finished;
+VisualAngleRange=-0.05942013..41.99972
+Outcome=PlayerWins
+RuntimeErrors=0
+Graphics=Direct3D11
+Opponent=Humanoid with IK targets (motion quality needs human review)
+ModelDiagnostics=Ch03, enabled=True, active=True, worldBounds=Center: (0.00, 0.32, 1.52), Extents: (0.42, 0.75, 0.37), bakedBounds=Center: (0.00, -0.11, 0.02), Extents: (0.42, 0.75, 0.37), modelScale=(0.95, 0.95, 0.95), inFrustum=True
+Font=ArmWrestlingFont

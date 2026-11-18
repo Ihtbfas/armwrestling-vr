@@ -1,0 +1,927 @@
+{
+  "archive": "banshouwan.zip",
+  "archive_bytes": 2351610922,
+  "archive_sha256": "828e42a024e6c99f9617a421cbb49e4de82ae396a46a42a423d0a09f001a26b4",
+  "entry": "banshouwan/test1/",
+  "files": [
+    {
+      "path": "Assets/ArmWrestling.meta",
+      "bytes": 172,
+      "sha256": "d78965ed9a195cd5de1fff16642b1d927bd50b6cef2a88986ffa947a271050a5",
+      "guid": "474551572aaf9544d9538aba119da7f8"
+    },
+    {
+      "path": "Assets/Resources.meta",
+      "bytes": 172,
+      "sha256": "50a89e7fc2c13b3aecd13951673daa499e99f23744a6a564c483e9021af711aa",
+      "guid": "252f01f7c4281d142b3fc4cc62a9978c"
+    },
+    {
+      "path": "Assets/Scenes.meta",
+      "bytes": 172,
+      "sha256": "8c95ad54612854d523ebbf3b61b395a19355cf9b2aba066473e1870bff608541",
+      "guid": "6c1c74ea7bdc14a41b0a12ade03c59c3"
+    },
+    {
+      "path": "Assets/XR.meta",
+      "bytes": 172,
+      "sha256": "f79ff2db6559f920d255819291ae01e0c5947905ac0740fa54cb44357de5fa38",
+      "guid": "ccd1de7e5481dbe40b45dce9527d85cc"
+    },
+    {
+      "path": "Assets/XRI.meta",
+      "bytes": 172,
+      "sha256": "53766cc2ab3d15b4c3757c5075ab278c16f9659b85decacc0bcb51776ebc6d0d",
+      "guid": "ed7d82a6039a6d74a80d8cda0a878474"
+    },
+    {
+      "path": "Assets/ArmWrestling/Art.meta",
+      "bytes": 172,
+      "sha256": "16808740938d29c928a17ba98e75cfde6cea5f8e8633e614ae44adfbfd713e34",
+      "guid": "b83401a6216b4e34e8262a6b878c51ec"
+    },
+    {
+      "path": "Assets/ArmWrestling/Editor.meta",
+      "bytes": 172,
+      "sha256": "a0d4ffa96b9f2581272401f63069ba7d0c1900dbb72077fa8c48d61b27e2fb64",
+      "guid": "a93830a1a3338a34b9c5758f37d31a9d"
+    },
+    {
+      "path": "Assets/ArmWrestling/Materials.meta",
+      "bytes": 172,
+      "sha256": "496e17b14a4fa80e02e71a4d51c826077f053007a2b767124bb2f2069791a3e8",
+      "guid": "c92ec96fc0f8b404f8ff8157c4d0eb87"
+    },
+    {
+      "path": "Assets/ArmWrestling/README.md",
+      "bytes": 2450,
+      "sha256": "86141c60651320d816b074549e47bee7c2014fc621ab4b5e1dc39eb0d1bb6f39"
+    },
+    {
+      "path": "Assets/ArmWrestling/README.md.meta",
+      "bytes": 158,
+      "sha256": "10a3e0f5d3b7a22486ec42676e2baf26443866370ce80fbb929c9730ea3b33d0",
+      "guid": "67796df295de11b47a5d95302083aa79"
+    },
+    {
+      "path": "Assets/ArmWrestling/Resources.meta",
+      "bytes": 172,
+      "sha256": "81f89afa5fb0132e804e2d92b545d2e602718fc068af910d9e2de428e4dd6118",
+      "guid": "983631ce49381364aa52036e5a6e1db1"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts.meta",
+      "bytes": 172,
+      "sha256": "e059da6860a9ed00b768ec577dccb040365bfd89e296606e94161e36c4b7cab1",
+      "guid": "f2a62d69994c0834c8d7c8fe65790a8b"
+    },
+    {
+      "path": "Assets/ArmWrestling/sucai.meta",
+      "bytes": 172,
+      "sha256": "1c797aeeca4cdd93f84b710c0a70360b6a5a5ba88ceaea564bf2fc3b5671c888",
+      "guid": "c79abca0c49db65459a26537a7df7fe3"
+    },
+    {
+      "path": "Assets/ArmWrestling/Editor/ArmWrestlingSetup.cs",
+      "bytes": 13305,
+      "sha256": "2c76a12f5b66dc7408c62ca10ff1f94a927e0ba8dd430cdf28d4208ae97846db"
+    },
+    {
+      "path": "Assets/ArmWrestling/Editor/ArmWrestlingSetup.cs.meta",
+      "bytes": 243,
+      "sha256": "cf8130aaee624867a06812c7a95367491fb68442f44b82d731c4eff854df3721",
+      "guid": "c33c6e7ed2233574183fc835c15fb301"
+    },
+    {
+      "path": "Assets/ArmWrestling/Editor/ArtImport.cs",
+      "bytes": 6790,
+      "sha256": "1b5c14bae40e5f3e69f206b95c2c3a2bf462c691e367fd36f107f6971456ecc1"
+    },
+    {
+      "path": "Assets/ArmWrestling/Editor/ArtImport.cs.meta",
+      "bytes": 243,
+      "sha256": "b5df52ff1092ee50e5f9383a9f76c0c8d171b2c642de6efc8a368da0afbb6b67",
+      "guid": "dcc0d442c24c3fe49a116f66bf6ac87d"
+    },
+    {
+      "path": "Assets/ArmWrestling/Editor/BatchEntry.cs",
+      "bytes": 7862,
+      "sha256": "fa10e766a49e3894581fa5f1ba5160a6cdbf635e0d71991c958ce9c9436dbcca"
+    },
+    {
+      "path": "Assets/ArmWrestling/Editor/BatchEntry.cs.meta",
+      "bytes": 243,
+      "sha256": "738190ece880de72e0ba42cfa3d304bafb8a7d3db7d417a2b48dd5e216f261a3",
+      "guid": "b0d897ee9c733324f9e77de73795cc3c"
+    },
+    {
+      "path": "Assets/ArmWrestling/Editor/BuildUtility.cs",
+      "bytes": 5110,
+      "sha256": "90dd2e7da357a1a07ebf505c743ff2f63b70e704ea5a1630e489d1918ad309be"
+    },
+    {
+      "path": "Assets/ArmWrestling/Editor/BuildUtility.cs.meta",
+      "bytes": 243,
+      "sha256": "688d79463f45b94645235701b9362b88cf8468431ea8576997cd9caee81b4754",
+      "guid": "4cd4d1c947b7c9b478dcdf9f28bffb4c"
+    },
+    {
+      "path": "Assets/ArmWrestling/Editor/SceneGenerator.cs",
+      "bytes": 4551,
+      "sha256": "dc76180c67e817c6efdd71a7d0d6278d4843a033163cc859267c73820a92d230"
+    },
+    {
+      "path": "Assets/ArmWrestling/Editor/SceneGenerator.cs.meta",
+      "bytes": 243,
+      "sha256": "51254e41a25167194cc26aa70731dc089b130e5f10185f076c2e739710884ab9",
+      "guid": "89cc1449c021b554fb1dbe57159008b0"
+    },
+    {
+      "path": "Assets/ArmWrestling/Materials/ARW_0D479E.mat",
+      "bytes": 2194,
+      "sha256": "93064bf1a4234bf627d9c94284452c7a03d8a9f1f80c563dc5c964ebd20681b6"
+    },
+    {
+      "path": "Assets/ArmWrestling/Materials/ARW_0D479E.mat.meta",
+      "bytes": 188,
+      "sha256": "552cf6cdb1006baecd8632831b233a6a1233bf2c21fe54bb2580b918e04b5b76",
+      "guid": "08e0e22c90ee5cc46b3e15c3f7e5b798"
+    },
+    {
+      "path": "Assets/ArmWrestling/Materials/ARW_171A21.mat",
+      "bytes": 2193,
+      "sha256": "b146d54872a9a7eeecdf36b51165c8a44531a79ed045729e81018df06e3caff8"
+    },
+    {
+      "path": "Assets/ArmWrestling/Materials/ARW_171A21.mat.meta",
+      "bytes": 188,
+      "sha256": "dd8edaaad279fe331611f8890d6474706b4576e367ab4cfdebf3a6a23bd60965",
+      "guid": "3f28a779284fcee479086912ccbd97fb"
+    },
+    {
+      "path": "Assets/ArmWrestling/Materials/ARW_1A1C21.mat",
+      "bytes": 2193,
+      "sha256": "8cc568911cc9e63d9fbfa896cb93468bc637e068fc696b3df82410125fbcc406"
+    },
+    {
+      "path": "Assets/ArmWrestling/Materials/ARW_1A1C21.mat.meta",
+      "bytes": 188,
+      "sha256": "557a691f419bd800de294b0e3518f590cbf9c8a63df2a86c8d2c51f8b8cb0266",
+      "guid": "b031692953e6ab5449bbf1135953ae2f"
+    },
+    {
+      "path": "Assets/ArmWrestling/Materials/ARW_1A336B.mat",
+      "bytes": 2192,
+      "sha256": "ca390f6451af34b5fba34cedb38fb50d0284cbaf08ba0cfdba6b8654d3f61c30"
+    },
+    {
+      "path": "Assets/ArmWrestling/Materials/ARW_1A336B.mat.meta",
+      "bytes": 188,
+      "sha256": "d911a5b2181c76b46c4e2937a964b8cbf89199553a6ed78004fe052196fa767f",
+      "guid": "0ebf1b840e10c75479a7957461c77a02"
+    },
+    {
+      "path": "Assets/ArmWrestling/Materials/ARW_1F2129.mat",
+      "bytes": 2194,
+      "sha256": "8ebd9628ba528c108f5b634fb2164efc07efbaeb948dca936b2b53aa827414a5"
+    },
+    {
+      "path": "Assets/ArmWrestling/Materials/ARW_1F2129.mat.meta",
+      "bytes": 188,
+      "sha256": "1ce6c8b7b62951243c0f89044982426d709e5a46820e199178c2c531e25e3e61",
+      "guid": "fa60bbe525f155b438ebb07c7a8b8092"
+    },
+    {
+      "path": "Assets/ArmWrestling/Materials/ARW_292B30.mat",
+      "bytes": 2194,
+      "sha256": "a4f813677eb680f4e18b0252d3bc00f1b070e5ad27f308bcf8b63e97040b01b9"
+    },
+    {
+      "path": "Assets/ArmWrestling/Materials/ARW_292B30.mat.meta",
+      "bytes": 188,
+      "sha256": "f8ab1a6c8c58e480833445088622c06ce6445564b33153051e21e7589933487f",
+      "guid": "372ff285d4ba3b740a838a2d7967ec0c"
+    },
+    {
+      "path": "Assets/ArmWrestling/Materials/ARW_331A0E.mat",
+      "bytes": 2193,
+      "sha256": "bc4a2917310fe2f4e2330a2f8c205f91586081731653aa4f90283f9cbaafdc27"
+    },
+    {
+      "path": "Assets/ArmWrestling/Materials/ARW_331A0E.mat.meta",
+      "bytes": 188,
+      "sha256": "30442528ddd249a0de7395072f5ba67bc3b49d5dc3df33626162234262d4a313",
+      "guid": "530d457c2fc58b1418da6b5a1a17a323"
+    },
+    {
+      "path": "Assets/ArmWrestling/Materials/ARW_9E2929.mat",
+      "bytes": 2194,
+      "sha256": "618ad2e442259f5ac4ffefda6ae47941c3acb5f50e5156214ab6646db48ae784"
+    },
+    {
+      "path": "Assets/ArmWrestling/Materials/ARW_9E2929.mat.meta",
+      "bytes": 188,
+      "sha256": "2bc165ce49b4dfec31942bdb1d4a7235140769682a7e783c4a33e398bdace7c0",
+      "guid": "da83f903d76370e409b69b154eb3ebe1"
+    },
+    {
+      "path": "Assets/ArmWrestling/Materials/ARW_9EA6B2.mat",
+      "bytes": 2193,
+      "sha256": "4f757caa0b10d902f66a4d93b41022fa53901fcd41f0e80599bfa35634089a17"
+    },
+    {
+      "path": "Assets/ArmWrestling/Materials/ARW_9EA6B2.mat.meta",
+      "bytes": 188,
+      "sha256": "f72c0ff40a4bee03c3388f4c9095441cc4e4922fb2e19fae4541cc92bc766f47",
+      "guid": "d33ed612b544a714b96e8f9b46c22909"
+    },
+    {
+      "path": "Assets/ArmWrestling/Materials/ARW_B88566.mat",
+      "bytes": 2193,
+      "sha256": "999b6d4ff252a57e62f0858164a54ee576495d15aca78976b7ea5a61c92a992b"
+    },
+    {
+      "path": "Assets/ArmWrestling/Materials/ARW_B88566.mat.meta",
+      "bytes": 188,
+      "sha256": "3a1597a2d8b716e22697d465acb3441eb5748142aab8b0b649406801727da802",
+      "guid": "7acbc0e3507fee94ab31ccbd89ab3575"
+    },
+    {
+      "path": "Assets/ArmWrestling/Materials/ARW_C79473.mat",
+      "bytes": 2194,
+      "sha256": "8927563b5ac8f51a3d9f8b94793344782114c361f952c9dafe23874ddbdce56e"
+    },
+    {
+      "path": "Assets/ArmWrestling/Materials/ARW_C79473.mat.meta",
+      "bytes": 188,
+      "sha256": "896d97da31ee4fb2207672a0557c0b074c195512481bc39b4c801ff25b2823d6",
+      "guid": "086077a9bb3d3f248b04f35fda616701"
+    },
+    {
+      "path": "Assets/ArmWrestling/Materials/ARW_E6B833.mat",
+      "bytes": 2192,
+      "sha256": "f0bfe787b3de39cfa5468c1f4548b134a5912974db8153ffac8a2ad8f8dcf68f"
+    },
+    {
+      "path": "Assets/ArmWrestling/Materials/ARW_E6B833.mat.meta",
+      "bytes": 188,
+      "sha256": "74c7f6d36f54c9190643aec36f51bcb16b6f73d0877b068e2650fd0710395ad5",
+      "guid": "cf8879c466af71c41aadae8ea4b38215"
+    },
+    {
+      "path": "Assets/ArmWrestling/Resources/ArmWrestlingConfig.asset",
+      "bytes": 1208,
+      "sha256": "dc4bcae632134af08cbbd159ea2675e8e4afca1e6ca3f5f24e3078308971de01"
+    },
+    {
+      "path": "Assets/ArmWrestling/Resources/ArmWrestlingConfig.asset.meta",
+      "bytes": 189,
+      "sha256": "172df4d20ed29f69513855f8a2fb9729d8ef4047e87e6a86d664f975bb5f32f2",
+      "guid": "e5567aa850a82934a9570177f48e36fa"
+    },
+    {
+      "path": "Assets/ArmWrestling/Resources/ArmWrestlingFont.ttf",
+      "bytes": 17773244,
+      "sha256": "763146584cf0710223441356b4395e279021b0806c196614377a7a0174ae074a"
+    },
+    {
+      "path": "Assets/ArmWrestling/Resources/ArmWrestlingFont.ttf.meta",
+      "bytes": 477,
+      "sha256": "54d988725bb363eba7f11628fead179a43683d816085d12795764ba4e3c962a0",
+      "guid": "5f902e401b1773c4a9e437229007a24d"
+    },
+    {
+      "path": "Assets/ArmWrestling/Resources/Characters.meta",
+      "bytes": 172,
+      "sha256": "acd208ba038d74498c0529937a8b99f26aa23477b8012a1d81ea241c87e25f78",
+      "guid": "5e05753a494928b42b4206a20d0947bf"
+    },
+    {
+      "path": "Assets/ArmWrestling/Resources/HDRI.meta",
+      "bytes": 172,
+      "sha256": "ef59d159d53c955aec10e24e234b2dcdd2523f38629cd32cc10b79233e5cdfef",
+      "guid": "e0af6387e394a4f4f97f414b2ae3cf5b"
+    },
+    {
+      "path": "Assets/ArmWrestling/Resources/Characters/Ch03.fbx",
+      "bytes": 20974352,
+      "sha256": "98e792695dddd646463a7b0c0e5ae7c05aefefc781f75c59c2bf3463aa7cbd7b"
+    },
+    {
+      "path": "Assets/ArmWrestling/Resources/Characters/Ch03.fbx.meta",
+      "bytes": 31693,
+      "sha256": "ed0d76a020e97e2a234b53ede4d5fc8065ce3f6e37162a31fa323c9d581a33c2",
+      "guid": "02301c88d91aabe4c895356c1e847d8a"
+    },
+    {
+      "path": "Assets/ArmWrestling/Resources/Characters/IdlePose.anim",
+      "bytes": 1296,
+      "sha256": "40b4e8f7b3c4088bd48e5f5539f221799ce0cca0d0cd8937c85c375c8629c683"
+    },
+    {
+      "path": "Assets/ArmWrestling/Resources/Characters/IdlePose.anim.meta",
+      "bytes": 188,
+      "sha256": "e76422026bf5f9f5352e11b367eed3a68bd7ef834973f1b6cb083632c080c7ba",
+      "guid": "3ea67aee81e3eb04e8ed3e39b5769da9"
+    },
+    {
+      "path": "Assets/ArmWrestling/Resources/Characters/OpponentIK.controller",
+      "bytes": 2019,
+      "sha256": "b85ae5db10ccf5745254bbcbd825cdd0dd459c2dfee3c077a1d9fbe59863f54c"
+    },
+    {
+      "path": "Assets/ArmWrestling/Resources/Characters/OpponentIK.controller.meta",
+      "bytes": 188,
+      "sha256": "91d0228be72510178ff7a16a1524212f8579e5f33a79c3f10a3697c3d8a3574e",
+      "guid": "b70f8f4e4c9631340bd5cbe5aba54cca"
+    },
+    {
+      "path": "Assets/ArmWrestling/Resources/HDRI/circus_arena.hdr",
+      "bytes": 25834262,
+      "sha256": "2bdf73a6c6e45e456e4b56fe75b515e32d48c0f36d8596799457d41d7f747b23"
+    },
+    {
+      "path": "Assets/ArmWrestling/Resources/HDRI/circus_arena.hdr.meta",
+      "bytes": 2948,
+      "sha256": "09cd128ede5fa7830a311fbb40c9d9216d2969550f74d121ccc0c65fa7b24b45",
+      "guid": "2ebc6b62d7c04d04ea71ed4d2071c570"
+    },
+    {
+      "path": "Assets/ArmWrestling/Resources/HDRI/SkyboxPanoramic.mat",
+      "bytes": 1093,
+      "sha256": "0bbc81dd703452aa58fe98529e0c6ce91392dab84c14895b682de64b495e4289"
+    },
+    {
+      "path": "Assets/ArmWrestling/Resources/HDRI/SkyboxPanoramic.mat.meta",
+      "bytes": 188,
+      "sha256": "229d0a167546e27be8f0d8d838c68ea0c417b24e15e96efd756467688215a307",
+      "guid": "c62904c610710c348b00c6d73288d528"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/App.meta",
+      "bytes": 172,
+      "sha256": "50c61011078ff90a144a695f3a848088e4795659a53a7bc88166ecb3839899ee",
+      "guid": "98cb4ac6ac880b345920c68ca74c2c92"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Calibration.meta",
+      "bytes": 172,
+      "sha256": "b51a6fe03aca13ad880ba2a8ec15bd9052c250a672aae1d0db19c5b9dbfb28bf",
+      "guid": "0e443d1ea46a38f4fa2fb4b3912dd6c4"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Comms.meta",
+      "bytes": 172,
+      "sha256": "14d7adc8855a315e49ed38ef6c72c1e84efdc0c771ba3a885fb9756c149bbd62",
+      "guid": "70f177df79e501a4291ad5e36c6aea8d"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Core.meta",
+      "bytes": 172,
+      "sha256": "edeaef89238242c418818325c31c55338937b6a6b49611e1a72e322ccb40c7a0",
+      "guid": "178c463fc08c0254c97c50cde957e771"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Mapping.meta",
+      "bytes": 172,
+      "sha256": "28d9a6e39d29532d6ba0371727777591fd14765c4f11176025d8444cbfb4be96",
+      "guid": "04a66147003c15c4b91325e77555352f"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Presentation.meta",
+      "bytes": 172,
+      "sha256": "886fe47e43d4c87932917184d25db44475a7d3524dd7108b8fa8bc622fca1bfc",
+      "guid": "ab88eaffda0cd4b4c87acb6ce6f6f6b8"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/UI.meta",
+      "bytes": 172,
+      "sha256": "12cce788e3f020b6e7d17fcd898faa8955ec9f723601cd940f4199e71b992c99",
+      "guid": "c69049fe134e7e24a817387526046f4a"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Xr.meta",
+      "bytes": 172,
+      "sha256": "4d90b7e76d8fd7476acdb2fe2e99449bf4c53e5754035d9d8c930f7de0468fe9",
+      "guid": "a2bef39b887b8764ca9efd602c79b93c"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/App/ArmWrestlingApp.cs",
+      "bytes": 37828,
+      "sha256": "123c431e6bd3c1e2920d8c6204ef358395e6d9d38e6c71c9d653620b3363bcb4"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/App/ArmWrestlingApp.cs.meta",
+      "bytes": 243,
+      "sha256": "99e9ef6a6dc33e07775d0d826f4e667234354398118d1caf3306dd802ea4f516",
+      "guid": "4d33821a5bbd2144393e447fd504c586"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/App/AutoScreenshot.cs",
+      "bytes": 2327,
+      "sha256": "c8451ce0e601c3dca5a212ff84a5b2b712734877126733dea5fecac8c9857f99"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/App/AutoScreenshot.cs.meta",
+      "bytes": 243,
+      "sha256": "2ab94d818904ede2d371ad4290483f45b001a5cb4c64be713326a1f926da70ad",
+      "guid": "ad2cc2ce95f3deb4bad5c96dc9caef5d"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/App/RuntimeBootstrap.cs",
+      "bytes": 1898,
+      "sha256": "d4769581c62757fb1bff3988ab43ede65d425115114bf1ec834161c838ab5497"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/App/RuntimeBootstrap.cs.meta",
+      "bytes": 243,
+      "sha256": "2282b5b079446f0c251d0b322ab4ad18e845a823a367344f490650aba0bba11c",
+      "guid": "197c0976903ee4d40b8ca12e95f4f8d8"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/App/SmokeTestDriver.cs",
+      "bytes": 3979,
+      "sha256": "e1895305db79058d3f9eb95c3571fdbd6f33e9a0297147b653d5a787d16d1d1b"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/App/SmokeTestDriver.cs.meta",
+      "bytes": 243,
+      "sha256": "c152747f0712fc2b51fae9ae02338a1432079c4299593a2b239f596b2688c07f",
+      "guid": "31855a04e128af14cbf878a75f738590"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Calibration/DeviceFrameCalibration.cs",
+      "bytes": 11339,
+      "sha256": "59f909b93fece53b0cd094078bea3c9de2b2f9f78ed0fa574005218a7346537a"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Calibration/DeviceFrameCalibration.cs.meta",
+      "bytes": 243,
+      "sha256": "61f4a5454c77c1f43d2b560b4725f29e5ed8445a9d5d265d38ef3fafb56aa3dc",
+      "guid": "e1b5a6fc0a57e8a4cb80fd2e2f1bfd73"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Comms/ControllerAngleSource.cs",
+      "bytes": 5158,
+      "sha256": "6194d105f6f87ed2c560bee053c4110b37a614b0857226ea5405f9394bfd8eb3"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Comms/ControllerAngleSource.cs.meta",
+      "bytes": 243,
+      "sha256": "347785252a3ac4a135e535d4a1c0e6df47830324bc6524a8495ea57b0bd829f8",
+      "guid": "96c4bef47a8441c4eb884340c23cbf22"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Comms/HandAngleSource.cs",
+      "bytes": 6220,
+      "sha256": "cf7b3297ad1a723892ea1e5e7785339dafe60ac71ad7bd34c1e18b5827e86930"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Comms/HandAngleSource.cs.meta",
+      "bytes": 243,
+      "sha256": "7295adf72b452ac25300b585a461615f3cc084d143c347695d502ab13c132f82",
+      "guid": "01c6ebea5e3cb184e9a9dd3cd4b9a297"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Comms/IDeviceConnection.cs",
+      "bytes": 2295,
+      "sha256": "c566a562ab49a7f9938a27f0734ad36196f22672f7ca46da32917a3e397488a9"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Comms/IDeviceConnection.cs.meta",
+      "bytes": 243,
+      "sha256": "a3552d8a316ca456b26a13a68d09aecd3d1ad32d710ae7c3aa56f1e895ca912f",
+      "guid": "7522522eb92e6ff40bdc5916387405dd"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Comms/SimulatedDeviceConnection.cs",
+      "bytes": 8798,
+      "sha256": "5c72e8bec892072da3257bb11f96596aed10f9088b3ae2bcf595705c02c32390"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Comms/SimulatedDeviceConnection.cs.meta",
+      "bytes": 243,
+      "sha256": "bae9f9409b35986ac8011ff254a98857cdc2f07aaec96e8a8b18a09159a0488f",
+      "guid": "00c0ca196eae3594eb8a1880700ff92f"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Comms/UdpDeviceConnection.cs",
+      "bytes": 18467,
+      "sha256": "4b3c594f2458a6c99741c3956a2eba239af82eb23ac1800d3dfc2382319f4328"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Comms/UdpDeviceConnection.cs.meta",
+      "bytes": 243,
+      "sha256": "481d7e88d7de8dd1d1eed55ec9ac645bd80e270745da1d73691ffe434713f208",
+      "guid": "2e8b21b878e24a546ae1e82a356309bc"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Comms/VrUdpClient.cs",
+      "bytes": 16220,
+      "sha256": "9d3697345fe79a5f08fc267addeadc327f6d21f66d24a06a45d83dc684009d9e"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Comms/VrUdpClient.cs.meta",
+      "bytes": 243,
+      "sha256": "32c8cc004de4441e55345221811927cff521b38ec7a0ddc1db86c8ca7d2deade",
+      "guid": "9e5ba9ce901241846adde82c58961d5a"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Comms/WireProtocol.cs",
+      "bytes": 11206,
+      "sha256": "c320a7336116c78fc31a99b2f29d2e1fde73e72db0d084709dde44852a66f400"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Comms/WireProtocol.cs.meta",
+      "bytes": 243,
+      "sha256": "3624ebfb0b67abbd5eff76a0bdd9922614fcb6c1e2e9811c8786a233b575d914",
+      "guid": "efe77fa932bbb7f439089263034f024f"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Core/ArmWrestlingConfig.cs",
+      "bytes": 10463,
+      "sha256": "6d344e2e80b1f4f56eac7833f17a366d5581ac713f9bf8a950879cf6c87c9410"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Core/ArmWrestlingConfig.cs.meta",
+      "bytes": 243,
+      "sha256": "7fad1ee50d68fc3b756cf910659be26a5c5b832216ecfc41721b576db499016c",
+      "guid": "4cfa6135f5cf81b4ba1900960fd7fdd9"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Core/Enums.cs",
+      "bytes": 4096,
+      "sha256": "c6fff404b91f745981f628d8813626cb1cb3a29f648a5c873c684d9c48f06eae"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Core/Enums.cs.meta",
+      "bytes": 243,
+      "sha256": "a5e4f44e50ca5ae312b3b2b925c2a2cdf94dd48289b43fdbeb69bb53a8131357",
+      "guid": "ca927d43ddd8c4e47a435a1640924249"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Core/SessionLogger.cs",
+      "bytes": 4215,
+      "sha256": "6b2d42e9e5f8785e64c7882a119548abfdbb79e10eeaeb8b99557df7226935a1"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Core/SessionLogger.cs.meta",
+      "bytes": 243,
+      "sha256": "3bbe3441f4ceac8e5ede601dac551166a620cafbf9f25c535f247fd945f6c4f5",
+      "guid": "ea5087842c535de4fba9bba4f8a97288"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Mapping/ArmAnglePipeline.cs",
+      "bytes": 5609,
+      "sha256": "ddd8b08b77f43960ce15caa967ba91bb29061556b02edc8d2e4111993c3f115c"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Mapping/ArmAnglePipeline.cs.meta",
+      "bytes": 243,
+      "sha256": "8a686116ba8ab0449426e7f64892fa07924b924825586dfa5b0ae8a7baf05275",
+      "guid": "2a8b9fa09a67ac14e8098bab629c4468"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Presentation/ArenaFactory.cs",
+      "bytes": 41420,
+      "sha256": "1ee69ce5de8de238e4af9cabc13ee4a66339936aeae2a0bf08b75245a43a474a"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Presentation/ArenaFactory.cs.meta",
+      "bytes": 243,
+      "sha256": "270f831713e0159e4ab6a4aea4ddaf3dacc695dd24b40ff6ccf23cb44df10e5d",
+      "guid": "bd5499eaffe7c0d48b0472f5aeb827e1"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Presentation/HandSkeletonView.cs",
+      "bytes": 6893,
+      "sha256": "a451d653e3bfabc1a84dcb498946e34145e18d32f335f19d612b62303ff3e8a1"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Presentation/HandSkeletonView.cs.meta",
+      "bytes": 243,
+      "sha256": "bc3dff1b0f1c656a448f21011172394b5b1b0b87777cb7c45c212c9bdef310b1",
+      "guid": "361d1e708cad2cc40a9349b309ee9853"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Presentation/OpponentAvatar.cs",
+      "bytes": 4016,
+      "sha256": "109b13b9fffdbec90ead1ca90ae707a107db4f446d16bf4a2b6512c985b13ec9"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Presentation/OpponentAvatar.cs.meta",
+      "bytes": 243,
+      "sha256": "7ed787736c064d745d85dcf8ad225a8d851fa30f3b55e1fe89425437ccd3fcbd",
+      "guid": "5eb563317aa7f0c4aa996ee0faac7080"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Presentation/VirtualArmRig.cs",
+      "bytes": 6607,
+      "sha256": "5fac003495eef88a1636e3c7d96247123ff2e053facc97afffa75ccceb7ef15f"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Presentation/VirtualArmRig.cs.meta",
+      "bytes": 243,
+      "sha256": "487f0d0208c0f5ef0f6c1c6cb995887f80f92ad177a61acb26f839b9c4fc3777",
+      "guid": "0c005588545ee64469aca6a914431359"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/UI/HudPresenter.cs",
+      "bytes": 15727,
+      "sha256": "d55fc23d52a5f622414f3a25e9ce6db8a69b47b7cdd1302d2346f9667052e29e"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/UI/HudPresenter.cs.meta",
+      "bytes": 243,
+      "sha256": "e5002edfec56930e22997d397b95086698b87bfed09315d2cba4fd24f46f381e",
+      "guid": "e94d401ccde76914788fe6382337376f"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Xr/VrUi.cs",
+      "bytes": 12017,
+      "sha256": "55a51de266a9ab12b49e9829cce45c229eb69522eddd38b615818bd832387644"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Xr/VrUi.cs.meta",
+      "bytes": 243,
+      "sha256": "9d06197735cfdbcc82e989e4b8a5067126584bd82d348336b9d9178c1f0bdeb8",
+      "guid": "3ac9298e10b52a8478860e90c128fbc9"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Xr/XrPlayerRig.cs",
+      "bytes": 7190,
+      "sha256": "6f371e75f3429392568d6b883058b7faab15e025017a013a2b0981b9a1617d36"
+    },
+    {
+      "path": "Assets/ArmWrestling/Scripts/Xr/XrPlayerRig.cs.meta",
+      "bytes": 243,
+      "sha256": "9c52de400e9853b46727ec409b2afa0c7b0f792e158aa5b9015c30059afc3f49",
+      "guid": "0deb9218848e1604cb90afb69a6fa9c8"
+    },
+    {
+      "path": "Assets/Resources/PICOProjectSetting.asset",
+      "bytes": 750,
+      "sha256": "925ffeee682e478996bf6d636ce030c014450cb196e0e84bc33735ca62b7fd32"
+    },
+    {
+      "path": "Assets/Resources/PICOProjectSetting.asset.meta",
+      "bytes": 189,
+      "sha256": "f4abd468ec7f2b566595f45950b420a8e51ed01d3b765a3f54f26d37399e1556",
+      "guid": "309db012f00abde49a25c25cf4822264"
+    },
+    {
+      "path": "Assets/Resources/PXR_PlatformSetting.asset",
+      "bytes": 514,
+      "sha256": "918292589a62a67d8bf9e259d9384c8ab931e2dd3706ca80c38da18eebe66c4d"
+    },
+    {
+      "path": "Assets/Resources/PXR_PlatformSetting.asset.meta",
+      "bytes": 189,
+      "sha256": "5114dad8756f442a134199de912b2e820e012a429102e3bbbca00de77ffbd936",
+      "guid": "d03e04de168093f428a4e4b173961d2f"
+    },
+    {
+      "path": "Assets/Scenes/ArmWrestlingMain.unity",
+      "bytes": 4833,
+      "sha256": "cd04e1ba6c88f7fad414cb1c079e8699446e1baafe266b8934995a54cac7eff6"
+    },
+    {
+      "path": "Assets/Scenes/ArmWrestlingMain.unity.meta",
+      "bytes": 155,
+      "sha256": "218f466a20af2cbf39f5c341aa8fe2bd8b4f159b2f1adb07f2b1c8469c8df08c",
+      "guid": "9d9b78acf5930f7488229de9ffc9b77d"
+    },
+    {
+      "path": "Assets/Scenes/ArmWrestlingPreview.unity",
+      "bytes": 184980,
+      "sha256": "cfccadd079d2ab66a64e99eb47fa8d71c9fcc1d9f4295dd889a42163366dfd2c"
+    },
+    {
+      "path": "Assets/Scenes/ArmWrestlingPreview.unity.meta",
+      "bytes": 155,
+      "sha256": "6cd544025b6756c0f734867915fd027bce9e91b7ffe449d0c7059da88ecc8c45",
+      "guid": "768700431c5f3f74bb497d2ff6dd3b9d"
+    },
+    {
+      "path": "Assets/XR/Loaders.meta",
+      "bytes": 172,
+      "sha256": "a874f370095afe705ad6eeeb375806c990605419a08bd31ffdbb32b21d7dfd96",
+      "guid": "ceee87be429230a449791d9b698b5c31"
+    },
+    {
+      "path": "Assets/XR/Settings.meta",
+      "bytes": 172,
+      "sha256": "2a133cf9cbea2bbba8b525d9e1531be486f20d96bc00f3bcd0305df5056705b8",
+      "guid": "a4e391b71a49451449d7ae9590a7fb1b"
+    },
+    {
+      "path": "Assets/XR/XRGeneralSettingsPerBuildTarget.asset",
+      "bytes": 2568,
+      "sha256": "c583027b2a7df0e4311ab83a220e585fdd2a918877a974384c82c0f1c5953f08"
+    },
+    {
+      "path": "Assets/XR/XRGeneralSettingsPerBuildTarget.asset.meta",
+      "bytes": 189,
+      "sha256": "87342423f5e6ba36c107aa77879c05b449a03b16c94ae3d5ce406b2026eaa58e",
+      "guid": "1f65c02423726a34d8f7cec951b97b6f"
+    },
+    {
+      "path": "Assets/XR/Loaders/OpenXRLoader.asset",
+      "bytes": 401,
+      "sha256": "6489cd5500c64a356888e57846a3b8580b288e18b5bbe7472bc13a10405d7915"
+    },
+    {
+      "path": "Assets/XR/Loaders/OpenXRLoader.asset.meta",
+      "bytes": 189,
+      "sha256": "b828a864a819f6a2e10dca2c7e44db9986ea566495093f81e519118c327384dc",
+      "guid": "ede91b5d11dde14439665da402154a4c"
+    },
+    {
+      "path": "Assets/XR/Settings/OpenXR Editor Settings.asset",
+      "bytes": 495,
+      "sha256": "33b4fa51037c55d15c04d5e4b9d4f1b6460345fec9e3a58dc696c0445e3ec610"
+    },
+    {
+      "path": "Assets/XR/Settings/OpenXR Editor Settings.asset.meta",
+      "bytes": 189,
+      "sha256": "d07f379635efda94d0784152bc7acf0728acb659d14a866845a083019bdea9ef",
+      "guid": "f7a84d78a82910449ac642629b73346e"
+    },
+    {
+      "path": "Assets/XR/Settings/OpenXR Package Settings.asset",
+      "bytes": 38792,
+      "sha256": "cd45f4702c4c0e426f39b680f559184ace68794d5519eb6f9f9b10a6a64546f6"
+    },
+    {
+      "path": "Assets/XR/Settings/OpenXR Package Settings.asset.meta",
+      "bytes": 189,
+      "sha256": "2973b983d14297d300212902ecd656736baa42e817aaefefcc059c599edb71f4",
+      "guid": "bd4bf27d150cd184283d2dcb958eb23e"
+    },
+    {
+      "path": "Assets/XRI/Settings.meta",
+      "bytes": 172,
+      "sha256": "49b3f6109e70ad8cbfaea675c06da937c2ff666371c532e58fb292c17e5967a8",
+      "guid": "c636a8d868aeb954093f508d21638a99"
+    },
+    {
+      "path": "Assets/XRI/Settings/Resources.meta",
+      "bytes": 172,
+      "sha256": "36735d8fe3b7a7f44b6eea4ed47661e0cda18ab9ad36cd544cfd6d7a9a3ccc42",
+      "guid": "f978192a754b3fb46bcd94c9b6b8bdb3"
+    },
+    {
+      "path": "Assets/XRI/Settings/XRInteractionEditorSettings.asset",
+      "bytes": 498,
+      "sha256": "f5daef71a162d4683eb4f08cb94dc8554e1875cc315a8e96e4ce7506d8801dd8"
+    },
+    {
+      "path": "Assets/XRI/Settings/XRInteractionEditorSettings.asset.meta",
+      "bytes": 189,
+      "sha256": "1376f6e572c16b52b3a0378fa2bd743bd59fa5684a5128dfa41dfd40bd8f4dc4",
+      "guid": "95a20304e49f9804f994b5c38c9af007"
+    },
+    {
+      "path": "Assets/XRI/Settings/Resources/InteractionLayerSettings.asset",
+      "bytes": 596,
+      "sha256": "f235987e7c92498641384e12883f998a7f439c3ebeff05fa686d8cb6a0a1605e"
+    },
+    {
+      "path": "Assets/XRI/Settings/Resources/InteractionLayerSettings.asset.meta",
+      "bytes": 189,
+      "sha256": "ba9bd5f386203504efe5e180e44531c999af0ccc69357de0768cf4739932de6c",
+      "guid": "714e7bdf7c7a4d74d8a0d93c2f5abd24"
+    },
+    {
+      "path": "Assets/XRI/Settings/Resources/XRDeviceSimulatorSettings.asset",
+      "bytes": 538,
+      "sha256": "dc4750cd727e8f921d3e5fbc822448b7f33e2911041fc4adf68769cd3cab2e16"
+    },
+    {
+      "path": "Assets/XRI/Settings/Resources/XRDeviceSimulatorSettings.asset.meta",
+      "bytes": 189,
+      "sha256": "8b42e492c1ac0296464090afd9ba4472875745fcddb972570a67056ba3317ae2",
+      "guid": "2ba25abc0991c0e40a45f4753f420e25"
+    },
+    {
+      "path": "Packages/manifest.json",
+      "bytes": 923,
+      "sha256": "4218a1b31df523dbedab1bd12abac4c0a6b70e472eb792c14b2a35f060d65ca5"
+    },
+    {
+      "path": "Packages/packages-lock.json",
+      "bytes": 10184,
+      "sha256": "b8a318463950145251f635bb9b31129e9b0c445d5d5040b25266e29d940a6d6a"
+    },
+    {
+      "path": "ProjectSettings/AudioManager.asset",
+      "bytes": 443,
+      "sha256": "9a554916fe138ebcad8443ee9b079363ecc72795c39d0e80f5f7ca99e2c6f5e7"
+    },
+    {
+      "path": "ProjectSettings/ClusterInputManager.asset",
+      "bytes": 114,
+      "sha256": "40e65dd214bf254955d2c8829ca8ce2130fd3510485560ce012e9a1ddd93e623"
+    },
+    {
+      "path": "ProjectSettings/DynamicsManager.asset",
+      "bytes": 1394,
+      "sha256": "62fd35da36080a098d3e9f90cf4af6c655fe582091c33e505b812cf9aa36fee1"
+    },
+    {
+      "path": "ProjectSettings/EditorBuildSettings.asset",
+      "bytes": 475,
+      "sha256": "b49c6c35295e9f807f9858b2a997b3438638ea644ac4db18427579fc069baff6"
+    },
+    {
+      "path": "ProjectSettings/EditorSettings.asset",
+      "bytes": 1502,
+      "sha256": "6f8761b516f06ff2f0373b6310571cf7951f63afb86c56bfd7be832e06a9987b"
+    },
+    {
+      "path": "ProjectSettings/GraphicsSettings.asset",
+      "bytes": 2392,
+      "sha256": "96fbec3a726513347293fb201477836277ade290a0bd7bd473cea90ffe896820"
+    },
+    {
+      "path": "ProjectSettings/InputManager.asset",
+      "bytes": 5816,
+      "sha256": "d0f454ddb880912abcae92e3e12957a7446786ba89e24937e019ff3bbc0d4300"
+    },
+    {
+      "path": "ProjectSettings/MemorySettings.asset",
+      "bytes": 1192,
+      "sha256": "1e8379a461b10ae09f3f696911088c16875d63e87ed5f2d95df9e1892703f9fd"
+    },
+    {
+      "path": "ProjectSettings/NavMeshAreas.asset",
+      "bytes": 1361,
+      "sha256": "7ebbf8f53b8033104e1878b95ca07a28d0954092d81c220f14196a42f651e658"
+    },
+    {
+      "path": "ProjectSettings/PackageManagerSettings.asset",
+      "bytes": 951,
+      "sha256": "142729f750e743a4a1d891fb7d0ac78a7239b850cc99fc9762909a49fa8b1cea"
+    },
+    {
+      "path": "ProjectSettings/Physics2DSettings.asset",
+      "bytes": 1635,
+      "sha256": "531861618163b01648a075414f6e864506ad8fe0a0d4d0096aa1fbbfcd3937dc"
+    },
+    {
+      "path": "ProjectSettings/PresetManager.asset",
+      "bytes": 146,
+      "sha256": "29c125923fe6e29f90190d4fce1c82d660e7051546e2c9d02908d18c9cf2436c"
+    },
+    {
+      "path": "ProjectSettings/ProjectSettings.asset",
+      "bytes": 21530,
+      "sha256": "9ca6e1bb2e151e7c2a800cae76d693e24467077d948f2da84045f5c06c365f75"
+    },
+    {
+      "path": "ProjectSettings/ProjectVersion.txt",
+      "bytes": 89,
+      "sha256": "b42279cfd794d9f1825f3b7c1f318b861fa9e2e2b3c6c146737bdbd41c01b389"
+    },
+    {
+      "path": "ProjectSettings/QualitySettings.asset",
+      "bytes": 9183,
+      "sha256": "944b52d523bcb15b945bc80924b9289f59185ab19bce8a00e99eec345bde6440"
+    },
+    {
+      "path": "ProjectSettings/SceneTemplateSettings.json",
+      "bytes": 3534,
+      "sha256": "5baf593374ad67246277a435d8d0ded7167696eef6e05d2d245670e490625d8c"
+    },
+    {
+      "path": "ProjectSettings/TagManager.asset",
+      "bytes": 378,
+      "sha256": "8e18b1c820e9c09e16bbd1f1b7842e9fb3b0158a0921b0964e0b8fa12c6e2c01"
+    },
+    {
+      "path": "ProjectSettings/TimeManager.asset",
+      "bytes": 202,
+      "sha256": "1a83e54adbbda7c9f4851103a0c6ab7f6448a3343d4ea5b7620452fa08416ecd"
+    },
+    {
+      "path": "ProjectSettings/UnityConnectSettings.asset",
+      "bytes": 1044,
+      "sha256": "5af4c69bb69f1d9dfbbc47b01eb6522e3ea41e672791e080a003c8deacae9ab5"
+    },
+    {
+      "path": "ProjectSettings/VersionControlSettings.asset",
+      "bytes": 188,
+      "sha256": "e7bda45bf7a394745fee1316e6c71fa676004d591ad1f3aa247fd3e4ceb86071"
+    },
+    {
+      "path": "ProjectSettings/VFXManager.asset",
+      "bytes": 465,
+      "sha256": "3f31266c7c1910447586e71b041dabd58d8371715ac3142d3e38ace46121f4ab"
+    },
+    {
+      "path": "ProjectSettings/Packages/com.unity.testtools.codecoverage/Settings.json",
+      "bytes": 64,
+      "sha256": "a40f81b0dcc795e422f5ca0881fe7dad4e26cb8fdb33244a70f110835c1a8d44"
+    }
+  ]
+}

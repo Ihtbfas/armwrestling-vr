@@ -1,0 +1,10 @@
+PASS
+Editor=2022.3.62f3c1
+Scene=ArmWrestlingMain
+States=DeviceCheck;Calibration;Lobby;Ready;Countdown;Fighting;Paused;Fighting;Finished;
+VisualAngleRange=-0.05902983..41.99972
+Outcome=PlayerWins
+RuntimeErrors=0
+Graphics=Direct3D11
+Opponent=Capsule fallback
+Font=LegacyRuntime
