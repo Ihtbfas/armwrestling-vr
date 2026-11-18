@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -53,6 +53,7 @@ namespace ArmWrestlingVR
 
         /// <summary>用导入的人物模型替代胶囊体对手。</summary>
         public static bool UseCharacterModel = false;
+        internal static GameObject PairedAvatar;
 
         // 配色
         private static readonly Color TableColor = new Color(0.27f, 0.145f, 0.085f);
@@ -572,7 +573,7 @@ namespace ArmWrestlingVR
         /// </summary>
         private static bool SpawnCharacter(Transform parent, VirtualArmRig armRig)
         {
-            GameObject prefab = Resources.Load<GameObject>("Characters/Ch03");
+            GameObject prefab = PairedAvatar != null ? PairedAvatar : Resources.Load<GameObject>("Characters/Ch03");
             if (prefab == null)
             {
                 Debug.LogWarning("[ArmWrestling] 找不到人物模型 Resources/Characters/Ch03");
@@ -580,13 +581,16 @@ namespace ArmWrestlingVR
             }
 
             GameObject model = Object.Instantiate(prefab, parent);
-            model.name = "Opponent Character (Ch03)";
+            bool rocketbox = prefab == PairedAvatar;
+            model.name = rocketbox ? "Opponent Character (Rocketbox)" : "Opponent Character (Ch03)";
 
-            const float scale = 1.12f;
-            float feetY = -TableHeight;
+            float scale = rocketbox ? PairedGripPose.AvatarScale : 1.12f;
+            float feetY = -TableHeight + (rocketbox ? 0.08f : 0f);
 
-            // Ch03's seated origin, fitted against the existing opponent seat and table.
-            model.transform.localPosition = new Vector3(0f, -0.22f, OpponentSeatZ - 0.08f);
+            // Offset each model's imported origin to the existing demo seat.
+            model.transform.localPosition = rocketbox
+                ? new Vector3(0f, -0.09f, OpponentSeatZ - 0.10f)
+                : new Vector3(0f, -0.22f, OpponentSeatZ - 0.08f);
             model.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
             model.transform.localScale = Vector3.one * scale;
 

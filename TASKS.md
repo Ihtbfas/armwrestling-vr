@@ -1,14 +1,16 @@
 # TASKS
 
-## 当前阶段：P2-A 正常人物与成对扳手腕握姿（待实施）
+## 当前阶段：P2-A 正常人物与成对扳手腕握姿（已完成 Editor 原型）
 
-- [ ] 先调研并试用 MIT Rocketbox、CC0 MakeHuman 等真实人物，验证贴图、Humanoid 与全部手指骨骼。
-- [ ] 保留 P1-E 基线和胶囊回退，完成一名外观正常的对手与第一人称玩家手臂。
-- [ ] 人工设计一个正确的**成对双手掌面对掌**握姿，保存相对共同 Grip Anchor 的两个腕目标和手指姿态。
-- [ ] 用实际 Editor 零位近景与连续 ±30° 往返验证姿态自然性，保持肘部稳定和比赛流程。
-- [ ] 留下研究来源、资产许可与真正的画面证据；不要求一轮上线 PICO/PC UDP。
+- [x] 先调研并试用 MIT Rocketbox、CC0 MakeHuman 等真实人物，验证贴图、Humanoid 与全部手指骨骼。
+- [x] 保留 P1-E 基线和胶囊回退，完成一名外观正常的对手与第一人称玩家手臂。
+- [x] 人工设计一个正确的**成对双手掌面对掌**握姿，保存相对共同 Grip Anchor 的两个腕目标和手指姿态。
+- [x] 用实际 Editor 零位近景与连续 ±30° 往返验证姿态自然性，保持肘部稳定和比赛流程。
+- [x] 留下研究来源、资产许可与真正的画面证据；不要求一轮上线 PICO/PC UDP。
 
-[执行任务书](docs/tasks/P2A-avatar-paired-grip-prototype.md) · [调研与技术参考](docs/research/P2A-avatar-and-grip-references.md)
+[执行任务书](docs/tasks/P2A-avatar-paired-grip-prototype.md) · [调研与技术参考](docs/research/P2A-avatar-and-grip-references.md) · [运行与证据](docs/P2A-avatar-and-paired-grip-result.md)
+
+Rocketbox 和配对姿态已跑通。近景仍有局部穿插，端点手腕和肘垫接触留待实际视角与实物标定复核。
 
 ## P1 阶段收口
 

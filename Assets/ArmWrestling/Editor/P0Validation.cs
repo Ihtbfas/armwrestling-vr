@@ -52,18 +52,26 @@ namespace ArmWrestlingVR.EditorTools
                 var bootstrap = UnityEngine.Object.FindObjectOfType<RuntimeBootstrap>();
                 bool grip = Array.IndexOf(args, "-p0grip") >= 0;
                 bool handContact = Array.IndexOf(args, "-p0handcontact") >= 0;
-                bool motion = handContact || Array.IndexOf(args, "-p0motion") >= 0;
+                bool paired = Array.IndexOf(args, "-p0pairedgrip") >= 0;
+                if (paired)
+                {
+                    var pose = Resources.Load<PairedGripPose>(PairedGripPose.PoseResource);
+                    Require(pose != null && pose.IsComplete, "The paired pose is missing or incomplete.");
+                }
+                bool motion = paired || handContact || Array.IndexOf(args, "-p0motion") >= 0;
                 if (bootstrap != null && (Array.IndexOf(args, "-p0art") >= 0 || grip || motion))
                 {
-                    Require(Resources.Load<GameObject>("Characters/Ch03") != null,
-                        "Restore local art before using -p0art.");
-                    bootstrap.useOriginalArt = true; // Play copy only; never save the scene.
+                    Require(Resources.Load<GameObject>(paired ? PairedGripPose.AvatarResource : "Characters/Ch03") != null,
+                        "The requested avatar is missing.");
+                    bootstrap.useOriginalArt = !paired; // Play copy only; never save the scene.
+                    bootstrap.usePairedGrip = paired;
                     bootstrap.useExperimentalGrip = grip;
                     bootstrap.useCharacterMotion = motion;
                     bootstrap.useHandContact = handContact;
                 }
                 SessionState.SetBool(ActiveKey + ".motion", motion);
                 SessionState.SetBool(ActiveKey + ".handContact", handContact);
+                SessionState.SetBool(ActiveKey + ".paired", paired);
                 SessionState.SetBool(ActiveKey, true);
                 SessionState.SetString(ActiveKey + ".scene", scenePath);
                 EditorApplication.EnterPlaymode();
@@ -147,6 +155,10 @@ namespace ArmWrestlingVR.EditorTools
         {
             var model = UnityEngine.Object.FindObjectOfType<OpponentAvatar>();
             string opponent = "Capsule fallback";
+            bool paired = SessionState.GetBool(ActiveKey + ".paired", false);
+            if (paired)
+                Require(model != null && model.UsesPairedGrip && app.armRig.playerVisual != null
+                    && app.armRig.playerVisual.UsesPairedGrip, "The Rocketbox pair did not start.");
             if (ArenaFactory.UseCharacterModel)
             {
                 Require(model != null, "Local character asset exists but was not instantiated.");
@@ -158,7 +170,16 @@ namespace ArmWrestlingVR.EditorTools
                 {
                     Require(app.armRig.playerVisual != null && app.armRig.playerVisual.Skin.enabled,
                         "P1-D player surface was not enabled.");
-                    Require(model.UsesAuthoredMotion && model.UsedStableElbow, "P1-D motion or elbow support fell back.");
+                    Require(model.UsesAuthoredMotion && (paired || model.UsedStableElbow), "Character motion fell back.");
+                    Require(model.UsesPairedGrip == paired && app.armRig.playerVisual.UsesPairedGrip == paired,
+                        "The requested paired grip mode did not start.");
+                    if (paired)
+                    {
+                        Require(app.armRig.playerVisual.HasSleeve, "Rocketbox sleeve is missing.");
+                        Require(app.armRig.playerVisual.Skin.sharedMaterial.mainTexture != null,
+                            "Rocketbox skin texture is missing.");
+                        opponent += "\nPairedGrip=Rocketbox opponent and player";
+                    }
                     Require(sawContestClip, "The contest clip did not play during the simulated match.");
                     bool expectedContact = SessionState.GetBool(ActiveKey + ".handContact", false);
                     Require(app.armRig.playerVisual.UsesHandContact == expectedContact,

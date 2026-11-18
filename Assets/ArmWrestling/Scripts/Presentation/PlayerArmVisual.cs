@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace ArmWrestlingVR
 {
-    // A view-only right arm skinned to the original local Ch03 skeleton.
+    // A view-only right arm skinned to the selected Humanoid skeleton.
     public sealed class PlayerArmVisual : MonoBehaviour
     {
         private const string MeshResource = "Characters/P1DLocalPlayerArm";
@@ -12,26 +12,39 @@ namespace ArmWrestlingVR
         private Vector3 upperAxis, lowerAxis;
         private Quaternion handBasis, lowerRest, upperRest;
         private Material material, sleeveMaterial;
-        private Mesh sleeveMesh;
+        private Mesh sleeveMesh, ownedCrop;
+        private PairedGripPose.Hand pairedGrip;
+        private Vector3 palmFromWrist;
         private readonly Transform[] fingers = new Transform[15];
         public SkinnedMeshRenderer Skin { get; private set; }
         public Vector3 PalmPosition => Vector3.Lerp(hand.position, middle.position, 0.55f);
         public Vector3 DesiredPalm { get; private set; }
         public bool UsesHandContact { get; private set; }
         public bool HasSleeve => sleeveMesh != null;
+        public bool UsesPairedGrip => pairedGrip != null;
 
         public static PlayerArmVisual TryCreate(VirtualArmRig rig, GameObject prefab)
         {
-            Mesh mesh = Resources.Load<Mesh>(MeshResource);
-            if (rig == null || rig.playerArm == null || prefab == null || mesh == null)
+            return Create(rig, prefab, Resources.Load<Mesh>(MeshResource), null);
+        }
+
+        internal static PlayerArmVisual TryCreatePaired(VirtualArmRig rig, GameObject prefab, PairedGripPose.Hand pose)
+        {
+            return Create(rig, prefab, null, pose);
+        }
+
+        private static PlayerArmVisual Create(VirtualArmRig rig, GameObject prefab, Mesh mesh, PairedGripPose.Hand pose)
+        {
+            if (rig == null || rig.playerArm == null || prefab == null || (mesh == null && pose == null))
             {
                 Debug.LogWarning("[P1-D] Local player arm unavailable. Use the editor Prepare Local Player Arm command.");
                 return null;
             }
             GameObject model = Instantiate(prefab, rig.transform, false);
-            model.name = "Player right arm (local Ch03)";
-            model.transform.localScale = 1.12f * Vector3.one;
+            model.name = pose != null ? "Player right arm (Rocketbox)" : "Player right arm (local Ch03)";
+            model.transform.localScale = (pose != null ? PairedGripPose.AvatarScale : 1.12f) * Vector3.one;
             var visual = model.AddComponent<PlayerArmVisual>();
+            visual.pairedGrip = pose;
             if (!visual.Bind(mesh))
             {
                 model.SetActive(false);
@@ -39,6 +52,7 @@ namespace ArmWrestlingVR
                 Debug.LogWarning("[P1-D] Local mesh and Ch03 did not bind. Using the capsule.");
                 return null;
             }
+            if (pose != null) visual.AddSleeve();
             foreach (Transform segment in new[] { rig.playerArm.upperArm, rig.playerArm.forearm, rig.playerArm.hand })
             {
                 segment.GetComponent<Renderer>().enabled = false;
@@ -72,6 +86,7 @@ namespace ArmWrestlingVR
             upperRest = Quaternion.Inverse(transform.rotation) * upper.rotation;
             lowerRest = Quaternion.Inverse(upper.rotation) * lower.rotation;
             setback = Vector3.Distance(hand.position, middle.position) * 0.55f;
+            palmFromWrist = Quaternion.Inverse(hand.rotation) * (PalmPosition - hand.position);
             Vector3 forward = (middle.position - hand.position).normalized;
             Vector3 dorsal = Vector3.Cross(index.position - little.position, forward).normalized;
             handBasis = Quaternion.Inverse(hand.rotation) * Quaternion.LookRotation(forward, dorsal);
@@ -80,17 +95,33 @@ namespace ArmWrestlingVR
             {
                 renderer.enabled = false;
                 if (Skin == null && renderer is SkinnedMeshRenderer candidate &&
-                    candidate.sharedMesh != null && mesh.vertexCount == candidate.sharedMesh.vertexCount &&
+                    candidate.sharedMesh != null && (UsesPairedGrip || mesh.vertexCount == candidate.sharedMesh.vertexCount) &&
                     System.Array.IndexOf(candidate.bones, upper) >= 0)
                     Skin = candidate;
             }
             if (Skin == null) return false;
+            if (UsesPairedGrip)
+            {
+                ownedCrop = ArmMeshCrop.RightArm(Skin, upper, keepMaterials: true);
+                if (ownedCrop == null) return false;
+                ownedCrop.name = "Rocketbox right arm crop";
+                mesh = ownedCrop;
+            }
             Skin.sharedMesh = mesh;
             Skin.enabled = true;
             Skin.updateWhenOffscreen = true;
-            material = new Material(Shader.Find("Standard")) { color = new Color(0.70f, 0.47f, 0.34f) };
-            material.SetFloat("_Glossiness", 0.22f);
-            Skin.sharedMaterial = material;
+            if (UsesPairedGrip)
+            {
+                var tint = new MaterialPropertyBlock();
+                tint.SetColor("_Color", new Color(0.94f, 0.84f, 0.78f));
+                Skin.SetPropertyBlock(tint);
+            }
+            else
+            {
+                material = new Material(Shader.Find("Standard")) { color = new Color(0.70f, 0.47f, 0.34f) };
+                material.SetFloat("_Glossiness", 0.22f);
+                Skin.sharedMaterial = material;
+            }
             return true;
         }
 
@@ -99,13 +130,19 @@ namespace ArmWrestlingVR
         internal void EnableHandContact()
         {
             UsesHandContact = true;
+            AddSleeve();
+        }
+
+        private void AddSleeve()
+        {
             var sleeve = new GameObject("Player short sleeve");
             sleeve.transform.SetParent(upper, false);
             sleeve.transform.localRotation = Quaternion.FromToRotation(Vector3.up, upperAxis);
             sleeve.transform.localScale = Vector3.one / upper.lossyScale.x;
             sleeveMesh = CreateSleeveMesh();
             sleeve.AddComponent<MeshFilter>().sharedMesh = sleeveMesh;
-            sleeveMaterial = new Material(material) { color = new Color(0.10f, 0.19f, 0.23f) };
+            sleeveMaterial = new Material(Shader.Find("Standard")) { color = new Color(0.10f, 0.19f, 0.23f) };
+            sleeveMaterial.mainTexture = null;
             sleeveMaterial.SetFloat("_Glossiness", 0.12f);
             sleeve.AddComponent<MeshRenderer>().sharedMaterial = sleeveMaterial;
         }
@@ -149,8 +186,18 @@ namespace ArmWrestlingVR
         private static Vector3 Pad(Transform frame) =>
             frame.TransformPoint(new Vector3(ArenaFactory.ElbowPadX, 0.08f, ArenaFactory.ElbowPadZ));
 
-        public void ApplyGrip(Transform frame, Vector3 grip) =>
-            PoseArm(frame, grip + frame.right * 0.028f, frame.right);
+        public void ApplyGrip(Transform frame, Transform anchor)
+        {
+            if (UsesPairedGrip)
+            {
+                Pose wrist = pairedGrip.WorldWrist(anchor);
+                DesiredPalm = wrist.position + wrist.rotation * palmFromWrist;
+                SolveArm(frame, wrist.position, wrist.rotation);
+                pairedGrip.Apply(fingers);
+                return;
+            }
+            PoseArm(frame, anchor.position + frame.right * 0.028f, frame.right);
+        }
 
         // Both palms use this side vector. The cross product keeps it nearly
         // perpendicular to both hands while preserving the world-space wrist goals.
@@ -168,18 +215,49 @@ namespace ArmWrestlingVR
 
         private void PoseArm(Transform frame, Vector3 palm, Vector3 side)
         {
+            DesiredPalm = palm;
+            Vector3 direction = (palm - Pad(frame)).normalized;
+            SolveArm(frame, palm - direction * setback, Quaternion.LookRotation(direction, side) * Quaternion.Inverse(handBasis));
+        }
+
+        private void SolveArm(Transform frame, Vector3 targetWrist, Quaternion rotation)
+        {
             Vector3 shoulder = frame.TransformPoint(new Vector3(0.19f, 0.19f, -0.34f));
             Vector3 pad = Pad(frame);
-            DesiredPalm = palm;
-            Vector3 direction = (DesiredPalm - pad).normalized;
-            Vector3 targetWrist = DesiredPalm - direction * setback;
+            if (UsesPairedGrip)
+            {
+                float weight = PlayerSupport(frame, targetWrist, out Vector3 support);
+                Vector3 toElbow = support - shoulder;
+                shoulder += toElbow.normalized * (weight * (toElbow.magnitude - upperLength));
+                pad = Vector3.Lerp(pad, support, weight);
+            }
             ArmChain.SolveJoints(shoulder, targetWrist, pad, frame.up, upperLength, foreLength, out var elbow, out var wrist);
             upper.position = shoulder;
             Quaternion start = transform.rotation * upperRest;
             upper.rotation = Quaternion.FromToRotation(start * upperAxis, elbow - shoulder) * start;
             start = upper.rotation * lowerRest;
             lower.rotation = Quaternion.FromToRotation(start * lowerAxis, wrist - elbow) * start;
-            hand.rotation = Quaternion.LookRotation(direction, side) * Quaternion.Inverse(handBasis);
+            hand.rotation = rotation;
+        }
+
+        private float PlayerSupport(Transform frame, Vector3 wrist, out Vector3 elbow)
+        {
+            elbow = default;
+            const float boneY = 0.073f;
+            Vector3 local = frame.InverseTransformPoint(wrist);
+            float radius = foreLength / frame.lossyScale.x;
+            float dy = local.y - boneY;
+            float horizontalSq = radius * radius - dy * dy;
+            if (horizontalSq <= 0f) return 0f;
+            Vector2 toward = new Vector2(0.13f - local.x, -0.14f - local.z).normalized;
+            float x = Mathf.Clamp(local.x + toward.x * Mathf.Sqrt(horizontalSq), 0.094f, 0.32f);
+            float depthSq = horizontalSq - (x - local.x) * (x - local.x);
+            if (depthSq < 0f) return 0f;
+            float z = local.z - Mathf.Sqrt(depthSq);
+            if (z < -0.24f || z > -0.066f) return 0f;
+            elbow = frame.TransformPoint(new Vector3(x, boneY, z));
+            // Blend out before the anatomical reach runs out at the pad edge.
+            return Mathf.InverseLerp(-0.24f, -0.221f, z) * Mathf.InverseLerp(-0.066f, -0.088f, z);
         }
 
         private void OnDestroy()
@@ -187,6 +265,7 @@ namespace ArmWrestlingVR
             if (material != null) Destroy(material);
             if (sleeveMaterial != null) Destroy(sleeveMaterial);
             if (sleeveMesh != null) Destroy(sleeveMesh);
+            if (ownedCrop != null) Destroy(ownedCrop);
         }
     }
 }

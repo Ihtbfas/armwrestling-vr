@@ -34,6 +34,10 @@ namespace ArmWrestlingVR
         private float upperArmLength, forearmLength;
         private bool useStableElbow;
         private bool useHandContact;
+        private PairedGripPose.Hand pairedGrip;
+        private Transform pairedWrist;
+        private Transform[] pairedFingers;
+        public bool UsesPairedGrip => pairedGrip != null;
         public bool UsedStableElbow { get; private set; }
         public float BodyCorrection { get; private set; }
         public bool UsesAuthoredMotion { get; private set; }
@@ -76,6 +80,14 @@ namespace ArmWrestlingVR
             if (controller == null || animator == null) return;
             animator.runtimeAnimatorController = controller;
             UsesAuthoredMotion = true;
+        }
+
+        internal void SetPairedGrip(PairedGripPose.Hand pose)
+        {
+            pairedGrip = pose;
+            pairedWrist = animator.GetBoneTransform(HumanBodyBones.RightHand);
+            pairedFingers = PairedGripPose.MapFingers(animator);
+            useGripPose = false;
         }
 
         private void Update()
@@ -148,30 +160,8 @@ namespace ArmWrestlingVR
 
             if (rightHandTarget != null && rightElbowHint != null)
             {
-                Vector3 aim = rightElbowHint.localPosition;
-                float gripX = frame.InverseTransformPoint(rightHandTarget.position).x;
-                aim.x = Mathf.Clamp(gripX - 0.15f, -0.28f, -0.11f);
-                Vector3 endPole = angle < 0f ? OpponentAheadPole : PlayerAheadPole;
-                Vector3 limitPole = angle < 0f ? OpponentLimitPoleOffset : PlayerLimitPoleOffset;
-                Vector3 pole = Vector3.Lerp(NeutralPole, endPole, Mathf.Abs(angle) / 30f) + limitPole * limitWeight;
-                Vector3 elbow = frame.TransformPoint(aim + pole);
-                // At the negative limit, align the palm more closely with the
-                // forearm while keeping the same grip centre and wrist setback.
-                if (angle < 0f) aim += OpponentLimitAimOffset * limitWeight;
-                Vector3 fingers = (rightHandTarget.position - frame.TransformPoint(aim)).normalized;
-                if (useStableElbow && TrySupportedElbow(frame, rightHandTarget.position, out Vector3 supported))
-                {
-                    elbow = supported;
-                    fingers = (rightHandTarget.position - elbow).normalized;
-                    UsedStableElbow = true;
-                }
-                // The swing anchor is the centre of the joined palms, ahead of the wrist.
-                DesiredRightWrist = rightHandTarget.position - fingers * 0.045f;
-                Vector3 palmSide = useHandContact
-                    ? armRig.playerVisual.ApplyContactGrip(frame, rightHandTarget.position, fingers)
-                    : frame.right;
-                ApplyHand(AvatarIKGoal.RightHand, AvatarIKHint.RightElbow,
-                    DesiredRightWrist, Quaternion.LookRotation(fingers, -palmSide), elbow);
+                if (UsesPairedGrip) ApplyPairedWristTarget(frame);
+                else ApplyLegacyRightHand(frame, angle, limitWeight);
             }
             if (leftHandTarget != null && leftElbowHint != null)
                 ApplyHand(AvatarIKGoal.LeftHand, AvatarIKHint.LeftElbow,
@@ -185,9 +175,64 @@ namespace ArmWrestlingVR
             if (useGripPose) gripPose?.Apply(animator);
         }
 
+        private void ApplyPairedWristTarget(Transform frame)
+        {
+            Pose wrist = pairedGrip.WorldWrist(rightHandTarget);
+            DesiredRightWrist = wrist.position;
+            Vector3 elbow = rightElbowHint.position;
+            if (TrySupportedElbow(frame, wrist.position, 0f, out Vector3 supported))
+            {
+                elbow = supported;
+                UsedStableElbow = true;
+            }
+            // Set the position and elbow hint through Humanoid IK. The saved
+            // FBX wrist quaternion is applied in bone space after IK.
+            animator.SetIKPositionWeight(AvatarIKGoal.RightHand, 1f);
+            animator.SetIKPosition(AvatarIKGoal.RightHand, wrist.position);
+            animator.SetIKRotationWeight(AvatarIKGoal.RightHand, 0f);
+            animator.SetIKHintPositionWeight(AvatarIKHint.RightElbow, 1f);
+            animator.SetIKHintPosition(AvatarIKHint.RightElbow, elbow);
+        }
+
+        public void ApplyPairedHandBones()
+        {
+            if (!UsesPairedGrip || !IkEnabled || rightHandTarget == null) return;
+            pairedWrist.rotation = rightHandTarget.rotation * pairedGrip.wristRotation;
+            pairedGrip.Apply(pairedFingers);
+        }
+
+        private void ApplyLegacyRightHand(Transform frame, float angle, float limitWeight)
+        {
+            Vector3 aim = rightElbowHint.localPosition;
+            float gripX = frame.InverseTransformPoint(rightHandTarget.position).x;
+            aim.x = Mathf.Clamp(gripX - 0.15f, -0.28f, -0.11f);
+            Vector3 endPole = angle < 0f ? OpponentAheadPole : PlayerAheadPole;
+            Vector3 limitPole = angle < 0f ? OpponentLimitPoleOffset : PlayerLimitPoleOffset;
+            Vector3 pole = Vector3.Lerp(NeutralPole, endPole, Mathf.Abs(angle) / 30f) + limitPole * limitWeight;
+            Vector3 elbow = frame.TransformPoint(aim + pole);
+            // At the negative limit, align the palm more closely with the
+            // forearm while keeping the same grip centre and wrist setback.
+            if (angle < 0f) aim += OpponentLimitAimOffset * limitWeight;
+            Vector3 fingers = (rightHandTarget.position - frame.TransformPoint(aim)).normalized;
+            if (useStableElbow && TrySupportedElbow(frame, rightHandTarget.position, 0.045f, out Vector3 supported))
+            {
+                elbow = supported;
+                fingers = (rightHandTarget.position - elbow).normalized;
+                UsedStableElbow = true;
+            }
+            // The swing anchor is the centre of the joined palms, ahead of the wrist.
+            DesiredRightWrist = rightHandTarget.position - fingers * 0.045f;
+            Vector3 palmSide = useHandContact
+                ? armRig.playerVisual.ApplyContactGrip(frame, rightHandTarget.position, fingers)
+                : frame.right;
+            ApplyHand(AvatarIKGoal.RightHand, AvatarIKHint.RightElbow,
+                DesiredRightWrist, Quaternion.LookRotation(fingers, -palmSide), elbow);
+        }
+
         private void LateUpdate()
         {
-            if (gripPose == null && ready && IkPassCount > 0)
+            ApplyPairedHandBones();
+            if (!UsesPairedGrip && gripPose == null && ready && IkPassCount > 0)
             {
                 gripPose = new OpponentGripPose(animator, useHandContact);
                 if (armRig != null && armRig.playerVisual != null)
@@ -206,25 +251,25 @@ namespace ArmWrestlingVR
             }
         }
 
-        private bool TrySupportedElbow(Transform frame, Vector3 grip, out Vector3 supported)
+        private bool TrySupportedElbow(Transform frame, Vector3 target, float extension, out Vector3 supported)
         {
             supported = default;
             if (upperArmLength <= 0f || forearmLength <= 0f) return false;
             // The pad top is at 95 mm. The elbow bone sits above the sampled
             // skin. A straight forearm-to-palm line gives a sphere about grip.
-            const float boneY = 0.109f;
-            Vector3 g = frame.InverseTransformPoint(grip);
-            float radius = (forearmLength + 0.045f) / frame.lossyScale.x;
+            float boneY = UsesPairedGrip ? 0.130f : 0.109f;
+            Vector3 g = frame.InverseTransformPoint(target);
+            float radius = (forearmLength + extension) / frame.lossyScale.x;
             float vertical = g.y - boneY;
             float horizontalSq = radius * radius - vertical * vertical;
             if (horizontalSq <= 0f) return false;
             float horizontal = Mathf.Sqrt(horizontalSq);
-            Vector2 toward = new Vector2(-0.025f - g.x, 0.14f - g.z).normalized;
+            Vector2 toward = new Vector2((UsesPairedGrip ? -0.075f : -0.025f) - g.x, 0.14f - g.z).normalized;
             float x = Mathf.Clamp(g.x + toward.x * horizontal, -0.29f, -0.021f);
             float depthSq = horizontalSq - (x - g.x) * (x - g.x);
             if (depthSq < 0f) return false;
             float z = g.z + Mathf.Sqrt(depthSq);
-            if (z < 0.055f || z > 0.23f) return false;
+            if (z < 0.055f || z > (UsesPairedGrip ? 0.234f : 0.23f)) return false;
             supported = frame.TransformPoint(new Vector3(x, boneY, z));
 
             Vector3 shoulder = bodyPosition + bodyRotation * shoulderFromBody;

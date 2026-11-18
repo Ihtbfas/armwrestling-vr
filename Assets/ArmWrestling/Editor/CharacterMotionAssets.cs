@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -31,45 +30,10 @@ namespace ArmWrestlingVR.EditorTools
                 var arm = animator.GetBoneTransform(HumanBodyBones.RightUpperArm);
                 foreach (var skin in instance.GetComponentsInChildren<SkinnedMeshRenderer>())
                 {
-                    Transform[] bones = skin.bones;
-                    if (arm == null || Array.IndexOf(bones, arm) < 0) continue;
-                    var armBones = new HashSet<int>();
-                    for (int i = 0; i < bones.Length; i++)
-                        if (bones[i] != null && (bones[i] == arm || bones[i].IsChildOf(arm))) armBones.Add(i);
-                    var source = skin.sharedMesh;
-                    var keep = new bool[source.vertexCount];
-                    var weights = source.boneWeights;
-                    for (int i = 0; i < weights.Length; i++)
-                    {
-                        var w = weights[i];
-                        if (!armBones.Contains(w.boneIndex0)) w.weight0 = 0;
-                        if (!armBones.Contains(w.boneIndex1)) w.weight1 = 0;
-                        if (!armBones.Contains(w.boneIndex2)) w.weight2 = 0;
-                        if (!armBones.Contains(w.boneIndex3)) w.weight3 = 0;
-                        float sum = w.weight0 + w.weight1 + w.weight2 + w.weight3;
-                        keep[i] = sum >= 0.55f;
-                        if (keep[i])
-                        {
-                            w.weight0 /= sum;
-                            w.weight1 /= sum;
-                            w.weight2 /= sum;
-                            w.weight3 /= sum;
-                            weights[i] = w;
-                        }
-                    }
-                    var triangles = source.triangles;
-                    var crop = new List<int>();
-                    for (int i = 0; i < triangles.Length; i += 3)
-                        if (keep[triangles[i]] && keep[triangles[i + 1]] && keep[triangles[i + 2]])
-                            crop.AddRange(new[] { triangles[i], triangles[i + 1], triangles[i + 2] });
-                    if (crop.Count == 0) continue;
-                    // Keep bind poses and indices. Cut torso triangles and remove
-                    // residual torso weights on the exposed shoulder seam.
-                    var mesh = UnityEngine.Object.Instantiate(source);
+                    var mesh = ArmMeshCrop.RightArm(skin, arm);
+                    if (mesh == null) continue;
                     mesh.name = "P1DLocalPlayerArm";
-                    mesh.subMeshCount = 1;
-                    mesh.SetTriangles(crop, 0);
-                    mesh.boneWeights = weights;
+                    int triangleCount = mesh.GetIndexCount(0) > 0 ? (int)mesh.GetIndexCount(0) / 3 : 0;
                     if (existing == null) AssetDatabase.CreateAsset(mesh, path);
                     else
                     {
@@ -78,7 +42,7 @@ namespace ArmWrestlingVR.EditorTools
                         UnityEngine.Object.DestroyImmediate(mesh);
                     }
                     AssetDatabase.SaveAssets();
-                    Debug.Log("[P1-D] Local cropped arm triangles: " + crop.Count / 3);
+                    Debug.Log("[P1-D] Local cropped arm triangles: " + triangleCount);
                     return;
                 }
                 throw new InvalidOperationException("No skinned right arm on the local Ch03 model.");

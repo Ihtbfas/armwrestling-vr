@@ -1,6 +1,6 @@
 # P2-A｜正常人体素材验证与成对扳手腕握姿原型
 
-> **待 Codex 执行。** 从 `main` 的 P1-E 稳定基线（调研原则提交 `8956e4f`）开始，具体工作分支 `feat/p2a-avatar-paired-grip`。目标是改进**真实画面**：两个人像正常人，并以正确的扳手腕方式握在一起。上阶段零散手指调参已到收益瓶颈；这次先验证现成资产及成熟姿态工作流。
+> **已完成 Editor 原型。** [结果、复现和限制](../P2A-avatar-and-paired-grip-result.md)。 从 `main` 的 P1-E 稳定基线（调研原则提交 `8956e4f`）开始，具体工作分支 `feat/p2a-avatar-paired-grip`。目标是改进**真实画面**：两个人像正常人，并以正确的扳手腕方式握在一起。上阶段零散手指调参已到收益瓶颈；这次先验证现成资产及成熟姿态工作流。
 
 先阅读 [调研与候选方案](../research/P2A-avatar-and-grip-references.md)、`AGENTS.md`、`README.md`、`docs/P1E-hand-contact-result.md`，再在本机 Windows/Unity 2022.3.62f3c1 中实施。不必每个决定向用户请求确认，优先做真实能看见的结果。
 

@@ -22,6 +22,8 @@ namespace ArmWrestlingVR
         public bool useCharacterMotion;
         [Tooltip("在人物动画模式中启用双方握持姿态和玩家衣袖。")]
         public bool useHandContact;
+        [Tooltip("Use the Rocketbox avatar and the authored paired grip.")]
+        public bool usePairedGrip;
 
         private void Awake()
         {
@@ -34,12 +36,32 @@ namespace ArmWrestlingVR
 
             // Optional art is restored locally with its original GUIDs. Decide before
             // BuildArms so a public checkout keeps both capsule arms when art is absent.
-            ArenaFactory.UseCharacterModel = useOriginalArt && Resources.Load<GameObject>("Characters/Ch03") != null;
+            var pair = usePairedGrip ? Resources.Load<PairedGripPose>(PairedGripPose.PoseResource) : null;
+            var rocketbox = pair != null && pair.IsComplete
+                ? Resources.Load<GameObject>(PairedGripPose.AvatarResource) : null;
+            var rocketAnimator = rocketbox != null ? rocketbox.GetComponent<Animator>() : null;
+            ArenaFactory.PairedAvatar = rocketAnimator != null && rocketAnimator.isHuman && rocketAnimator.avatar.isValid
+                ? rocketbox : null;
+            if (usePairedGrip && ArenaFactory.PairedAvatar == null)
+                Debug.LogWarning("[P2-A] The Rocketbox avatar or paired pose is incomplete. Using the selected fallback.");
+            ArenaFactory.UseCharacterModel = ArenaFactory.PairedAvatar != null
+                || (useOriginalArt && Resources.Load<GameObject>("Characters/Ch03") != null);
             ArenaFactory.UseHdriSky = useOriginalArt && Resources.Load<Texture2D>("HDRI/circus_arena") != null;
 
             ArmWrestlingConfig config = ArmWrestlingConfig.Load();
             ArmWrestlingApp app = ArenaFactory.Build(config);
-            if ((useExperimentalGrip || useCharacterMotion) && ArenaFactory.UseCharacterModel)
+            if (ArenaFactory.PairedAvatar != null)
+            {
+                var opponent = app.deviceRoot.GetComponentInChildren<OpponentAvatar>();
+                app.armRig.playerVisual = PlayerArmVisual.TryCreatePaired(app.armRig, ArenaFactory.PairedAvatar, pair.player);
+                if (opponent != null && app.armRig.playerVisual != null)
+                {
+                    opponent.EnableCharacterMotion(app, false);
+                    opponent.SetPairedGrip(pair.opponent);
+                }
+                app.armRig.ApplyAngle(0f);
+            }
+            else if ((useExperimentalGrip || useCharacterMotion) && ArenaFactory.UseCharacterModel)
             {
                 var opponent = app.deviceRoot.GetComponentInChildren<OpponentAvatar>();
                 if (opponent != null && useExperimentalGrip) opponent.useGripPose = true;

@@ -38,6 +38,7 @@ namespace ArmWrestlingVR.EditorTools
         private static bool motionSweep;
         private static bool motionBaseline;
         private static bool handContactSweep;
+        private static bool pairedGripSweep;
         private static HandContactProbe handContactProbe;
         private static Camera playerCamera;
         private static Camera playerDetail;
@@ -67,11 +68,13 @@ namespace ArmWrestlingVR.EditorTools
         {
             try
             {
-                if (Resources.Load<GameObject>("Characters/Ch03") == null)
+                bool paired = HasArgument("-p2a");
+                if (!paired && Resources.Load<GameObject>("Characters/Ch03") == null)
                     throw new InvalidOperationException("Restore the local Ch03 asset first.");
                 EditorSceneManager.OpenScene(SceneGenerator.MainScenePath, OpenSceneMode.Single);
                 var bootstrap = UnityEngine.Object.FindObjectOfType<RuntimeBootstrap>();
-                bootstrap.useOriginalArt = true;
+                bootstrap.useOriginalArt = !paired;
+                bootstrap.usePairedGrip = paired;
                 bootstrap.useCharacterMotion = HasArgument("-p1e") || (HasArgument("-p1d") && !HasArgument("-p1dbaseline"));
                 bootstrap.useHandContact = HasArgument("-p1e") && !HasArgument("-p1ebaseline");
                 SessionState.SetBool(ActiveKey, true);
@@ -91,7 +94,7 @@ namespace ArmWrestlingVR.EditorTools
                 if (animator == null) Setup();
                 if (animator == null) return;
 
-                string label = handContactSweep ? (HasArgument("-p1ebaseline") ? "p1d" : "p1e")
+                string label = pairedGripSweep ? "p2a" : handContactSweep ? (HasArgument("-p1ebaseline") ? "p1d" : "p1e")
                     : motionSweep ? (motionBaseline ? "baseline" : "motion")
                     : gripSweep ? (route == 0 ? "baseline" : "grip")
                     : contactSweep || route == 1 ? "B" : "A";
@@ -104,6 +107,7 @@ namespace ArmWrestlingVR.EditorTools
 
                 // Three poses at matching timestamps: frame 0 = -30, 45 = 0, 90 = +30.
                 float range = contactSweep && HasArgument("-p1bfullrange") ? 42f : 30f;
+                if (pairedGripSweep && HasArgument("-p2aneutral")) range = 0f;
                 float angle = -range * Mathf.Cos(2f * Mathf.PI * frame / SweepFrames);
                 rig.ApplyAngle(angle);
                 if (motionSweep && avatar.UsesAuthoredMotion)
@@ -114,6 +118,7 @@ namespace ArmWrestlingVR.EditorTools
                 animator.Update(1f / FrameRate);
                 if (motionSweep) animator.speed = 0f;
                 int calls = avatar.IkPassCount - countBefore;
+                avatar.ApplyPairedHandBones();
                 Record(label, angle, calls);
                 if (gripSweep || handContactSweep) PositionHandCameras();
                 if (frame == 0 || frame == 45 || frame == 90)
@@ -142,7 +147,7 @@ namespace ArmWrestlingVR.EditorTools
                 if (calls == 0)
                     throw new InvalidOperationException("The Animator IK pass did not execute.");
 
-                if (++frame > SweepFrames)
+                if (++frame > SweepFrames || (pairedGripSweep && HasArgument("-p2aneutral")))
                 {
                     Debug.Log("[P1] Captured " + label + " | callbacks=" + avatar.IkPassCount);
                     if (motionSweep || (contactSweep && !gripSweep) || ++route == 2) Finish(null);
@@ -157,7 +162,7 @@ namespace ArmWrestlingVR.EditorTools
             var app = UnityEngine.Object.FindObjectOfType<ArmWrestlingApp>();
             if (app == null || app.Pipeline == null) return;
             avatar = UnityEngine.Object.FindObjectOfType<OpponentAvatar>();
-            if (avatar == null) throw new InvalidOperationException("Ch03 was not instantiated.");
+            if (avatar == null) throw new InvalidOperationException("The humanoid opponent was not instantiated.");
             animator = avatar.GetComponent<Animator>();
             if (!animator.isHuman || !animator.avatar.isValid)
                 throw new InvalidOperationException("Ch03 needs a valid Humanoid Avatar.");
@@ -182,11 +187,12 @@ namespace ArmWrestlingVR.EditorTools
             front = View(app.deviceRoot, new Vector3(-0.28f, 0.82f, -1.42f), new Vector3(0f, 0.18f, 0.34f));
             side = View(app.deviceRoot, new Vector3(-1.98f, 0.43f, 0.35f), new Vector3(-0.07f, -0.15f, 0.33f));
             gripSweep = HasArgument("-p1c");
-            handContactSweep = HasArgument("-p1e");
+            pairedGripSweep = HasArgument("-p2a");
+            handContactSweep = pairedGripSweep || HasArgument("-p1e");
             motionSweep = handContactSweep || HasArgument("-p1d");
             motionBaseline = HasArgument("-p1dbaseline");
             contactSweep = gripSweep || motionSweep || HasArgument("-p1b");
-            output = Path.GetFullPath(Path.Combine(".p0-local", handContactSweep ? "p1e-hand-contact" : motionSweep ? "p1d-motion"
+            output = Path.GetFullPath(Path.Combine(".p0-local", pairedGripSweep ? "p2a-avatar" : handContactSweep ? "p1e-hand-contact" : motionSweep ? "p1d-motion"
                 : gripSweep ? "p1c-grip" : contactSweep ? "p1b-contact" : "p1-animation",
                 DateTime.Now.ToString("yyyyMMdd-HHmmss")));
             Directory.CreateDirectory(output);
@@ -220,7 +226,8 @@ namespace ArmWrestlingVR.EditorTools
             if (handContactSweep)
             {
                 bool expectedContact = !HasArgument("-p1ebaseline");
-                if (rig.playerVisual.UsesHandContact != expectedContact)
+                if (pairedGripSweep ? (!rig.playerVisual.UsesPairedGrip || !avatar.UsesPairedGrip)
+                    : rig.playerVisual.UsesHandContact != expectedContact)
                     throw new InvalidOperationException("The requested hand contact mode did not start.");
                 handContactProbe = new HandContactProbe(animator, skin, rig.playerVisual.Skin);
                 playerDetail = View(app.deviceRoot, Vector3.back, Vector3.zero);

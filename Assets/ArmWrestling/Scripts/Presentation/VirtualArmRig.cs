@@ -161,7 +161,7 @@ namespace ArmWrestlingVR
                     Quaternion.LookRotation(-lateral, Vector3.up));
             }
 
-            if (playerVisual != null && !playerVisual.UsesHandContact) playerVisual.ApplyGrip(transform, grip);
+            if (playerVisual != null && !playerVisual.UsesHandContact) playerVisual.ApplyGrip(transform, gripAnchor != null ? gripAnchor : transform);
             initialised = true;
         }
 
