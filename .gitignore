@@ -1,0 +1,31 @@
+# Unity generated caches, for Unity project at repository root or nested one level.
+**/[Ll]ibrary/
+**/[Tt]emp/
+**/[Oo]bj/
+**/[Ll]ogs/
+**/[Uu]ser[Ss]ettings/
+**/[Bb]uild/
+**/[Bb]uilds/
+**/[Mm]emory[Cc]aptures/
+**/[Rr]ecordings/
+
+# IDE / OS generated files
+.vs/
+.idea/
+.vscode/
+*.csproj
+*.sln
+*.slnx
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
+
+# This file intentionally does NOT ignore *.meta, Assets, Packages, or ProjectSettings.
+# Inspect any original-project .gitignore before replacing or merging its rules.
