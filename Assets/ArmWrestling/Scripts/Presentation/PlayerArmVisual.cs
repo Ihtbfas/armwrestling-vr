@@ -6,15 +6,19 @@ namespace ArmWrestlingVR
     public sealed class PlayerArmVisual : MonoBehaviour
     {
         private const string MeshResource = "Characters/P1DLocalPlayerArm";
+        private static readonly Vector3 ContactPalmOffset = new Vector3(0.032f, 0f, 0.008f);
         private Transform upper, lower, hand, middle;
         private float upperLength, foreLength, setback;
         private Vector3 upperAxis, lowerAxis;
         private Quaternion handBasis, lowerRest, upperRest;
-        private Material material;
+        private Material material, sleeveMaterial;
+        private Mesh sleeveMesh;
         private readonly Transform[] fingers = new Transform[15];
         public SkinnedMeshRenderer Skin { get; private set; }
         public Vector3 PalmPosition => Vector3.Lerp(hand.position, middle.position, 0.55f);
         public Vector3 DesiredPalm { get; private set; }
+        public bool UsesHandContact { get; private set; }
+        public bool HasSleeve => sleeveMesh != null;
 
         public static PlayerArmVisual TryCreate(VirtualArmRig rig, GameObject prefab)
         {
@@ -92,13 +96,81 @@ namespace ArmWrestlingVR
 
         internal void SetGripPose(OpponentGripPose pose) => pose.Apply(fingers);
 
-        public void ApplyGrip(Transform frame, Vector3 grip)
+        internal void EnableHandContact()
         {
-            // The player sits on -Z. Keep the real one-arm bone lengths while
-            // offsetting the two palm centres across the shared grip reference.
+            UsesHandContact = true;
+            var sleeve = new GameObject("Player short sleeve");
+            sleeve.transform.SetParent(upper, false);
+            sleeve.transform.localRotation = Quaternion.FromToRotation(Vector3.up, upperAxis);
+            sleeve.transform.localScale = Vector3.one / upper.lossyScale.x;
+            sleeveMesh = CreateSleeveMesh();
+            sleeve.AddComponent<MeshFilter>().sharedMesh = sleeveMesh;
+            sleeveMaterial = new Material(material) { color = new Color(0.10f, 0.19f, 0.23f) };
+            sleeveMaterial.SetFloat("_Glossiness", 0.12f);
+            sleeve.AddComponent<MeshRenderer>().sharedMaterial = sleeveMaterial;
+        }
+
+        // Profile in metres along the upper arm. The last ring folds in at
+        // the cuff. The closed shoulder covers the crop from external views.
+        private static Mesh CreateSleeveMesh()
+        {
+            const int sides = 20;
+            Vector2[] profile =
+            {
+                new Vector2(-0.043f, 0.012f), new Vector2(-0.030f, 0.035f),
+                new Vector2(0f, 0.048f), new Vector2(0.067f, 0.047f),
+                new Vector2(0.086f, 0.044f), new Vector2(0.092f, 0.041f),
+                new Vector2(0.089f, 0.033f)
+            };
+            var vertices = new Vector3[profile.Length * sides + 1];
+            int cap = vertices.Length - 1;
+            vertices[cap] = new Vector3(0f, -0.045f, 0f);
+            var triangles = new System.Collections.Generic.List<int>();
+            for (int ring = 0; ring < profile.Length; ring++)
+            {
+                for (int side = 0; side < sides; side++)
+                {
+                    float angle = side * (2f * Mathf.PI / sides);
+                    int a = ring * sides + side;
+                    int b = ring * sides + (side + 1) % sides;
+                    float radius = profile[ring].y;
+                    vertices[a] = new Vector3(radius * Mathf.Cos(angle), profile[ring].x, radius * Mathf.Sin(angle));
+                    if (ring == 0) triangles.AddRange(new[] { cap, a, b });
+                    if (ring < profile.Length - 1)
+                        triangles.AddRange(new[] { a, a + sides, b, b, a + sides, b + sides });
+                }
+            }
+            var mesh = new Mesh { name = "Player short sleeve", vertices = vertices };
+            mesh.SetTriangles(triangles, 0);
+            mesh.RecalculateNormals();
+            return mesh;
+        }
+
+        private static Vector3 Pad(Transform frame) =>
+            frame.TransformPoint(new Vector3(ArenaFactory.ElbowPadX, 0.08f, ArenaFactory.ElbowPadZ));
+
+        public void ApplyGrip(Transform frame, Vector3 grip) =>
+            PoseArm(frame, grip + frame.right * 0.028f, frame.right);
+
+        // Both palms use this side vector. The cross product keeps it nearly
+        // perpendicular to both hands while preserving the world-space wrist goals.
+        internal Vector3 ApplyContactGrip(Transform frame, Vector3 grip, Vector3 opponentForward)
+        {
+            Vector3 palm = grip + frame.TransformVector(ContactPalmOffset);
+            Vector3 playerForward = (palm - Pad(frame)).normalized;
+            Vector3 across = Vector3.Cross(opponentForward, playerForward);
+            if (Vector3.Dot(across, frame.right) < 0f) across = -across;
+            Vector3 side = across.sqrMagnitude > 0.000001f
+                ? Vector3.Slerp(frame.right, across.normalized, 0.85f).normalized : frame.right;
+            PoseArm(frame, palm, side);
+            return side;
+        }
+
+        private void PoseArm(Transform frame, Vector3 palm, Vector3 side)
+        {
             Vector3 shoulder = frame.TransformPoint(new Vector3(0.19f, 0.19f, -0.34f));
-            Vector3 pad = frame.TransformPoint(new Vector3(ArenaFactory.ElbowPadX, 0.08f, ArenaFactory.ElbowPadZ));
-            DesiredPalm = grip + frame.right * 0.028f;
+            Vector3 pad = Pad(frame);
+            DesiredPalm = palm;
             Vector3 direction = (DesiredPalm - pad).normalized;
             Vector3 targetWrist = DesiredPalm - direction * setback;
             ArmChain.SolveJoints(shoulder, targetWrist, pad, frame.up, upperLength, foreLength, out var elbow, out var wrist);
@@ -107,12 +179,14 @@ namespace ArmWrestlingVR
             upper.rotation = Quaternion.FromToRotation(start * upperAxis, elbow - shoulder) * start;
             start = upper.rotation * lowerRest;
             lower.rotation = Quaternion.FromToRotation(start * lowerAxis, wrist - elbow) * start;
-            hand.rotation = Quaternion.LookRotation(direction, frame.right) * Quaternion.Inverse(handBasis);
+            hand.rotation = Quaternion.LookRotation(direction, side) * Quaternion.Inverse(handBasis);
         }
 
         private void OnDestroy()
         {
             if (material != null) Destroy(material);
+            if (sleeveMaterial != null) Destroy(sleeveMaterial);
+            if (sleeveMesh != null) Destroy(sleeveMesh);
         }
     }
 }

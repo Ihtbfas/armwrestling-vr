@@ -51,7 +51,8 @@ namespace ArmWrestlingVR.EditorTools
                 EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
                 var bootstrap = UnityEngine.Object.FindObjectOfType<RuntimeBootstrap>();
                 bool grip = Array.IndexOf(args, "-p0grip") >= 0;
-                bool motion = Array.IndexOf(args, "-p0motion") >= 0;
+                bool handContact = Array.IndexOf(args, "-p0handcontact") >= 0;
+                bool motion = handContact || Array.IndexOf(args, "-p0motion") >= 0;
                 if (bootstrap != null && (Array.IndexOf(args, "-p0art") >= 0 || grip || motion))
                 {
                     Require(Resources.Load<GameObject>("Characters/Ch03") != null,
@@ -59,8 +60,10 @@ namespace ArmWrestlingVR.EditorTools
                     bootstrap.useOriginalArt = true; // Play copy only; never save the scene.
                     bootstrap.useExperimentalGrip = grip;
                     bootstrap.useCharacterMotion = motion;
+                    bootstrap.useHandContact = handContact;
                 }
                 SessionState.SetBool(ActiveKey + ".motion", motion);
+                SessionState.SetBool(ActiveKey + ".handContact", handContact);
                 SessionState.SetBool(ActiveKey, true);
                 SessionState.SetString(ActiveKey + ".scene", scenePath);
                 EditorApplication.EnterPlaymode();
@@ -157,6 +160,15 @@ namespace ArmWrestlingVR.EditorTools
                         "P1-D player surface was not enabled.");
                     Require(model.UsesAuthoredMotion && model.UsedStableElbow, "P1-D motion or elbow support fell back.");
                     Require(sawContestClip, "The contest clip did not play during the simulated match.");
+                    bool expectedContact = SessionState.GetBool(ActiveKey + ".handContact", false);
+                    Require(app.armRig.playerVisual.UsesHandContact == expectedContact,
+                        "The requested hand contact mode did not start.");
+                    if (expectedContact)
+                    {
+                        Require(app.armRig.playerVisual.HasSleeve,
+                            "The player sleeve mesh did not start.");
+                        opponent += "\nHandContact=Paired palm frame and sleeve";
+                    }
                     opponent += "\nPlayer=Skinned arm, Contest clip observed in Fighting";
                 }
                 Require(animator != null && animator.isHuman && animator.avatar.isValid

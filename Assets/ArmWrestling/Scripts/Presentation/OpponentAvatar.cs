@@ -33,6 +33,7 @@ namespace ArmWrestlingVR
         private Quaternion bodyRotation;
         private float upperArmLength, forearmLength;
         private bool useStableElbow;
+        private bool useHandContact;
         public bool UsedStableElbow { get; private set; }
         public float BodyCorrection { get; private set; }
         public bool UsesAuthoredMotion { get; private set; }
@@ -65,9 +66,10 @@ namespace ArmWrestlingVR
         [Tooltip("Local Ch03 trial. Apply an authored right-hand grip during the existing IK pass.")]
         public bool useGripPose;
 
-        public void EnableCharacterMotion(ArmWrestlingApp app)
+        public void EnableCharacterMotion(ArmWrestlingApp app, bool handContact)
         {
             useStableElbow = true;
+            useHandContact = handContact;
             useGripPose = true;
             match = app;
             var controller = Resources.Load<RuntimeAnimatorController>("Characters/OpponentMotion");
@@ -165,8 +167,11 @@ namespace ArmWrestlingVR
                 }
                 // The swing anchor is the centre of the joined palms, ahead of the wrist.
                 DesiredRightWrist = rightHandTarget.position - fingers * 0.045f;
+                Vector3 palmSide = useHandContact
+                    ? armRig.playerVisual.ApplyContactGrip(frame, rightHandTarget.position, fingers)
+                    : frame.right;
                 ApplyHand(AvatarIKGoal.RightHand, AvatarIKHint.RightElbow,
-                    DesiredRightWrist, Quaternion.LookRotation(fingers, -frame.right), elbow);
+                    DesiredRightWrist, Quaternion.LookRotation(fingers, -palmSide), elbow);
             }
             if (leftHandTarget != null && leftElbowHint != null)
                 ApplyHand(AvatarIKGoal.LeftHand, AvatarIKHint.LeftElbow,
@@ -184,8 +189,10 @@ namespace ArmWrestlingVR
         {
             if (gripPose == null && ready && IkPassCount > 0)
             {
-                gripPose = new OpponentGripPose(animator);
-                if (armRig != null && armRig.playerVisual != null) armRig.playerVisual.SetGripPose(gripPose);
+                gripPose = new OpponentGripPose(animator, useHandContact);
+                if (armRig != null && armRig.playerVisual != null)
+                    armRig.playerVisual.SetGripPose(useHandContact
+                        ? new OpponentGripPose(animator, true, true) : gripPose);
             }
             if (useStableElbow && upperArmLength == 0f && ready && IkPassCount > 0)
             {

@@ -37,7 +37,10 @@ namespace ArmWrestlingVR.EditorTools
         private static bool gripSweep;
         private static bool motionSweep;
         private static bool motionBaseline;
+        private static bool handContactSweep;
+        private static HandContactProbe handContactProbe;
         private static Camera playerCamera;
+        private static Camera playerDetail;
         private static Quaternion headInitial, chestInitial;
         private static int[] fingerVertices;
         private static int[] palmVertices;
@@ -69,7 +72,8 @@ namespace ArmWrestlingVR.EditorTools
                 EditorSceneManager.OpenScene(SceneGenerator.MainScenePath, OpenSceneMode.Single);
                 var bootstrap = UnityEngine.Object.FindObjectOfType<RuntimeBootstrap>();
                 bootstrap.useOriginalArt = true;
-                bootstrap.useCharacterMotion = HasArgument("-p1d") && !HasArgument("-p1dbaseline");
+                bootstrap.useCharacterMotion = HasArgument("-p1e") || (HasArgument("-p1d") && !HasArgument("-p1dbaseline"));
+                bootstrap.useHandContact = HasArgument("-p1e") && !HasArgument("-p1ebaseline");
                 SessionState.SetBool(ActiveKey, true);
                 EditorApplication.EnterPlaymode();
             }
@@ -87,7 +91,8 @@ namespace ArmWrestlingVR.EditorTools
                 if (animator == null) Setup();
                 if (animator == null) return;
 
-                string label = motionSweep ? (motionBaseline ? "baseline" : "motion")
+                string label = handContactSweep ? (HasArgument("-p1ebaseline") ? "p1d" : "p1e")
+                    : motionSweep ? (motionBaseline ? "baseline" : "motion")
                     : gripSweep ? (route == 0 ? "baseline" : "grip")
                     : contactSweep || route == 1 ? "B" : "A";
                 if (frame == 0)
@@ -110,25 +115,29 @@ namespace ArmWrestlingVR.EditorTools
                 if (motionSweep) animator.speed = 0f;
                 int calls = avatar.IkPassCount - countBefore;
                 Record(label, angle, calls);
-                if (gripSweep) PositionHandCameras();
+                if (gripSweep || handContactSweep) PositionHandCameras();
                 if (frame == 0 || frame == 45 || frame == 90)
                 {
                     Capture(front, Path.Combine(output, label, "front-" + frame.ToString("D3") + ".png"));
                     Capture(side, Path.Combine(output, label, "side-" + frame.ToString("D3") + ".png"));
-                    if (gripSweep)
+                    if (gripSweep || handContactSweep)
                     {
                         Capture(handFront, Path.Combine(output, label, "hand-front-" + frame.ToString("D3") + ".png"));
                         Capture(handSide, Path.Combine(output, label, "hand-side-" + frame.ToString("D3") + ".png"));
                     }
                     if (motionSweep)
                         Capture(playerCamera, Path.Combine(output, label, "player-" + frame.ToString("D3") + ".png"));
+                    if (handContactSweep)
+                        Capture(playerDetail, Path.Combine(output, label, "eye-" + frame.ToString("D3") + ".png"));
                 }
                 if (!HasArgument("-p1stills"))
                 {
-                    Capture(gripSweep ? handFront : front, Path.Combine(output, label, "f-" + frame.ToString("D3") + ".jpg"));
-                    Capture(gripSweep ? handSide : side, Path.Combine(output, label, "s-" + frame.ToString("D3") + ".jpg"));
+                    Capture(gripSweep || handContactSweep ? handFront : front, Path.Combine(output, label, "f-" + frame.ToString("D3") + ".jpg"));
+                    Capture(gripSweep || handContactSweep ? handSide : side, Path.Combine(output, label, "s-" + frame.ToString("D3") + ".jpg"));
                     if (motionSweep)
                         Capture(playerCamera, Path.Combine(output, label, "p-" + frame.ToString("D3") + ".jpg"));
+                    if (handContactSweep)
+                        Capture(playerDetail, Path.Combine(output, label, "e-" + frame.ToString("D3") + ".jpg"));
                 }
                 if (calls == 0)
                     throw new InvalidOperationException("The Animator IK pass did not execute.");
@@ -173,10 +182,11 @@ namespace ArmWrestlingVR.EditorTools
             front = View(app.deviceRoot, new Vector3(-0.28f, 0.82f, -1.42f), new Vector3(0f, 0.18f, 0.34f));
             side = View(app.deviceRoot, new Vector3(-1.98f, 0.43f, 0.35f), new Vector3(-0.07f, -0.15f, 0.33f));
             gripSweep = HasArgument("-p1c");
-            motionSweep = HasArgument("-p1d");
+            handContactSweep = HasArgument("-p1e");
+            motionSweep = handContactSweep || HasArgument("-p1d");
             motionBaseline = HasArgument("-p1dbaseline");
             contactSweep = gripSweep || motionSweep || HasArgument("-p1b");
-            output = Path.GetFullPath(Path.Combine(".p0-local", motionSweep ? "p1d-motion"
+            output = Path.GetFullPath(Path.Combine(".p0-local", handContactSweep ? "p1e-hand-contact" : motionSweep ? "p1d-motion"
                 : gripSweep ? "p1c-grip" : contactSweep ? "p1b-contact" : "p1-animation",
                 DateTime.Now.ToString("yyyyMMdd-HHmmss")));
             Directory.CreateDirectory(output);
@@ -188,12 +198,12 @@ namespace ArmWrestlingVR.EditorTools
             const string header = "route,frame,seconds,angle,ik_calls,grip_to_wrist_mm,target_to_wrist_mm,grip_to_palm_proxy_mm,elbow_dx_mm,elbow_dy_mm,elbow_dz_mm,elbow_flex_deg,wrist_bend_deg,hips_x,hips_y,hips_z,shoulder_x,shoulder_y,shoulder_z,head_x,head_y,head_z,elbow_x,elbow_y,elbow_z,wrist_x,wrist_y,wrist_z";
             string contactColumns = ",skin_gap_mm,skin_overhang_mm,patch_vertices,skin_x,skin_y,skin_z,grip_x,grip_y,grip_z,pad_x,pad_top_y,pad_z,pad_width,pad_depth,seat_x,seat_top_y,seat_z,model_scale,right_upper_mm,right_fore_mm,left_upper_mm,left_fore_mm,left_shoulder_x,left_shoulder_y,left_shoulder_z,left_elbow_x,left_elbow_y,left_elbow_z,left_wrist_x,left_wrist_y,left_wrist_z";
             if (contactSweep) PrepareSurfaceProbe();
-            if (gripSweep)
+            if (gripSweep || handContactSweep)
             {
                 handFront = View(app.deviceRoot, Vector3.back, Vector3.zero);
                 handSide = View(app.deviceRoot, Vector3.left, Vector3.zero);
                 handFront.nearClipPlane = handSide.nearClipPlane = 0.02f;
-                PrepareGripProbe();
+                if (gripSweep) PrepareGripProbe();
             }
             const string gripColumns = ",mapped_finger_bones,finger_vertices,sphere_inside,sphere_max_depth_mm,sphere_mean_intrusion_mm,sphere_min_clearance_mm,palm_vertices,palm_sphere_inside,palm_max_depth_mm,index_pip_deg,middle_pip_deg,thumb_ip_deg";
             const string motionColumns = ",skinned_player,player_palm_error_mm,palm_separation_mm,stable_elbow,body_shift_mm,head_local_delta_deg,chest_local_delta_deg,effort,authored_clip,normalized_state_time";
@@ -207,8 +217,18 @@ namespace ArmWrestlingVR.EditorTools
                 headInitial = Bone(HumanBodyBones.Head).localRotation;
                 chestInitial = Bone(HumanBodyBones.Chest).localRotation;
             }
+            if (handContactSweep)
+            {
+                bool expectedContact = !HasArgument("-p1ebaseline");
+                if (rig.playerVisual.UsesHandContact != expectedContact)
+                    throw new InvalidOperationException("The requested hand contact mode did not start.");
+                handContactProbe = new HandContactProbe(animator, skin, rig.playerVisual.Skin);
+                playerDetail = View(app.deviceRoot, Vector3.back, Vector3.zero);
+                playerDetail.nearClipPlane = playerCamera.nearClipPlane;
+                playerDetail.fieldOfView = 26f;
+            }
             data.WriteLine(header + (contactSweep ? contactColumns : "") + (gripSweep ? gripColumns : "")
-                + (motionSweep ? motionColumns : ""));
+                + (motionSweep ? motionColumns : "") + (handContactSweep ? HandContactProbe.Header : ""));
             Debug.Log("[P1] " + Application.unityVersion + " | " + SystemInfo.graphicsDeviceType + " | " + output);
         }
 
@@ -249,7 +269,8 @@ namespace ArmWrestlingVR.EditorTools
             data.WriteLine(label + "," + string.Join(",", values.Select(v => v.ToString("F4", Format)))
                 + Point(hips) + Point(shoulder) + Point(head) + Point(elbow) + Point(wrist)
                 + (contactSweep ? ContactColumns(elbowLocal, pad, shoulder, elbow, wrist) : "")
-                + (gripSweep ? GripColumns() : "") + (motionSweep ? MotionColumns(palm) : ""));
+                + (gripSweep ? GripColumns() : "") + (motionSweep ? MotionColumns(palm) : "")
+                + (handContactSweep ? handContactProbe.Record(baked, Vertices) : ""));
             if (frame == 0 || frame == 45 || frame == 90) data.Flush();
         }
 
@@ -399,6 +420,11 @@ namespace ArmWrestlingVR.EditorTools
             handFront.transform.LookAt(grip, frame.up);
             handSide.transform.position = grip + frame.TransformVector(new Vector3(-0.30f, 0.10f, 0.07f));
             handSide.transform.LookAt(grip, frame.up);
+            if (handContactSweep)
+            {
+                playerDetail.transform.position = playerCamera.transform.position;
+                playerDetail.transform.LookAt(grip, playerCamera.transform.up);
+            }
         }
 
         private static string ContactColumns(Vector3 elbowLocal, Vector3 pad, Transform shoulder,
@@ -461,6 +487,7 @@ namespace ArmWrestlingVR.EditorTools
         {
             SessionState.SetBool(ActiveKey, false);
             data?.Dispose();
+            handContactProbe?.Dispose();
             if (target != null) target.Release();
             if (baked != null) UnityEngine.Object.DestroyImmediate(baked);
             if (error != null) Debug.LogError("[P1] " + error);

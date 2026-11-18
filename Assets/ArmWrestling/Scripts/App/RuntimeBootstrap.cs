@@ -20,6 +20,8 @@ namespace ArmWrestlingVR
         public bool useExperimentalGrip;
         [Tooltip("启用本地人体玩家手臂、近固定对手肘及骨骼片段。需要恢复 Ch03 并勾选 Use Original Art。")]
         public bool useCharacterMotion;
+        [Tooltip("在人物动画模式中启用双方握持姿态和玩家衣袖。")]
+        public bool useHandContact;
 
         private void Awake()
         {
@@ -44,7 +46,11 @@ namespace ArmWrestlingVR
                 if (useCharacterMotion)
                 {
                     app.armRig.playerVisual = PlayerArmVisual.TryCreate(app.armRig, Resources.Load<GameObject>("Characters/Ch03"));
-                    if (opponent != null && app.armRig.playerVisual != null) opponent.EnableCharacterMotion(app);
+                    if (opponent != null && app.armRig.playerVisual != null)
+                    {
+                        opponent.EnableCharacterMotion(app, useHandContact);
+                        if (useHandContact) app.armRig.playerVisual.EnableHandContact();
+                    }
                     app.armRig.ApplyAngle(0f);
                 }
             }
