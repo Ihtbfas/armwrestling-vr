@@ -21,4 +21,4 @@
 
 ## 本阶段
 
-当前分支 `feat/p1d-character-motion`：执行 [P1-D 玩家模型、肘部稳定与预制动画混合](docs/tasks/P1D-player-avatar-elbow-animation.md)。以 P1-C 已通过的 Unity Demo 为基线；正常玩家人体手臂与相对稳定的对手肘部优先，骨骼 AnimationClip 为最小可用探索。不因缺少实物测量而阻塞纯 VR 动画工作，也不把演示尺寸冒充实装尺寸。
+当前分支 `feat/p1e-hand-contact`：按 [P1-E 双方真实手部握持与第一人称模型完善](docs/tasks/P1E-two-hand-grip-and-player-finish.md) 实施。基于 P1-D 已通过的 `a6268b9`；先修双手掌面朝向/拇指/指部的真实观感，尽量改善玩家上臂裁切边缘。保持已有骨骼动画、稳定肘部、单轴 grip 及离线比赛回归；未经确认授权的人物网格及衍生资产继续本地保留。
