@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -26,6 +27,13 @@ namespace ArmWrestlingVR.EditorTools
         private static RenderTexture target;
         private static Texture2D pixels;
         private static StreamWriter data;
+        private static Transform elbowPad;
+        private static Transform seat;
+        private static SkinnedMeshRenderer skin;
+        private static Mesh baked;
+        private static int[] armVertices;
+        private static readonly List<Vector3> Vertices = new List<Vector3>();
+        private static bool contactSweep;
         private static int route;
         private static int frame;
         private static int errors;
@@ -66,15 +74,16 @@ namespace ArmWrestlingVR.EditorTools
                 if (animator == null) Setup();
                 if (animator == null) return;
 
-                string label = route == 0 ? "A" : "B";
+                string label = contactSweep || route == 1 ? "B" : "A";
                 if (frame == 0)
                 {
-                    avatar.BlendBodyPoses = route == 1;
+                    avatar.BlendBodyPoses = contactSweep || route == 1;
                     Directory.CreateDirectory(Path.Combine(output, label));
                 }
 
                 // Three poses at matching timestamps: frame 0 = -30, 45 = 0, 90 = +30.
-                float angle = -30f * Mathf.Cos(2f * Mathf.PI * frame / SweepFrames);
+                float range = contactSweep && HasArgument("-p1bfullrange") ? 42f : 30f;
+                float angle = -range * Mathf.Cos(2f * Mathf.PI * frame / SweepFrames);
                 rig.ApplyAngle(angle);
                 int countBefore = avatar.IkPassCount;
                 animator.Update(1f / FrameRate);
@@ -96,7 +105,7 @@ namespace ArmWrestlingVR.EditorTools
                 if (++frame > SweepFrames)
                 {
                     Debug.Log("[P1] Captured " + label + " | callbacks=" + avatar.IkPassCount);
-                    if (++route == 2) Finish(null);
+                    if (contactSweep || ++route == 2) Finish(null);
                     frame = 0;
                 }
             }
@@ -132,13 +141,19 @@ namespace ArmWrestlingVR.EditorTools
 
             front = View(app.deviceRoot, new Vector3(-0.28f, 0.82f, -1.42f), new Vector3(0f, 0.18f, 0.34f));
             side = View(app.deviceRoot, new Vector3(-1.98f, 0.43f, 0.35f), new Vector3(-0.07f, -0.15f, 0.33f));
-            output = Path.GetFullPath(Path.Combine(".p0-local", "p1-animation",
+            contactSweep = HasArgument("-p1b");
+            output = Path.GetFullPath(Path.Combine(".p0-local", contactSweep ? "p1b-contact" : "p1-animation",
                 DateTime.Now.ToString("yyyyMMdd-HHmmss")));
             Directory.CreateDirectory(output);
             target = new RenderTexture(768, 576, 24);
             pixels = new Texture2D(target.width, target.height, TextureFormat.RGB24, false);
             data = new StreamWriter(Path.Combine(output, "measurements.csv"));
-            data.WriteLine("route,frame,seconds,angle,ik_calls,grip_to_wrist_mm,target_to_wrist_mm,grip_to_palm_proxy_mm,elbow_dx_mm,elbow_dy_mm,elbow_dz_mm,elbow_flex_deg,wrist_bend_deg,hips_x,hips_y,hips_z,shoulder_x,shoulder_y,shoulder_z,head_x,head_y,head_z,elbow_x,elbow_y,elbow_z,wrist_x,wrist_y,wrist_z");
+            elbowPad = app.deviceRoot.Find("Opponent Elbow Pad");
+            seat = app.deviceRoot.Find("Opponent Seat");
+            const string header = "route,frame,seconds,angle,ik_calls,grip_to_wrist_mm,target_to_wrist_mm,grip_to_palm_proxy_mm,elbow_dx_mm,elbow_dy_mm,elbow_dz_mm,elbow_flex_deg,wrist_bend_deg,hips_x,hips_y,hips_z,shoulder_x,shoulder_y,shoulder_z,head_x,head_y,head_z,elbow_x,elbow_y,elbow_z,wrist_x,wrist_y,wrist_z";
+            string contactColumns = ",skin_gap_mm,skin_overhang_mm,patch_vertices,skin_x,skin_y,skin_z,grip_x,grip_y,grip_z,pad_x,pad_top_y,pad_z,pad_width,pad_depth,seat_x,seat_top_y,seat_z,model_scale,right_upper_mm,right_fore_mm,left_upper_mm,left_fore_mm,left_shoulder_x,left_shoulder_y,left_shoulder_z,left_elbow_x,left_elbow_y,left_elbow_z,left_wrist_x,left_wrist_y,left_wrist_z";
+            if (contactSweep) PrepareSurfaceProbe();
+            data.WriteLine(header + (contactSweep ? contactColumns : ""));
             Debug.Log("[P1] " + Application.unityVersion + " | " + SystemInfo.graphicsDeviceType + " | " + output);
         }
 
@@ -164,7 +179,7 @@ namespace ArmWrestlingVR.EditorTools
             var head = Bone(HumanBodyBones.Head);
             var palm = Vector3.Lerp(wrist.position, finger.position, 0.55f);
             var elbowLocal = rig.transform.InverseTransformPoint(elbow.position);
-            var pad = new Vector3(-ArenaFactory.ElbowPadX, 0.0425f, -ArenaFactory.ElbowPadZ);
+            var pad = elbowPad.localPosition + 0.5f * elbowPad.localScale.y * Vector3.up;
             var offset = 1000f * (elbowLocal - pad);
             float flex = Vector3.Angle(elbow.position - shoulder.position, wrist.position - elbow.position);
             float wristBend = Vector3.Angle(wrist.position - elbow.position, finger.position - wrist.position);
@@ -177,7 +192,8 @@ namespace ArmWrestlingVR.EditorTools
                 offset.x, offset.y, offset.z, flex, wristBend
             };
             data.WriteLine(label + "," + string.Join(",", values.Select(v => v.ToString("F4", Format)))
-                + Point(hips) + Point(shoulder) + Point(head) + Point(elbow) + Point(wrist));
+                + Point(hips) + Point(shoulder) + Point(head) + Point(elbow) + Point(wrist)
+                + (contactSweep ? ContactColumns(elbowLocal, pad, shoulder, elbow, wrist) : ""));
             if (frame == 0 || frame == 45 || frame == 90) data.Flush();
         }
 
@@ -185,8 +201,75 @@ namespace ArmWrestlingVR.EditorTools
 
         private static string Point(Transform bone)
         {
-            Vector3 p = rig.transform.InverseTransformPoint(bone.position);
+            return Point(rig.transform.InverseTransformPoint(bone.position));
+        }
+
+        private static string Point(Vector3 p)
+        {
             return string.Format(Format, ",{0:F4},{1:F4},{2:F4}", p.x, p.y, p.z);
+        }
+
+        private static void PrepareSurfaceProbe()
+        {
+            Transform upper = Bone(HumanBodyBones.RightUpperArm);
+            Transform lower = Bone(HumanBodyBones.RightLowerArm);
+            foreach (var candidate in avatar.GetComponentsInChildren<SkinnedMeshRenderer>())
+            {
+                int a = Array.IndexOf(candidate.bones, upper);
+                int b = Array.IndexOf(candidate.bones, lower);
+                if (a < 0 || b < 0) continue;
+                var weights = candidate.sharedMesh.boneWeights;
+                armVertices = Enumerable.Range(0, weights.Length)
+                    .Where(i => ArmWeight(weights[i], a, b) >= 0.5f).ToArray();
+                if (armVertices.Length == 0) continue;
+                skin = candidate;
+                baked = new Mesh();
+                return;
+            }
+            throw new InvalidOperationException("Could not identify Ch03's weighted right arm surface.");
+        }
+
+        private static float ArmWeight(BoneWeight w, int a, int b)
+        {
+            return (w.boneIndex0 == a || w.boneIndex0 == b ? w.weight0 : 0)
+                 + (w.boneIndex1 == a || w.boneIndex1 == b ? w.weight1 : 0)
+                 + (w.boneIndex2 == a || w.boneIndex2 == b ? w.weight2 : 0)
+                 + (w.boneIndex3 == a || w.boneIndex3 == b ? w.weight3 : 0);
+        }
+
+        private static string ContactColumns(Vector3 elbowLocal, Vector3 pad, Transform shoulder,
+            Transform elbow, Transform wrist)
+        {
+            // Measure the underside of the skinned elbow neighbourhood. This is a
+            // sampled rendered surface, not a pressure/contact or triangle test.
+            skin.BakeMesh(baked);
+            baked.GetVertices(Vertices);
+            Matrix4x4 toDevice = rig.transform.worldToLocalMatrix * skin.transform.localToWorldMatrix;
+            Vector3 underside = new Vector3(0f, float.PositiveInfinity, 0f);
+            int samples = 0;
+            foreach (int i in armVertices)
+            {
+                Vector3 vertex = toDevice.MultiplyPoint3x4(Vertices[i]);
+                if ((vertex - elbowLocal).sqrMagnitude > 0.055f * 0.055f) continue;
+                samples++;
+                if (vertex.y < underside.y) underside = vertex;
+            }
+            if (samples == 0) throw new InvalidOperationException("No sampled surface near the right elbow.");
+            Vector3 size = elbowPad.localScale;
+            float outsideX = Mathf.Max(0, Mathf.Abs(underside.x - pad.x) - size.x * 0.5f);
+            float outsideZ = Mathf.Max(0, Mathf.Abs(underside.z - pad.z) - size.z * 0.5f);
+            float overhang = new Vector2(outsideX, outsideZ).magnitude;
+            Transform ls = Bone(HumanBodyBones.LeftUpperArm);
+            Transform le = Bone(HumanBodyBones.LeftLowerArm);
+            Transform lw = Bone(HumanBodyBones.LeftHand);
+            return string.Format(Format, ",{0:F4},{1:F4},{2}", 1000f * (underside.y - pad.y), 1000f * overhang, samples)
+                + Point(underside) + Point(rig.transform.InverseTransformPoint(rig.GripWorldPosition))
+                + Point(pad) + string.Format(Format, ",{0:F4},{1:F4}", size.x, size.z)
+                + Point(seat.localPosition + 0.5f * seat.localScale.y * Vector3.up)
+                + string.Format(Format, ",{0:F4},{1:F4},{2:F4},{3:F4},{4:F4}", avatar.transform.localScale.x,
+                    1000f * Vector3.Distance(shoulder.position, elbow.position), 1000f * Vector3.Distance(elbow.position, wrist.position),
+                    1000f * Vector3.Distance(ls.position, le.position), 1000f * Vector3.Distance(le.position, lw.position))
+                + Point(ls) + Point(le) + Point(lw);
         }
 
         private static void Capture(Camera camera, string path)
@@ -215,6 +298,7 @@ namespace ArmWrestlingVR.EditorTools
             SessionState.SetBool(ActiveKey, false);
             data?.Dispose();
             if (target != null) target.Release();
+            if (baked != null) UnityEngine.Object.DestroyImmediate(baked);
             if (error != null) Debug.LogError("[P1] " + error);
             EditorApplication.Exit(error == null ? 0 : 1);
         }

@@ -28,17 +28,30 @@ namespace ArmWrestlingVR
         private Quaternion restBodyRotation;
         private bool hasRestBodyPose;
 
-        // Authored in the device frame. Both routes start from the same seated neutral.
+        // Ch03's seated poses in the device frame. At neutral, bring the shoulder
+        // 41 mm forward to increase elbow flex without moving the wrist goal.
         private static readonly Pose OpponentAhead = new Pose(new Vector3(-0.012f, 0.005f, -0.026f),
             Quaternion.Euler(-31f, -4f, 7f));
-        private static readonly Pose Neutral = new Pose(Vector3.zero, Quaternion.Euler(-27f, 0f, 0f));
-        private static readonly Pose PlayerAhead = new Pose(new Vector3(0.012f, -0.012f, -0.034f),
+        private static readonly Pose Neutral = new Pose(new Vector3(0f, 0f, -0.041f), Quaternion.Euler(-27f, 0f, 0f));
+        private static readonly Pose PlayerAhead = new Pose(new Vector3(0.012f, -0.012f, -0.027f),
             Quaternion.Euler(-30f, -10f, -9f));
+
+        // Pole offsets use the fitted demo pad and Ch03's unmodified two-bone reach.
+        // The grip aim is kept separate so wrist orientation can be tuned independently.
+        private static readonly Vector3 OpponentAheadPole = new Vector3(-0.004f, 0.038f, 0.026f);
+        private static readonly Vector3 NeutralPole = new Vector3(0.039f, -0.034f, -0.022f);
+        private static readonly Vector3 PlayerAheadPole = new Vector3(0.026f, -0.033f, -0.008f);
+        // At the demo limits the grip drops further. Blend these corrections
+        // outside the authored ±30° poses to keep the elbow above the pad.
+        private static readonly Vector3 OpponentLimitBodyOffset = new Vector3(0.033f, -0.021f, 0.034f);
+        private static readonly Vector3 OpponentLimitPoleOffset = new Vector3(-0.040f, 0.024f, 0.021f);
+        private static readonly Vector3 OpponentLimitAimOffset = new Vector3(-0.003f, 0.023f, 0.026f);
+        private static readonly Vector3 PlayerLimitPoleOffset = new Vector3(-0.002f, 0.005f, 0f);
 
         public int IkPassCount { get; private set; }
         public Vector3 DesiredRightWrist { get; private set; }
-        [Tooltip("P1 experiment. Blend the three seated body poses by visual angle before solving hand and foot contact.")]
-        public bool BlendBodyPoses;
+        [Tooltip("Blend the three seated body poses by visual angle before solving hand and foot contact.")]
+        public bool BlendBodyPoses = true;
 
         public void Bind(Transform rightHand, Transform leftHand, Transform rightElbow, Transform leftElbow,
             Vector3 leftFoot, Vector3 rightFoot, VirtualArmRig rig)
@@ -92,15 +105,23 @@ namespace ArmWrestlingVR
                 restBodyRotation = Quaternion.Inverse(frame.rotation) * animator.bodyRotation;
                 hasRestBodyPose = true;
             }
-            ApplyBodyPose(frame);
+            float angle = armRig.VisualAngleDeg;
+            float limitWeight = Mathf.InverseLerp(30f, 42f, Mathf.Abs(angle));
+            ApplyBodyPose(frame, angle, limitWeight);
 
             if (rightHandTarget != null && rightElbowHint != null)
             {
-                Vector3 pad = rightElbowHint.localPosition;
+                Vector3 aim = rightElbowHint.localPosition;
                 float gripX = frame.InverseTransformPoint(rightHandTarget.position).x;
-                pad.x = Mathf.Clamp(gripX - 0.15f, -0.28f, -0.11f);
-                Vector3 elbow = frame.TransformPoint(pad);
-                Vector3 fingers = (rightHandTarget.position - elbow).normalized;
+                aim.x = Mathf.Clamp(gripX - 0.15f, -0.28f, -0.11f);
+                Vector3 endPole = angle < 0f ? OpponentAheadPole : PlayerAheadPole;
+                Vector3 limitPole = angle < 0f ? OpponentLimitPoleOffset : PlayerLimitPoleOffset;
+                Vector3 pole = Vector3.Lerp(NeutralPole, endPole, Mathf.Abs(angle) / 30f) + limitPole * limitWeight;
+                Vector3 elbow = frame.TransformPoint(aim + pole);
+                // At the negative limit, align the palm more closely with the
+                // forearm while keeping the same grip centre and wrist setback.
+                if (angle < 0f) aim += OpponentLimitAimOffset * limitWeight;
+                Vector3 fingers = (rightHandTarget.position - frame.TransformPoint(aim)).normalized;
                 // The swing anchor is the centre of the joined palms, ahead of the wrist.
                 DesiredRightWrist = rightHandTarget.position - fingers * 0.045f;
                 ApplyHand(AvatarIKGoal.RightHand, AvatarIKHint.RightElbow,
@@ -117,14 +138,14 @@ namespace ArmWrestlingVR
             }
         }
 
-        private void ApplyBodyPose(Transform frame)
+        private void ApplyBodyPose(Transform frame, float visualAngle, float limitWeight)
         {
-            // A keeps Neutral. B eases across two intervals with zero tangent at the join,
-            // then uses exactly the same hand goals, elbow hints and planted feet as A.
-            float angle = BlendBodyPoses ? armRig.VisualAngleDeg : 0f;
+            // Ease across both pose intervals with zero tangent at neutral.
+            float angle = BlendBodyPoses ? visualAngle : 0f;
             Pose endpoint = angle < 0f ? OpponentAhead : PlayerAhead;
             float weight = Mathf.SmoothStep(0f, 1f, Mathf.Abs(angle) / 30f);
             Vector3 offset = Vector3.Lerp(Neutral.position, endpoint.position, weight);
+            if (angle < 0f) offset += OpponentLimitBodyOffset * limitWeight;
             Quaternion lean = Quaternion.Slerp(Neutral.rotation, endpoint.rotation, weight);
             animator.bodyPosition = frame.TransformPoint(restBodyPosition + offset);
             animator.bodyRotation = frame.rotation * lean * restBodyRotation;

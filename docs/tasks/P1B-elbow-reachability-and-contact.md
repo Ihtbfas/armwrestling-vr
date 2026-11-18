@@ -1,6 +1,6 @@
 # P1-B｜Ch03 肘垫可达性与握持接触优化
 
-> **状态：待 Codex 执行。** 在 P1-A 完成的 `feat/p1-animation-spike`（提交 `b7bc9d6`）之上继续。P0 PR #1、P1-A PR #2 均暂未合并。**本阶段优先解决现有动画的几何接触问题，不增加新动画框架。**
+> **状态：桌面 Editor Play 已完成。** 见 [P1-B 实测结果](../P1B-elbow-contact-result.md)。 在 P1-A 完成的 `feat/p1-animation-spike`（提交 `b7bc9d6`）之上继续。P0 PR #1、P1-A PR #2 均暂未合并。**本阶段优先解决现有动画的几何接触问题，不增加新动画框架。**
 
 ## 已有事实与本轮目标
 

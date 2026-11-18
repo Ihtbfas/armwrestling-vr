@@ -466,7 +466,20 @@ namespace ArmWrestlingVR
 
             // 两侧肘垫
             CreateBox(parent, "Player Elbow Pad", new Vector3(ElbowPadX, 0.02f, ElbowPadZ), new Vector3(0.24f, 0.045f, 0.18f), PadColor);
-            CreateBox(parent, "Opponent Elbow Pad", new Vector3(-ElbowPadX, 0.02f, -ElbowPadZ), new Vector3(0.24f, 0.045f, 0.18f), PadColor);
+            if (UseCharacterModel)
+            {
+                // Ch03 demo fit. A 50 mm riser under the 45 mm pad supports the
+                // sliding elbow over the unchanged grip arc. Real dimensions need calibration.
+                CreateBox(parent, "Opponent Elbow Pad Riser", new Vector3(-0.155f, 0.025f, -ElbowPadZ),
+                    new Vector3(0.30f, 0.05f, 0.18f), DarkMetalColor);
+                CreateBox(parent, "Opponent Elbow Pad", new Vector3(-0.155f, 0.0725f, -ElbowPadZ),
+                    new Vector3(0.30f, 0.045f, 0.18f), PadColor);
+            }
+            else
+            {
+                CreateBox(parent, "Opponent Elbow Pad", new Vector3(-ElbowPadX, 0.02f, -ElbowPadZ),
+                    new Vector3(0.24f, 0.045f, 0.18f), PadColor);
+            }
         }
 
         private static VirtualArmRig BuildArms(Transform deviceRoot)

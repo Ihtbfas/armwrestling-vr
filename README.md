@@ -19,6 +19,10 @@
 
 本地恢复 Ch03 后，可在主场景 Play 中使用 **Blend Body Poses** 观察固定躯干 Animator IK 与三档躯干姿态混合的差异。运行入口、量化结果和本机视频位置见 [P1-A 动画对照结果](docs/P1-animation-ab-result.md)。
 
+## P1-B 肘垫接触
+
+本地 Ch03 模式默认使用 B 姿态插值和调整后的演示对手肘垫。复现和前后测量见 [P1-B 接触结果](docs/P1B-elbow-contact-result.md)。
+
 ## 实际验证与交接
 
 - **已验证：** 原版本首次导入和 C# 编译、两场景脚本引用、主场景真实 Editor Play（批处理驱动）、Direct3D11 渲染、通过现有按钮回调完成角色选择/准备/倒计时/暂停/继续/结算、持续模拟角度；Windows 独立构建及10步加载冒烟检查。
