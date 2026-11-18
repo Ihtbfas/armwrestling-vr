@@ -569,13 +569,11 @@ namespace ArmWrestlingVR
             GameObject model = Object.Instantiate(prefab, parent);
             model.name = "Opponent Character (Ch03)";
 
-            const float scale = 0.95f;
+            const float scale = 1.12f;
             float feetY = -TableHeight;
 
-            // The Humanoid Idle controller rebases the body to the model origin.
-            // Put that origin at seat height; subtracting standing hip height again
-            // placed the animated character entirely below the tabletop.
-            model.transform.localPosition = new Vector3(0f, -0.30f, OpponentSeatZ + 0.30f);
+            // Ch03's seated origin, fitted against the existing opponent seat and table.
+            model.transform.localPosition = new Vector3(0f, -0.22f, OpponentSeatZ - 0.08f);
             model.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
             model.transform.localScale = Vector3.one * scale;
 
@@ -598,15 +596,16 @@ namespace ArmWrestlingVR
 
             Transform leftHand = new GameObject("Left Hand Rest").transform;
             leftHand.SetParent(parent, false);
-            leftHand.localPosition = new Vector3(0.34f, 0.06f, OpponentSeatZ - 0.05f);
+            leftHand.localPosition = new Vector3(0.38f, 0.065f, 0.25f);
+            leftHand.localRotation = Quaternion.LookRotation(Vector3.back, Vector3.up);
 
             Transform rightElbow = new GameObject("Right Elbow Hint").transform;
             rightElbow.SetParent(parent, false);
-            rightElbow.localPosition = new Vector3(-0.34f, 0.24f, OpponentSeatZ + 0.16f);
+            rightElbow.localPosition = new Vector3(-0.17f, 0.065f, -ElbowPadZ - 0.02f);
 
             Transform leftElbow = new GameObject("Left Elbow Hint").transform;
             leftElbow.SetParent(parent, false);
-            leftElbow.localPosition = new Vector3(0.38f, 0.20f, OpponentSeatZ + 0.10f);
+            leftElbow.localPosition = new Vector3(0.31f, 0.10f, 0.49f);
 
             OpponentAvatar driver = model.AddComponent<OpponentAvatar>();
             driver.Bind(
@@ -614,9 +613,9 @@ namespace ArmWrestlingVR
                 leftHand,
                 rightElbow,
                 leftElbow,
-                // 注意：IK 目标必须用世界坐标，这里要把装置坐标系里的点转换成世界点
-                parent.TransformPoint(new Vector3(0.17f, feetY, OpponentSeatZ - 0.18f)),
-                parent.TransformPoint(new Vector3(-0.17f, feetY, OpponentSeatZ - 0.18f)));
+                new Vector3(0.18f, feetY, OpponentSeatZ - 0.41f),
+                new Vector3(-0.18f, feetY, OpponentSeatZ - 0.41f),
+                armRig);
 
             Renderer[] renderers = model.GetComponentsInChildren<Renderer>();
             foreach (Renderer renderer in renderers)

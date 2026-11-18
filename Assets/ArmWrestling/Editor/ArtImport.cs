@@ -78,12 +78,14 @@ namespace ArmWrestlingVR.EditorTools
                 existing = UnityEditor.Animations.AnimatorController.CreateAnimatorControllerAtPath(path);
             }
 
-            if (existing.layers.Length > 0)
+            var layers = existing.layers;
+            if (layers.Length > 0)
             {
-                existing.layers[0].iKPass = true;
+                layers[0].iKPass = true;
+                existing.layers = layers;
 
                 // 关键：层里必须有状态和片段，否则骨骼会被重置，模型直接"消失"
-                var machine = existing.layers[0].stateMachine;
+                var machine = layers[0].stateMachine;
                 if (machine.states == null || machine.states.Length == 0)
                 {
                     const string clipPath = "Assets/ArmWrestling/Resources/Characters/IdlePose.anim";

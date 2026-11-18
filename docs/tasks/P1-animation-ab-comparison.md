@@ -1,6 +1,6 @@
 # P1-A｜虚拟对手动画路线对照实验（Animator IK vs 姿态混合 + 局部 IK）
 
-**状态：待 Codex 在 Windows 实施。** 本任务从已验证的 P0 工程 `feat/p0-import` / `117b6e1` 出发；与尚未合并的 [PR #1](https://github.com/Ihtbfas/armwrestling-vr/pull/1) 分离。目标不是重建场景，而是**用同一人物、同一机械角度输入做出两条可比较的动画路线，判断哪种更适合扳手腕。**
+**状态：Windows Editor 对照实验已执行。** 见 [实测结果](../P1-animation-ab-result.md)。 本任务从已验证的 P0 工程 `feat/p0-import` / `117b6e1` 出发；与尚未合并的 [PR #1](https://github.com/Ihtbfas/armwrestling-vr/pull/1) 分离。目标不是重建场景，而是**用同一人物、同一机械角度输入做出两条可比较的动画路线，判断哪种更适合扳手腕。**
 
 ## 为什么开展本轮
 
