@@ -21,4 +21,4 @@
 
 ## 本阶段
 
-当前分支 `feat/p1e-hand-contact`：按 [P1-E 双方真实手部握持与第一人称模型完善](docs/tasks/P1E-two-hand-grip-and-player-finish.md) 实施。基于 P1-D 已通过的 `a6268b9`；先修双手掌面朝向/拇指/指部的真实观感，尽量改善玩家上臂裁切边缘。保持已有骨骼动画、稳定肘部、单轴 grip 及离线比赛回归；未经确认授权的人物网格及衍生资产继续本地保留。
+`main` 保留 P0～P1-E 的离线 Editor 演示基线。运行与回归入口见 [README](README.md)，后续工作见 [TASKS](TASKS.md)。本机人物及其衍生网格留在本地，PICO、PCVR、实物标定和 PC UDP 联调须分别验证。
