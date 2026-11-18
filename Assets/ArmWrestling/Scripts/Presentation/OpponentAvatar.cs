@@ -27,6 +27,7 @@ namespace ArmWrestlingVR
         private Vector3 restBodyPosition;
         private Quaternion restBodyRotation;
         private bool hasRestBodyPose;
+        private OpponentGripPose gripPose;
 
         // Ch03's seated poses in the device frame. At neutral, bring the shoulder
         // 41 mm forward to increase elbow flex without moving the wrist goal.
@@ -52,6 +53,8 @@ namespace ArmWrestlingVR
         public Vector3 DesiredRightWrist { get; private set; }
         [Tooltip("Blend the three seated body poses by visual angle before solving hand and foot contact.")]
         public bool BlendBodyPoses = true;
+        [Tooltip("Local Ch03 trial. Apply an authored right-hand grip during the existing IK pass.")]
+        public bool useGripPose;
 
         public void Bind(Transform rightHand, Transform leftHand, Transform rightElbow, Transform leftElbow,
             Vector3 leftFoot, Vector3 rightFoot, VirtualArmRig rig)
@@ -136,6 +139,13 @@ namespace ArmWrestlingVR
                 ApplyFoot(frame, AvatarIKGoal.LeftFoot, AvatarIKHint.LeftKnee, leftFootLocal);
                 ApplyFoot(frame, AvatarIKGoal.RightFoot, AvatarIKHint.RightKnee, rightFootLocal);
             }
+            if (useGripPose) gripPose?.Apply(animator);
+        }
+
+        private void LateUpdate()
+        {
+            if (gripPose == null && ready && IkPassCount > 0)
+                gripPose = new OpponentGripPose(animator);
         }
 
         private void ApplyBodyPose(Transform frame, float visualAngle, float limitWeight)

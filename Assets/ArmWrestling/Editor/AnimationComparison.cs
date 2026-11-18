@@ -34,6 +34,13 @@ namespace ArmWrestlingVR.EditorTools
         private static int[] armVertices;
         private static readonly List<Vector3> Vertices = new List<Vector3>();
         private static bool contactSweep;
+        private static bool gripSweep;
+        private static int[] fingerVertices;
+        private static int[] palmVertices;
+        private static Camera handFront;
+        private static Camera handSide;
+        private static SphereCollider playerSphere;
+        private static int mappedFingerBones;
         private static int route;
         private static int frame;
         private static int errors;
@@ -74,10 +81,12 @@ namespace ArmWrestlingVR.EditorTools
                 if (animator == null) Setup();
                 if (animator == null) return;
 
-                string label = contactSweep || route == 1 ? "B" : "A";
+                string label = gripSweep ? (route == 0 ? "baseline" : "grip")
+                    : contactSweep || route == 1 ? "B" : "A";
                 if (frame == 0)
                 {
                     avatar.BlendBodyPoses = contactSweep || route == 1;
+                    avatar.useGripPose = gripSweep && route == 1;
                     Directory.CreateDirectory(Path.Combine(output, label));
                 }
 
@@ -89,15 +98,21 @@ namespace ArmWrestlingVR.EditorTools
                 animator.Update(1f / FrameRate);
                 int calls = avatar.IkPassCount - countBefore;
                 Record(label, angle, calls);
+                if (gripSweep) PositionHandCameras();
                 if (frame == 0 || frame == 45 || frame == 90)
                 {
                     Capture(front, Path.Combine(output, label, "front-" + frame.ToString("D3") + ".png"));
                     Capture(side, Path.Combine(output, label, "side-" + frame.ToString("D3") + ".png"));
+                    if (gripSweep)
+                    {
+                        Capture(handFront, Path.Combine(output, label, "hand-front-" + frame.ToString("D3") + ".png"));
+                        Capture(handSide, Path.Combine(output, label, "hand-side-" + frame.ToString("D3") + ".png"));
+                    }
                 }
                 if (!HasArgument("-p1stills"))
                 {
-                    Capture(front, Path.Combine(output, label, "f-" + frame.ToString("D3") + ".jpg"));
-                    Capture(side, Path.Combine(output, label, "s-" + frame.ToString("D3") + ".jpg"));
+                    Capture(gripSweep ? handFront : front, Path.Combine(output, label, "f-" + frame.ToString("D3") + ".jpg"));
+                    Capture(gripSweep ? handSide : side, Path.Combine(output, label, "s-" + frame.ToString("D3") + ".jpg"));
                 }
                 if (calls == 0)
                     throw new InvalidOperationException("The Animator IK pass did not execute.");
@@ -105,7 +120,7 @@ namespace ArmWrestlingVR.EditorTools
                 if (++frame > SweepFrames)
                 {
                     Debug.Log("[P1] Captured " + label + " | callbacks=" + avatar.IkPassCount);
-                    if (contactSweep || ++route == 2) Finish(null);
+                    if ((contactSweep && !gripSweep) || ++route == 2) Finish(null);
                     frame = 0;
                 }
             }
@@ -141,8 +156,9 @@ namespace ArmWrestlingVR.EditorTools
 
             front = View(app.deviceRoot, new Vector3(-0.28f, 0.82f, -1.42f), new Vector3(0f, 0.18f, 0.34f));
             side = View(app.deviceRoot, new Vector3(-1.98f, 0.43f, 0.35f), new Vector3(-0.07f, -0.15f, 0.33f));
-            contactSweep = HasArgument("-p1b");
-            output = Path.GetFullPath(Path.Combine(".p0-local", contactSweep ? "p1b-contact" : "p1-animation",
+            gripSweep = HasArgument("-p1c");
+            contactSweep = gripSweep || HasArgument("-p1b");
+            output = Path.GetFullPath(Path.Combine(".p0-local", gripSweep ? "p1c-grip" : contactSweep ? "p1b-contact" : "p1-animation",
                 DateTime.Now.ToString("yyyyMMdd-HHmmss")));
             Directory.CreateDirectory(output);
             target = new RenderTexture(768, 576, 24);
@@ -153,7 +169,15 @@ namespace ArmWrestlingVR.EditorTools
             const string header = "route,frame,seconds,angle,ik_calls,grip_to_wrist_mm,target_to_wrist_mm,grip_to_palm_proxy_mm,elbow_dx_mm,elbow_dy_mm,elbow_dz_mm,elbow_flex_deg,wrist_bend_deg,hips_x,hips_y,hips_z,shoulder_x,shoulder_y,shoulder_z,head_x,head_y,head_z,elbow_x,elbow_y,elbow_z,wrist_x,wrist_y,wrist_z";
             string contactColumns = ",skin_gap_mm,skin_overhang_mm,patch_vertices,skin_x,skin_y,skin_z,grip_x,grip_y,grip_z,pad_x,pad_top_y,pad_z,pad_width,pad_depth,seat_x,seat_top_y,seat_z,model_scale,right_upper_mm,right_fore_mm,left_upper_mm,left_fore_mm,left_shoulder_x,left_shoulder_y,left_shoulder_z,left_elbow_x,left_elbow_y,left_elbow_z,left_wrist_x,left_wrist_y,left_wrist_z";
             if (contactSweep) PrepareSurfaceProbe();
-            data.WriteLine(header + (contactSweep ? contactColumns : ""));
+            if (gripSweep)
+            {
+                handFront = View(app.deviceRoot, Vector3.back, Vector3.zero);
+                handSide = View(app.deviceRoot, Vector3.left, Vector3.zero);
+                handFront.nearClipPlane = handSide.nearClipPlane = 0.02f;
+                PrepareGripProbe();
+            }
+            const string gripColumns = ",mapped_finger_bones,finger_vertices,sphere_inside,sphere_max_depth_mm,sphere_mean_intrusion_mm,sphere_min_clearance_mm,palm_vertices,palm_sphere_inside,palm_max_depth_mm,index_pip_deg,middle_pip_deg,thumb_ip_deg";
+            data.WriteLine(header + (contactSweep ? contactColumns : "") + (gripSweep ? gripColumns : ""));
             Debug.Log("[P1] " + Application.unityVersion + " | " + SystemInfo.graphicsDeviceType + " | " + output);
         }
 
@@ -193,7 +217,8 @@ namespace ArmWrestlingVR.EditorTools
             };
             data.WriteLine(label + "," + string.Join(",", values.Select(v => v.ToString("F4", Format)))
                 + Point(hips) + Point(shoulder) + Point(head) + Point(elbow) + Point(wrist)
-                + (contactSweep ? ContactColumns(elbowLocal, pad, shoulder, elbow, wrist) : ""));
+                + (contactSweep ? ContactColumns(elbowLocal, pad, shoulder, elbow, wrist) : "")
+                + (gripSweep ? GripColumns() : ""));
             if (frame == 0 || frame == 45 || frame == 90) data.Flush();
         }
 
@@ -235,6 +260,93 @@ namespace ArmWrestlingVR.EditorTools
                  + (w.boneIndex1 == a || w.boneIndex1 == b ? w.weight1 : 0)
                  + (w.boneIndex2 == a || w.boneIndex2 == b ? w.weight2 : 0)
                  + (w.boneIndex3 == a || w.boneIndex3 == b ? w.weight3 : 0);
+        }
+
+        private static void PrepareGripProbe()
+        {
+            var digitBones = new HashSet<int>();
+            Transform[] bones = skin.bones;
+            for (int i = (int)HumanBodyBones.RightThumbProximal; i <= (int)HumanBodyBones.RightLittleDistal; i++)
+            {
+                var joint = Bone((HumanBodyBones)i);
+                if (joint == null) continue;
+                mappedFingerBones++;
+                int index = Array.IndexOf(bones, joint);
+                if (index >= 0) digitBones.Add(index);
+            }
+            var weights = skin.sharedMesh.boneWeights;
+            fingerVertices = WeightedVertices(weights, digitBones);
+            int palm = Array.IndexOf(bones, Bone(HumanBodyBones.RightHand));
+            palmVertices = WeightedVertices(weights, new HashSet<int> { palm });
+            if (mappedFingerBones != 15 || fingerVertices.Length == 0 || palmVertices.Length == 0)
+                throw new InvalidOperationException("Ch03 does not have all mapped, skinned right hand bones.");
+            playerSphere = rig.playerArm.hand.GetComponent<SphereCollider>();
+        }
+
+        private static int[] WeightedVertices(BoneWeight[] weights, HashSet<int> bones)
+        {
+            return Enumerable.Range(0, weights.Length).Where(i =>
+            {
+                var w = weights[i];
+                return (bones.Contains(w.boneIndex0) ? w.weight0 : 0f)
+                    + (bones.Contains(w.boneIndex1) ? w.weight1 : 0f)
+                    + (bones.Contains(w.boneIndex2) ? w.weight2 : 0f)
+                    + (bones.Contains(w.boneIndex3) ? w.weight3 : 0f) >= 0.5f;
+            }).ToArray();
+        }
+
+        private static string GripColumns()
+        {
+            // Reuse the posed mesh from ContactColumns. The player hand primitive is
+            // uniformly scaled, so a signed distance to its visual sphere is sufficient.
+            Transform proxy = playerSphere.transform;
+            Vector3 centre = proxy.TransformPoint(playerSphere.center);
+            float radius = playerSphere.radius * proxy.lossyScale.x;
+            var fingers = SphereOverlap(fingerVertices, centre, radius);
+            var palm = SphereOverlap(palmVertices, centre, radius);
+            return string.Format(Format, ",{0},{1},{2},{3:F4},{4:F4},{5:F4},{6},{7},{8:F4},{9:F4},{10:F4},{11:F4}",
+                mappedFingerBones, fingerVertices.Length, fingers.inside, fingers.peak * 1000f,
+                fingers.total * 1000f / fingerVertices.Length, fingers.nearest * 1000f,
+                palmVertices.Length, palm.inside, palm.peak * 1000f,
+                FingerBend(HumanBodyBones.RightIndexProximal), FingerBend(HumanBodyBones.RightMiddleProximal),
+                FingerBend(HumanBodyBones.RightThumbProximal));
+        }
+
+        private static (int inside, float peak, float total, float nearest) SphereOverlap(int[] vertexIds, Vector3 centre, float radius)
+        {
+            float peak = 0f;
+            float total = 0f;
+            float nearest = float.PositiveInfinity;
+            int inside = 0;
+            foreach (int i in vertexIds)
+            {
+                float depth = radius - Vector3.Distance(centre, skin.transform.TransformPoint(Vertices[i]));
+                nearest = Mathf.Min(nearest, -depth);
+                if (depth <= 0f) continue;
+                inside++;
+                peak = Mathf.Max(peak, depth);
+                total += depth;
+            }
+            return (inside, peak, total, nearest);
+        }
+
+        private static float FingerBend(HumanBodyBones proximal)
+        {
+            int index = (int)proximal;
+            Vector3 a = Bone(proximal).position;
+            Vector3 b = Bone((HumanBodyBones)(index + 1)).position;
+            Vector3 c = Bone((HumanBodyBones)(index + 2)).position;
+            return Vector3.Angle(b - a, c - b);
+        }
+
+        private static void PositionHandCameras()
+        {
+            Vector3 grip = rig.GripWorldPosition;
+            Transform frame = rig.transform;
+            handFront.transform.position = grip + frame.TransformVector(new Vector3(-0.11f, 0.11f, -0.27f));
+            handFront.transform.LookAt(grip, frame.up);
+            handSide.transform.position = grip + frame.TransformVector(new Vector3(-0.30f, 0.10f, 0.07f));
+            handSide.transform.LookAt(grip, frame.up);
         }
 
         private static string ContactColumns(Vector3 elbowLocal, Vector3 pad, Transform shoulder,

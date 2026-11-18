@@ -16,6 +16,8 @@ namespace ArmWrestlingVR
 
         [Tooltip("仅本地恢复原始人物/HDRI 后使用。原人物姿态和材质仍需调整；默认展示胶囊场景。")]
         public bool useOriginalArt;
+        [Tooltip("启用 Ch03 右手握姿预研。需要先勾选 Use Original Art。")]
+        public bool useExperimentalGrip;
 
         private void Awake()
         {
@@ -33,6 +35,11 @@ namespace ArmWrestlingVR
 
             ArmWrestlingConfig config = ArmWrestlingConfig.Load();
             ArmWrestlingApp app = ArenaFactory.Build(config);
+            if (useExperimentalGrip && ArenaFactory.UseCharacterModel)
+            {
+                var opponent = app.deviceRoot.GetComponentInChildren<OpponentAvatar>();
+                if (opponent != null) opponent.useGripPose = true;
+            }
 
             if (verbose)
             {

@@ -23,6 +23,10 @@
 
 本地 Ch03 模式默认使用 B 姿态插值和调整后的演示对手肘垫。复现和前后测量见 [P1-B 接触结果](docs/P1B-elbow-contact-result.md)。
 
+## P1-C 实物测量与手部预研
+
+[实物测量指南](docs/calibration/physical-measurement-guide.md)列出现场步骤和可填写记录。恢复本地 Ch03 后，在 Runtime Bootstrap 勾选 **Use Original Art** 和 **Use Experimental Grip** 可试用弯指姿态。见[实验数据与复现](docs/P1C-geometry-and-hand-result.md)。
+
 ## 实际验证与交接
 
 - **已验证：** 原版本首次导入和 C# 编译、两场景脚本引用、主场景真实 Editor Play（批处理驱动）、Direct3D11 渲染、通过现有按钮回调完成角色选择/准备/倒计时/暂停/继续/结算、持续模拟角度；Windows 独立构建及10步加载冒烟检查。

@@ -49,11 +49,13 @@ namespace ArmWrestlingVR.EditorTools
                     if (args[i] == "-p0scene") scenePath = args[i + 1];
                 EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
                 var bootstrap = UnityEngine.Object.FindObjectOfType<RuntimeBootstrap>();
-                if (bootstrap != null && Array.IndexOf(args, "-p0art") >= 0)
+                bool grip = Array.IndexOf(args, "-p0grip") >= 0;
+                if (bootstrap != null && (Array.IndexOf(args, "-p0art") >= 0 || grip))
                 {
                     Require(Resources.Load<GameObject>("Characters/Ch03") != null,
                         "Restore local art before using -p0art.");
                     bootstrap.useOriginalArt = true; // Play copy only; never save the scene.
+                    bootstrap.useExperimentalGrip = grip;
                 }
                 SessionState.SetBool(ActiveKey, true);
                 SessionState.SetString(ActiveKey + ".scene", scenePath);
@@ -133,6 +135,8 @@ namespace ArmWrestlingVR.EditorTools
             if (ArenaFactory.UseCharacterModel)
             {
                 Require(model != null, "Local character asset exists but was not instantiated.");
+                if (Array.IndexOf(Environment.GetCommandLineArgs(), "-p0grip") >= 0)
+                    Require(model.useGripPose, "The grip trial did not reach the spawned avatar.");
                 var animator = model.GetComponent<Animator>();
                 Require(animator != null && animator.isHuman && animator.avatar.isValid
                     && animator.runtimeAnimatorController != null && model.rightHandTarget != null,
