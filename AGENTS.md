@@ -28,4 +28,4 @@
 
 ## 本阶段
 
-`main` 保留 P0～P1-E 的离线 Editor 演示基线。运行与回归入口见 [README](README.md)，后续工作见 [TASKS](TASKS.md)。本机人物及其衍生网格留在本地，PICO、PCVR、实物标定和 PC UDP 联调须分别验证。
+当前分支 `feat/p2a-avatar-paired-grip`：执行 [P2-A 正常人物与成对握姿原型](docs/tasks/P2A-avatar-paired-grip-prototype.md)。先查 [调研参考](docs/research/P2A-avatar-and-grip-references.md) 和来源许可证，再试少量真人外观资源。优先人工制作正确的中立双手扣握姿态，并验证正常人物贴图与完整手骨；旧 P1-E、胶囊回退及 Unity 离线比赛必须保留。真实模型/握姿未实际 Editor 验证前，不要仅凭原理宣称成功。
