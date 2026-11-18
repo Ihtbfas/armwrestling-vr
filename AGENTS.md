@@ -21,4 +21,4 @@
 
 ## 本阶段
 
-当前分支 `feat/p1c-geometry-handoff`：执行 [P1-C 实物几何标定准备与手部接触预研](docs/tasks/P1C-physical-geometry-and-hand-pose.md)。沿用 P1-B 的演示基线；不得把演示轴/肘垫参数描述成实物测量值。优先可执行的简明测量交接，骨骼条件允许时再做最小手部动作实验。
+当前分支 `feat/p1d-character-motion`：执行 [P1-D 玩家模型、肘部稳定与预制动画混合](docs/tasks/P1D-player-avatar-elbow-animation.md)。以 P1-C 已通过的 Unity Demo 为基线；正常玩家人体手臂与相对稳定的对手肘部优先，骨骼 AnimationClip 为最小可用探索。不因缺少实物测量而阻塞纯 VR 动画工作，也不把演示尺寸冒充实装尺寸。
