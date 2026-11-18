@@ -21,4 +21,4 @@
 
 ## 本阶段
 
-当前分支 `feat/p1b-elbow-contact`：执行 [P1-B 肘垫可达性与握持接触优化](docs/tasks/P1B-elbow-reachability-and-contact.md)。以 P1-A 验证通过的 B（身体姿态插值 + 接触 IK）为起点。优先几何可达性与真实的编辑器画面，不假定骨关节原点是网格接触点，也不强制改机械轨迹。
+当前分支 `feat/p1c-geometry-handoff`：执行 [P1-C 实物几何标定准备与手部接触预研](docs/tasks/P1C-physical-geometry-and-hand-pose.md)。沿用 P1-B 的演示基线；不得把演示轴/肘垫参数描述成实物测量值。优先可执行的简明测量交接，骨骼条件允许时再做最小手部动作实验。
