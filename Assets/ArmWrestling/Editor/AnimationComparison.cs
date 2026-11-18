@@ -35,6 +35,10 @@ namespace ArmWrestlingVR.EditorTools
         private static readonly List<Vector3> Vertices = new List<Vector3>();
         private static bool contactSweep;
         private static bool gripSweep;
+        private static bool motionSweep;
+        private static bool motionBaseline;
+        private static Camera playerCamera;
+        private static Quaternion headInitial, chestInitial;
         private static int[] fingerVertices;
         private static int[] palmVertices;
         private static Camera handFront;
@@ -63,7 +67,9 @@ namespace ArmWrestlingVR.EditorTools
                 if (Resources.Load<GameObject>("Characters/Ch03") == null)
                     throw new InvalidOperationException("Restore the local Ch03 asset first.");
                 EditorSceneManager.OpenScene(SceneGenerator.MainScenePath, OpenSceneMode.Single);
-                UnityEngine.Object.FindObjectOfType<RuntimeBootstrap>().useOriginalArt = true;
+                var bootstrap = UnityEngine.Object.FindObjectOfType<RuntimeBootstrap>();
+                bootstrap.useOriginalArt = true;
+                bootstrap.useCharacterMotion = HasArgument("-p1d") && !HasArgument("-p1dbaseline");
                 SessionState.SetBool(ActiveKey, true);
                 EditorApplication.EnterPlaymode();
             }
@@ -81,12 +87,13 @@ namespace ArmWrestlingVR.EditorTools
                 if (animator == null) Setup();
                 if (animator == null) return;
 
-                string label = gripSweep ? (route == 0 ? "baseline" : "grip")
+                string label = motionSweep ? (motionBaseline ? "baseline" : "motion")
+                    : gripSweep ? (route == 0 ? "baseline" : "grip")
                     : contactSweep || route == 1 ? "B" : "A";
                 if (frame == 0)
                 {
                     avatar.BlendBodyPoses = contactSweep || route == 1;
-                    avatar.useGripPose = gripSweep && route == 1;
+                    if (!motionSweep) avatar.useGripPose = gripSweep && route == 1;
                     Directory.CreateDirectory(Path.Combine(output, label));
                 }
 
@@ -94,8 +101,13 @@ namespace ArmWrestlingVR.EditorTools
                 float range = contactSweep && HasArgument("-p1bfullrange") ? 42f : 30f;
                 float angle = -range * Mathf.Cos(2f * Mathf.PI * frame / SweepFrames);
                 rig.ApplyAngle(angle);
+                if (motionSweep && avatar.UsesAuthoredMotion)
+                    animator.SetFloat("Effort", Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(15, 45, frame)));
                 int countBefore = avatar.IkPassCount;
+                // Keep automatic Animator evaluations from advancing the clips between captures.
+                if (motionSweep) animator.speed = 1f;
                 animator.Update(1f / FrameRate);
+                if (motionSweep) animator.speed = 0f;
                 int calls = avatar.IkPassCount - countBefore;
                 Record(label, angle, calls);
                 if (gripSweep) PositionHandCameras();
@@ -108,11 +120,15 @@ namespace ArmWrestlingVR.EditorTools
                         Capture(handFront, Path.Combine(output, label, "hand-front-" + frame.ToString("D3") + ".png"));
                         Capture(handSide, Path.Combine(output, label, "hand-side-" + frame.ToString("D3") + ".png"));
                     }
+                    if (motionSweep)
+                        Capture(playerCamera, Path.Combine(output, label, "player-" + frame.ToString("D3") + ".png"));
                 }
                 if (!HasArgument("-p1stills"))
                 {
                     Capture(gripSweep ? handFront : front, Path.Combine(output, label, "f-" + frame.ToString("D3") + ".jpg"));
                     Capture(gripSweep ? handSide : side, Path.Combine(output, label, "s-" + frame.ToString("D3") + ".jpg"));
+                    if (motionSweep)
+                        Capture(playerCamera, Path.Combine(output, label, "p-" + frame.ToString("D3") + ".jpg"));
                 }
                 if (calls == 0)
                     throw new InvalidOperationException("The Animator IK pass did not execute.");
@@ -120,7 +136,7 @@ namespace ArmWrestlingVR.EditorTools
                 if (++frame > SweepFrames)
                 {
                     Debug.Log("[P1] Captured " + label + " | callbacks=" + avatar.IkPassCount);
-                    if ((contactSweep && !gripSweep) || ++route == 2) Finish(null);
+                    if (motionSweep || (contactSweep && !gripSweep) || ++route == 2) Finish(null);
                     frame = 0;
                 }
             }
@@ -157,8 +173,11 @@ namespace ArmWrestlingVR.EditorTools
             front = View(app.deviceRoot, new Vector3(-0.28f, 0.82f, -1.42f), new Vector3(0f, 0.18f, 0.34f));
             side = View(app.deviceRoot, new Vector3(-1.98f, 0.43f, 0.35f), new Vector3(-0.07f, -0.15f, 0.33f));
             gripSweep = HasArgument("-p1c");
-            contactSweep = gripSweep || HasArgument("-p1b");
-            output = Path.GetFullPath(Path.Combine(".p0-local", gripSweep ? "p1c-grip" : contactSweep ? "p1b-contact" : "p1-animation",
+            motionSweep = HasArgument("-p1d");
+            motionBaseline = HasArgument("-p1dbaseline");
+            contactSweep = gripSweep || motionSweep || HasArgument("-p1b");
+            output = Path.GetFullPath(Path.Combine(".p0-local", motionSweep ? "p1d-motion"
+                : gripSweep ? "p1c-grip" : contactSweep ? "p1b-contact" : "p1-animation",
                 DateTime.Now.ToString("yyyyMMdd-HHmmss")));
             Directory.CreateDirectory(output);
             target = new RenderTexture(768, 576, 24);
@@ -177,7 +196,19 @@ namespace ArmWrestlingVR.EditorTools
                 PrepareGripProbe();
             }
             const string gripColumns = ",mapped_finger_bones,finger_vertices,sphere_inside,sphere_max_depth_mm,sphere_mean_intrusion_mm,sphere_min_clearance_mm,palm_vertices,palm_sphere_inside,palm_max_depth_mm,index_pip_deg,middle_pip_deg,thumb_ip_deg";
-            data.WriteLine(header + (contactSweep ? contactColumns : "") + (gripSweep ? gripColumns : ""));
+            const string motionColumns = ",skinned_player,player_palm_error_mm,palm_separation_mm,stable_elbow,body_shift_mm,head_local_delta_deg,chest_local_delta_deg,effort,authored_clip,normalized_state_time";
+            if (motionSweep)
+            {
+                animator.speed = 0f;
+                animator.Play(0, 0, 0f);
+                playerCamera = Camera.main;
+                if (!motionBaseline && (rig.playerVisual == null || !avatar.UsesAuthoredMotion))
+                    throw new InvalidOperationException("P1-D requires the local player crop and authored motion controller.");
+                headInitial = Bone(HumanBodyBones.Head).localRotation;
+                chestInitial = Bone(HumanBodyBones.Chest).localRotation;
+            }
+            data.WriteLine(header + (contactSweep ? contactColumns : "") + (gripSweep ? gripColumns : "")
+                + (motionSweep ? motionColumns : ""));
             Debug.Log("[P1] " + Application.unityVersion + " | " + SystemInfo.graphicsDeviceType + " | " + output);
         }
 
@@ -218,7 +249,7 @@ namespace ArmWrestlingVR.EditorTools
             data.WriteLine(label + "," + string.Join(",", values.Select(v => v.ToString("F4", Format)))
                 + Point(hips) + Point(shoulder) + Point(head) + Point(elbow) + Point(wrist)
                 + (contactSweep ? ContactColumns(elbowLocal, pad, shoulder, elbow, wrist) : "")
-                + (gripSweep ? GripColumns() : ""));
+                + (gripSweep ? GripColumns() : "") + (motionSweep ? MotionColumns(palm) : ""));
             if (frame == 0 || frame == 45 || frame == 90) data.Flush();
         }
 
@@ -232,6 +263,27 @@ namespace ArmWrestlingVR.EditorTools
         private static string Point(Vector3 p)
         {
             return string.Format(Format, ",{0:F4},{1:F4},{2:F4}", p.x, p.y, p.z);
+        }
+
+        private static string MotionColumns(Vector3 opponentPalm)
+        {
+            var player = rig.playerVisual;
+            Vector3 palm = player != null ? player.PalmPosition : rig.playerArm.hand.position;
+            Vector3 targetPalm = player != null ? player.DesiredPalm
+                : rig.GripWorldPosition - rig.transform.right * rig.handSeparation;
+            string clip = "IdlePose";
+            float effort = 0f;
+            if (avatar.UsesAuthoredMotion)
+            {
+                var clips = animator.GetCurrentAnimatorClipInfo(0);
+                clip = string.Join("+", clips.Where(c => c.weight > 0.001f).Select(c => c.clip.name));
+                effort = animator.GetFloat("Effort");
+            }
+            return string.Format(Format, ",{0},{1:F4},{2:F4},{3},{4:F4},{5:F4},{6:F4},{7:F4},{8},{9:F5}",
+                player != null ? 1 : 0, 1000f * Vector3.Distance(targetPalm, palm),
+                1000f * Vector3.Distance(opponentPalm, palm), avatar.UsedStableElbow ? 1 : 0,
+                avatar.BodyCorrection * 1000f, Quaternion.Angle(headInitial, Bone(HumanBodyBones.Head).localRotation),
+                Quaternion.Angle(chestInitial, Bone(HumanBodyBones.Chest).localRotation), effort, clip, animator.GetCurrentAnimatorStateInfo(0).normalizedTime);
         }
 
         private static void PrepareSurfaceProbe()

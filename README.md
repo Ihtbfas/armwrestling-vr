@@ -27,6 +27,10 @@
 
 [实物测量指南](docs/calibration/physical-measurement-guide.md)列出现场步骤和可填写记录。恢复本地 Ch03 后，在 Runtime Bootstrap 勾选 **Use Original Art** 和 **Use Experimental Grip** 可试用弯指姿态。见[实验数据与复现](docs/P1C-geometry-and-hand-result.md)。
 
+## P1-D 玩家手臂与对手动画
+
+本机恢复 Ch03 后运行 **扳手腕 → P1-D → Prepare Local Player Arm**，再在主场景 Runtime Bootstrap 勾选 **Use Original Art** 和 **Use Character Motion**。可看到第一人称蒙皮手臂、对手限域肘部和准备／对抗动画混合。详见 [P1-D 运行、对照与本机证据](docs/P1D-character-motion-result.md)。
+
 ## 实际验证与交接
 
 - **已验证：** 原版本首次导入和 C# 编译、两场景脚本引用、主场景真实 Editor Play（批处理驱动）、Direct3D11 渲染、通过现有按钮回调完成角色选择/准备/倒计时/暂停/继续/结算、持续模拟角度；Windows 独立构建及10步加载冒烟检查。

@@ -31,6 +31,18 @@ namespace ArmWrestlingVR
                 return;
             }
 
+            SolveJoints(shoulder, handTarget, poleHint, handUp, upperLength, forearmLength, out var elbow, out var wrist);
+            PlaceBone(upperArm, shoulder, elbow, upperRadius);
+            PlaceBone(forearm, elbow, wrist, forearmRadius);
+            hand.position = wrist;
+            hand.rotation = handRotation != Quaternion.identity ? handRotation
+                : Quaternion.FromToRotation(Vector3.up, (wrist - elbow).normalized);
+            hand.localScale = Vector3.one * (handRadius * 2f);
+        }
+
+        public static void SolveJoints(Vector3 shoulder, Vector3 handTarget, Vector3 poleHint, Vector3 handUp,
+            float upperLength, float forearmLength, out Vector3 elbow, out Vector3 wrist)
+        {
             Vector3 toTarget = handTarget - shoulder;
             float distance = toTarget.magnitude;
             float maxReach = upperLength + forearmLength - 0.001f;
@@ -54,23 +66,8 @@ namespace ArmWrestlingVR
 
             pole.Normalize();
 
-            Vector3 elbow = shoulder + direction * along + pole * height;
-            Vector3 wrist = shoulder + direction * Mathf.Min(distance, maxReach);
-
-            PlaceBone(upperArm, shoulder, elbow, upperRadius);
-            PlaceBone(forearm, elbow, wrist, forearmRadius);
-
-            hand.position = wrist;
-            if (handRotation != Quaternion.identity)
-            {
-                hand.rotation = handRotation;
-            }
-            else
-            {
-                hand.rotation = Quaternion.FromToRotation(Vector3.up, (wrist - elbow).normalized);
-            }
-
-            hand.localScale = Vector3.one * (handRadius * 2f);
+            elbow = shoulder + direction * along + pole * height;
+            wrist = shoulder + direction * distance;
         }
 
         /// <summary>把一根胶囊骨骼摆到两点之间，并拉伸到对应长度。</summary>
@@ -108,6 +105,7 @@ namespace ArmWrestlingVR
         [Header("手臂")]
         public ArmChain playerArm;
         public ArmChain opponentArm;
+        public PlayerArmVisual playerVisual;
 
         [Tooltip("两只手在握持点两侧的微小错开距离，避免穿模。")]
         public float handSeparation = 0.035f;
@@ -163,6 +161,7 @@ namespace ArmWrestlingVR
                     Quaternion.LookRotation(-lateral, Vector3.up));
             }
 
+            if (playerVisual != null) playerVisual.ApplyGrip(transform, grip);
             initialised = true;
         }
 

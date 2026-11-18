@@ -19,6 +19,7 @@ namespace ArmWrestlingVR.EditorTools
         private static float minAngle = float.PositiveInfinity;
         private static float maxAngle = float.NegativeInfinity;
         private static string states = "";
+        private static bool sawContestClip;
 
         static P0Validation()
         {
@@ -50,13 +51,16 @@ namespace ArmWrestlingVR.EditorTools
                 EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
                 var bootstrap = UnityEngine.Object.FindObjectOfType<RuntimeBootstrap>();
                 bool grip = Array.IndexOf(args, "-p0grip") >= 0;
-                if (bootstrap != null && (Array.IndexOf(args, "-p0art") >= 0 || grip))
+                bool motion = Array.IndexOf(args, "-p0motion") >= 0;
+                if (bootstrap != null && (Array.IndexOf(args, "-p0art") >= 0 || grip || motion))
                 {
                     Require(Resources.Load<GameObject>("Characters/Ch03") != null,
                         "Restore local art before using -p0art.");
                     bootstrap.useOriginalArt = true; // Play copy only; never save the scene.
                     bootstrap.useExperimentalGrip = grip;
+                    bootstrap.useCharacterMotion = motion;
                 }
+                SessionState.SetBool(ActiveKey + ".motion", motion);
                 SessionState.SetBool(ActiveKey, true);
                 SessionState.SetString(ActiveKey + ".scene", scenePath);
                 EditorApplication.EnterPlaymode();
@@ -112,6 +116,14 @@ namespace ArmWrestlingVR.EditorTools
                         Require(app.state == AppState.Fighting, "Resume button failed.");
                         app.autoDemo = true; Advance(now); break;
                     case 6:
+                        if (!sawContestClip && app.state == AppState.Fighting
+                            && SessionState.GetBool(ActiveKey + ".motion", false))
+                        {
+                            var avatar = app.deviceRoot.GetComponentInChildren<OpponentAvatar>();
+                            if (avatar != null)
+                                sawContestClip = Array.Exists(avatar.GetComponent<Animator>().GetCurrentAnimatorClipInfo(0),
+                                    info => info.clip.name == "SeatedContest" && info.weight > 0.1f);
+                        }
                         if (app.state != AppState.Finished
                             || app.hud.bigText.text != DisplayNames.Of(app.outcome)) return;
                         Require(app.outcome != MatchOutcome.None, "No match result.");
@@ -135,13 +147,21 @@ namespace ArmWrestlingVR.EditorTools
             if (ArenaFactory.UseCharacterModel)
             {
                 Require(model != null, "Local character asset exists but was not instantiated.");
+                opponent = "Humanoid with IK targets";
                 if (Array.IndexOf(Environment.GetCommandLineArgs(), "-p0grip") >= 0)
                     Require(model.useGripPose, "The grip trial did not reach the spawned avatar.");
                 var animator = model.GetComponent<Animator>();
+                if (SessionState.GetBool(ActiveKey + ".motion", false))
+                {
+                    Require(app.armRig.playerVisual != null && app.armRig.playerVisual.Skin.enabled,
+                        "P1-D player surface was not enabled.");
+                    Require(model.UsesAuthoredMotion && model.UsedStableElbow, "P1-D motion or elbow support fell back.");
+                    Require(sawContestClip, "The contest clip did not play during the simulated match.");
+                    opponent += "\nPlayer=Skinned arm, Contest clip observed in Fighting";
+                }
                 Require(animator != null && animator.isHuman && animator.avatar.isValid
                     && animator.runtimeAnimatorController != null && model.rightHandTarget != null,
                     "Local Humanoid / IK bindings are invalid.");
-                opponent = "Humanoid with IK targets (motion quality needs human review)";
                 foreach (var renderer in model.GetComponentsInChildren<SkinnedMeshRenderer>())
                 {
                     Require(renderer.bounds.max.y > app.deviceRoot.position.y + 0.1f,

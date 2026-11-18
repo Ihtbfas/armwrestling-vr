@@ -44,5 +44,11 @@ namespace ArmWrestlingVR
             for (int i = 0; i < Count; i++)
                 if (mapped[i]) animator.SetBoneLocalRotation((HumanBodyBones)(First + i), rotations[i]);
         }
+
+        public void Apply(Transform[] joints)
+        {
+            for (int i = 0; i < Count; i++)
+                if (mapped[i] && joints[i] != null) joints[i].localRotation = rotations[i];
+        }
     }
 }
