@@ -21,4 +21,4 @@
 
 ## 本阶段
 
-首先执行 [P0-import-and-run.md](docs/tasks/P0-import-and-run.md)。如果同学工程尚不在本机工作目录中，只需让用户提供准确路径/压缩包；无需凭空生成与交付不相关的场景。
+当前分支 `feat/p1-animation-spike`：执行 [P1-A 动画路线对照任务](docs/tasks/P1-animation-ab-comparison.md)。以 P0 已验证的现有 Unity 工程为起点；原始导入背景仍可参阅 [P0](docs/tasks/P0-import-and-run.md)。保留真实运行证据，不因为初步判断就认定 IK 或姿态混合路线胜出。
