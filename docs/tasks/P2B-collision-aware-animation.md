@@ -1,6 +1,6 @@
 # P2-B｜Rocketbox 骨骼碰撞体与局部防穿模试验
 
-> **状态：待 Codex 执行。** 基于 P2-A 已完成的 `feat/p2a-avatar-paired-grip` / `111e65d` 和 [PR #8](https://github.com/Ihtbfas/armwrestling-vr/pull/8)（目前未合并 main）。本轮先小规模实验，目的不是让人物成为完整物理仿真体，而是**让手—手、上臂—身体的明显穿模可检测、可解释、能在不破坏已有动画的情况下有所改善**。
+> **状态：已完成 Editor 实验。** [结果和复现](../P2B-collision-experiment-result.md)。 基于 P2-A 已完成的 `feat/p2a-avatar-paired-grip` / `111e65d` 和 [PR #8](https://github.com/Ihtbfas/armwrestling-vr/pull/8)（目前未合并 main）。本轮先小规模实验，目的不是让人物成为完整物理仿真体，而是**让手—手、上臂—身体的明显穿模可检测、可解释、能在不破坏已有动画的情况下有所改善**。
 
 ## 先读并确认
 

@@ -24,6 +24,9 @@ namespace ArmWrestlingVR
         public bool useHandContact;
         [Tooltip("Use the Rocketbox avatar and the authored paired grip.")]
         public bool usePairedGrip;
+        [Tooltip("P2-B。仅用于 Rocketbox 配对握姿。可只诊断，或在诊断基础上修正。")]
+        public PairedCollisionMode pairedCollisions;
+        public bool showCollisionGizmos;
 
         private void Awake()
         {
@@ -58,6 +61,8 @@ namespace ArmWrestlingVR
                 {
                     opponent.EnableCharacterMotion(app, false);
                     opponent.SetPairedGrip(pair.opponent);
+                    if (pairedCollisions != PairedCollisionMode.Off)
+                        opponent.EnableCollisionExperiment(app.armRig, pairedCollisions, showCollisionGizmos);
                 }
                 app.armRig.ApplyAngle(0f);
             }

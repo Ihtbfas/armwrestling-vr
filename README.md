@@ -46,6 +46,10 @@
 
 在主场景 **Runtime Bootstrap** 勾选 **Use Paired Grip** 后 Play。该模式使用随仓库分发的 MIT Rocketbox 人物、原有比赛动画和统一的双手姿态。默认胶囊和本机 P1-E 可继续运行。见 [人物许可、姿态编辑与 Editor 验证](docs/P2A-avatar-and-paired-grip-result.md)。
 
+## P2-B 碰撞诊断与修正试验
+
+在 Rocketbox 模式下用 **Paired Collisions** 切换 **Off**、**Diagnose**、**Correct**。**Show Collision Gizmos** 在 Scene 视图显示代理体与分离方向。见 [P2-B 实验、对照与复现](docs/P2B-collision-experiment-result.md)。
+
 ## 实际验证与交接
 
 - **P1 收口已验证**。Unity 中国版 `2022.3.62f3c1`、Windows Direct3D11 下，默认胶囊和本地 P1-E 均进入主场景 Editor Play，通过现有按钮回调完成选角、倒计时、暂停、继续和结算，运行错误为 0。P1-E 对抗片段、玩家蒙皮和短袖、对手肘部求解均通过检查。

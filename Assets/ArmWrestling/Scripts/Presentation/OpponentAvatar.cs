@@ -37,7 +37,9 @@ namespace ArmWrestlingVR
         private PairedGripPose.Hand pairedGrip;
         private Transform pairedWrist;
         private Transform[] pairedFingers;
+        private int correctedIkPass = -1;
         public bool UsesPairedGrip => pairedGrip != null;
+        public AvatarCollisionExperiment CollisionExperiment { get; private set; }
         public bool UsedStableElbow { get; private set; }
         public float BodyCorrection { get; private set; }
         public bool UsesAuthoredMotion { get; private set; }
@@ -88,6 +90,16 @@ namespace ArmWrestlingVR
             pairedWrist = animator.GetBoneTransform(HumanBodyBones.RightHand);
             pairedFingers = PairedGripPose.MapFingers(animator);
             useGripPose = false;
+        }
+
+        internal void EnableCollisionExperiment(VirtualArmRig rig, PairedCollisionMode mode, bool showGizmos)
+        {
+            var probes = new GameObject("Paired collision experiment");
+            probes.transform.SetParent(rig.transform, false);
+            CollisionExperiment = probes.AddComponent<AvatarCollisionExperiment>();
+            CollisionExperiment.Mode = mode;
+            CollisionExperiment.showGizmos = showGizmos;
+            CollisionExperiment.Bind(rig, animator, rig.playerVisual);
         }
 
         private void Update()
@@ -197,8 +209,14 @@ namespace ArmWrestlingVR
         public void ApplyPairedHandBones()
         {
             if (!UsesPairedGrip || !IkEnabled || rightHandTarget == null) return;
+            if (CollisionExperiment != null && correctedIkPass == IkPassCount) return;
             pairedWrist.rotation = rightHandTarget.rotation * pairedGrip.wristRotation;
             pairedGrip.Apply(pairedFingers);
+            if (CollisionExperiment != null)
+            {
+                CollisionExperiment.Evaluate();
+                correctedIkPass = IkPassCount;
+            }
         }
 
         private void ApplyLegacyRightHand(Transform frame, float angle, float limitWeight)

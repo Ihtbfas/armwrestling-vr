@@ -52,7 +52,8 @@ namespace ArmWrestlingVR.EditorTools
                 var bootstrap = UnityEngine.Object.FindObjectOfType<RuntimeBootstrap>();
                 bool grip = Array.IndexOf(args, "-p0grip") >= 0;
                 bool handContact = Array.IndexOf(args, "-p0handcontact") >= 0;
-                bool paired = Array.IndexOf(args, "-p0pairedgrip") >= 0;
+                bool collision = Array.IndexOf(args, "-p0collision") >= 0;
+                bool paired = collision || Array.IndexOf(args, "-p0pairedgrip") >= 0;
                 if (paired)
                 {
                     var pose = Resources.Load<PairedGripPose>(PairedGripPose.PoseResource);
@@ -65,6 +66,7 @@ namespace ArmWrestlingVR.EditorTools
                         "The requested avatar is missing.");
                     bootstrap.useOriginalArt = !paired; // Play copy only; never save the scene.
                     bootstrap.usePairedGrip = paired;
+                    bootstrap.pairedCollisions = collision ? PairedCollisionMode.Correct : PairedCollisionMode.Off;
                     bootstrap.useExperimentalGrip = grip;
                     bootstrap.useCharacterMotion = motion;
                     bootstrap.useHandContact = handContact;
@@ -72,6 +74,7 @@ namespace ArmWrestlingVR.EditorTools
                 SessionState.SetBool(ActiveKey + ".motion", motion);
                 SessionState.SetBool(ActiveKey + ".handContact", handContact);
                 SessionState.SetBool(ActiveKey + ".paired", paired);
+                SessionState.SetBool(ActiveKey + ".collision", collision);
                 SessionState.SetBool(ActiveKey, true);
                 SessionState.SetString(ActiveKey + ".scene", scenePath);
                 EditorApplication.EnterPlaymode();
@@ -178,6 +181,15 @@ namespace ArmWrestlingVR.EditorTools
                         Require(app.armRig.playerVisual.HasSleeve, "Rocketbox sleeve is missing.");
                         Require(app.armRig.playerVisual.Skin.sharedMaterial.mainTexture != null,
                             "Rocketbox skin texture is missing.");
+                        bool expectCollision = SessionState.GetBool(ActiveKey + ".collision", false);
+                        var experiment = model.CollisionExperiment;
+                        Require(expectCollision == (experiment != null), "The requested collision mode did not start.");
+                        if (expectCollision)
+                        {
+                            Require(experiment.Mode == PairedCollisionMode.Correct && experiment.EvaluationCount > 0
+                                && experiment.MaxFingerCorrection > 0f, "The collision correction did not execute.");
+                            opponent += "\nCollision=Correct, proxies=" + experiment.ProxyCount;
+                        }
                         opponent += "\nPairedGrip=Rocketbox opponent and player";
                     }
                     Require(sawContestClip, "The contest clip did not play during the simulated match.");

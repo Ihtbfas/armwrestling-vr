@@ -40,6 +40,7 @@ namespace ArmWrestlingVR.EditorTools
         private static bool handContactSweep;
         private static bool pairedGripSweep;
         private static HandContactProbe handContactProbe;
+        private static CollisionCapture collisionCapture;
         private static Camera playerCamera;
         private static Camera playerDetail;
         private static Quaternion headInitial, chestInitial;
@@ -68,13 +69,15 @@ namespace ArmWrestlingVR.EditorTools
         {
             try
             {
-                bool paired = HasArgument("-p2a");
+                bool paired = HasArgument("-p2a") || HasArgument("-p2b");
                 if (!paired && Resources.Load<GameObject>("Characters/Ch03") == null)
                     throw new InvalidOperationException("Restore the local Ch03 asset first.");
                 EditorSceneManager.OpenScene(SceneGenerator.MainScenePath, OpenSceneMode.Single);
                 var bootstrap = UnityEngine.Object.FindObjectOfType<RuntimeBootstrap>();
                 bootstrap.useOriginalArt = !paired;
                 bootstrap.usePairedGrip = paired;
+                if (HasArgument("-p2b"))
+                    bootstrap.pairedCollisions = HasArgument("-p2bcorrect") ? PairedCollisionMode.Correct : PairedCollisionMode.Diagnose;
                 bootstrap.useCharacterMotion = HasArgument("-p1e") || (HasArgument("-p1d") && !HasArgument("-p1dbaseline"));
                 bootstrap.useHandContact = HasArgument("-p1e") && !HasArgument("-p1ebaseline");
                 SessionState.SetBool(ActiveKey, true);
@@ -94,7 +97,8 @@ namespace ArmWrestlingVR.EditorTools
                 if (animator == null) Setup();
                 if (animator == null) return;
 
-                string label = pairedGripSweep ? "p2a" : handContactSweep ? (HasArgument("-p1ebaseline") ? "p1d" : "p1e")
+                string label = collisionCapture != null ? (HasArgument("-p2bcorrect") ? "corrected" : "baseline")
+                    : pairedGripSweep ? "p2a" : handContactSweep ? (HasArgument("-p1ebaseline") ? "p1d" : "p1e")
                     : motionSweep ? (motionBaseline ? "baseline" : "motion")
                     : gripSweep ? (route == 0 ? "baseline" : "grip")
                     : contactSweep || route == 1 ? "B" : "A";
@@ -134,9 +138,21 @@ namespace ArmWrestlingVR.EditorTools
                         Capture(playerCamera, Path.Combine(output, label, "player-" + frame.ToString("D3") + ".png"));
                     if (handContactSweep)
                         Capture(playerDetail, Path.Combine(output, label, "eye-" + frame.ToString("D3") + ".png"));
+                    if (collisionCapture != null)
+                    {
+                        Capture(handSide, Path.Combine(output, label, "diagnostic-hand-" + frame.ToString("D3") + ".png"),
+                            AvatarCollisionExperiment.Region.Hands);
+                        Capture(front, Path.Combine(output, label, "diagnostic-body-" + frame.ToString("D3") + ".png"),
+                            AvatarCollisionExperiment.Region.Torso);
+                    }
                 }
                 if (!HasArgument("-p1stills"))
                 {
+                    if (collisionCapture != null)
+                    {
+                        Capture(front, Path.Combine(output, label, "wide-front-" + frame.ToString("D3") + ".jpg"));
+                        Capture(side, Path.Combine(output, label, "wide-side-" + frame.ToString("D3") + ".jpg"));
+                    }
                     Capture(gripSweep || handContactSweep ? handFront : front, Path.Combine(output, label, "f-" + frame.ToString("D3") + ".jpg"));
                     Capture(gripSweep || handContactSweep ? handSide : side, Path.Combine(output, label, "s-" + frame.ToString("D3") + ".jpg"));
                     if (motionSweep)
@@ -187,15 +203,17 @@ namespace ArmWrestlingVR.EditorTools
             front = View(app.deviceRoot, new Vector3(-0.28f, 0.82f, -1.42f), new Vector3(0f, 0.18f, 0.34f));
             side = View(app.deviceRoot, new Vector3(-1.98f, 0.43f, 0.35f), new Vector3(-0.07f, -0.15f, 0.33f));
             gripSweep = HasArgument("-p1c");
-            pairedGripSweep = HasArgument("-p2a");
+            pairedGripSweep = HasArgument("-p2a") || HasArgument("-p2b");
             handContactSweep = pairedGripSweep || HasArgument("-p1e");
             motionSweep = handContactSweep || HasArgument("-p1d");
             motionBaseline = HasArgument("-p1dbaseline");
             contactSweep = gripSweep || motionSweep || HasArgument("-p1b");
-            output = Path.GetFullPath(Path.Combine(".p0-local", pairedGripSweep ? "p2a-avatar" : handContactSweep ? "p1e-hand-contact" : motionSweep ? "p1d-motion"
+            output = Path.GetFullPath(Path.Combine(".p0-local", HasArgument("-p2b") ? "p2b-collision" : pairedGripSweep ? "p2a-avatar" : handContactSweep ? "p1e-hand-contact" : motionSweep ? "p1d-motion"
                 : gripSweep ? "p1c-grip" : contactSweep ? "p1b-contact" : "p1-animation",
                 DateTime.Now.ToString("yyyyMMdd-HHmmss")));
             Directory.CreateDirectory(output);
+            if (HasArgument("-p2b"))
+                collisionCapture = new CollisionCapture(avatar.CollisionExperiment, output, rig.transform);
             target = new RenderTexture(768, 576, 24);
             pixels = new Texture2D(target.width, target.height, TextureFormat.RGB24, false);
             data = new StreamWriter(Path.Combine(output, "measurements.csv"));
@@ -235,7 +253,8 @@ namespace ArmWrestlingVR.EditorTools
                 playerDetail.fieldOfView = 26f;
             }
             data.WriteLine(header + (contactSweep ? contactColumns : "") + (gripSweep ? gripColumns : "")
-                + (motionSweep ? motionColumns : "") + (handContactSweep ? HandContactProbe.Header : ""));
+                + (motionSweep ? motionColumns : "") + (handContactSweep ? HandContactProbe.Header : "")
+                + (collisionCapture != null ? CollisionCapture.Header : ""));
             Debug.Log("[P1] " + Application.unityVersion + " | " + SystemInfo.graphicsDeviceType + " | " + output);
         }
 
@@ -277,7 +296,8 @@ namespace ArmWrestlingVR.EditorTools
                 + Point(hips) + Point(shoulder) + Point(head) + Point(elbow) + Point(wrist)
                 + (contactSweep ? ContactColumns(elbowLocal, pad, shoulder, elbow, wrist) : "")
                 + (gripSweep ? GripColumns() : "") + (motionSweep ? MotionColumns(palm) : "")
-                + (handContactSweep ? handContactProbe.Record(baked, Vertices) : ""));
+                + (handContactSweep ? handContactProbe.Record(baked, Vertices) : "")
+                + (collisionCapture != null ? collisionCapture.Record(frame, angle) : ""));
             if (frame == 0 || frame == 45 || frame == 90) data.Flush();
         }
 
@@ -469,7 +489,7 @@ namespace ArmWrestlingVR.EditorTools
                 + Point(ls) + Point(le) + Point(lw);
         }
 
-        private static void Capture(Camera camera, string path)
+        private static void Capture(Camera camera, string path, AvatarCollisionExperiment.Region? overlay = null)
         {
             var previous = RenderTexture.active;
             camera.targetTexture = target;
@@ -478,6 +498,7 @@ namespace ArmWrestlingVR.EditorTools
                 camera.Render();
                 RenderTexture.active = target;
                 pixels.ReadPixels(new Rect(0, 0, target.width, target.height), 0, 0);
+                if (overlay.HasValue) collisionCapture.DrawOverlay(camera, pixels, overlay.Value);
                 pixels.Apply();
                 File.WriteAllBytes(path, path.EndsWith(".png") ? pixels.EncodeToPNG() : pixels.EncodeToJPG(88));
             }
@@ -495,6 +516,7 @@ namespace ArmWrestlingVR.EditorTools
             SessionState.SetBool(ActiveKey, false);
             data?.Dispose();
             handContactProbe?.Dispose();
+            collisionCapture?.Dispose();
             if (target != null) target.Release();
             if (baked != null) UnityEngine.Object.DestroyImmediate(baked);
             if (error != null) Debug.LogError("[P1] " + error);

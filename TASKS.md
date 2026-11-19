@@ -1,14 +1,16 @@
 # TASKS
 
-## 当前阶段：P2-B 碰撞感知人物动画（待执行）
+## 当前阶段：P2-B 碰撞感知人物动画（已完成 Editor 实验）
 
-- [ ] 验证 Rocketbox 的手—手、上臂—胸部及肘垫穿插，建立合理尺寸的骨骼碰撞代理和 Editor 可见诊断。
-- [ ] 先在零位复核碰撞与真实画面，再对 1～2 处明显穿模尝试有限骨骼/身体姿态修正。
-- [ ] 不改变共同 Grip Anchor、既有预制动画/IK 主流程；保留不带碰撞修正的 P2-A 回退。
-- [ ] 同机位对比 0°、±30° 与往返视频、碰撞诊断和肘/腕/掌心回退；实际 Editor Play 回归。
-- [ ] 提交简明实验结论与真实证据，不宣称已经实现完整人体物理仿真或全网格无穿模。
+- [x] 验证 Rocketbox 的手—手、上臂—胸部及肘垫穿插，建立合理尺寸的骨骼碰撞代理和 Editor 可见诊断。
+- [x] 先在零位复核碰撞与真实画面，再对 1～2 处明显穿模尝试有限骨骼/身体姿态修正。
+- [x] 不改变共同 Grip Anchor、既有预制动画/IK 主流程；保留不带碰撞修正的 P2-A 回退。
+- [x] 同机位对比 0°、±30° 与往返视频、碰撞诊断和肘/腕/掌心回退；实际 Editor Play 回归。
+- [x] 提交简明实验结论与真实证据，不宣称已经实现完整人体物理仿真或全网格无穿模。
 
-[任务书](docs/tasks/P2B-collision-aware-animation.md) · [参考与调研](docs/research/P2B-unity-collision-aware-animation.md)
+[任务书](docs/tasks/P2B-collision-aware-animation.md) · [参考与调研](docs/research/P2B-unity-collision-aware-animation.md) · [实验结果与本机证据](docs/P2B-collision-experiment-result.md)
+
+零位的右上臂与胸部交叠减轻，局部指节有改善。极端角和手指仍有交叠，保留可切换的 P2-A 原姿态。
 
 ## 当前阶段：P2-A 正常人物与成对扳手腕握姿（已完成 Editor 原型）
 
