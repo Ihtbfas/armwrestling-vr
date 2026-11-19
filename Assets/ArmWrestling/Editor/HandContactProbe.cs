@@ -25,7 +25,7 @@ namespace ArmWrestlingVR.EditorTools
 
         internal string Record(Mesh opponentBaked, List<Vector3> opponentVertices)
         {
-            player.Skin.BakeMesh(playerBaked);
+            player.Skin.BakeMesh(playerBaked,true);
             playerBaked.GetVertices(playerVertices);
             opponent.UpdateSurface(opponentBaked, opponentVertices);
             player.UpdateSurface(playerBaked, playerVertices);

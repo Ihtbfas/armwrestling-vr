@@ -52,6 +52,8 @@
 
 ## P2-D 跨人物握姿
 
+主场景默认启用 **Use Grip Surface Targets**，新增掌部/虎口/拇指及四指的可视接触目标；[最新画廊](docs/validation/p2d-contact-targets/README.md)和[本轮修订结果](docs/P2D-contact-targets-revision.md)展示改善与代价。关闭该开关可回看首轮 P2-D。
+
 主场景已接入共享 `HumanoidGripDefinition` 与独立玩家/对手 `GripAvatarProfile`。可在 Runtime Bootstrap 选择人物配置，无需改 C#；Rocketbox 与本机 Ch03 两套不同骨架均已实际 Editor 扫角及比赛回归。人物切换、骨映射要求、几何限制见 [P2-D 结果](docs/P2D-cross-avatar-grip-result.md)，真实 PNG/GIF 见 [公开画廊](docs/validation/p2d-visual/README.md)。**松握、指节交错及部分肘垫/胸臂问题仍在，跨骨架运行通过不等于自然握姿完成。**
 
 以下历史 P2-A～P2-C / P1-E 模式先关闭 **Use Humanoid Grip** 再使用原开关；P2-C 与胶囊回退均保留。原有 P2-C 画廊未覆盖。

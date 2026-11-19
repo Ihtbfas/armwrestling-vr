@@ -15,6 +15,8 @@ namespace ArmWrestlingVR
         public Vector3 playerWebCorrection, opponentWebCorrection;
         public float playerRoll, opponentRoll;
         public Vector3 thumbOpposition;
+        [Tooltip("Optional normalized surface marker offsets: heel, web, thumb, index, middle, ring, little.")]
+        public Vector3[] contactOffsets = new Vector3[7];
         public Vector4[] muscleOffsets = new Vector4[5];
         [Min(0.5f)] public float contactRadiusScale = 1f;
         public float elbowSupportHeight = 0.135f;

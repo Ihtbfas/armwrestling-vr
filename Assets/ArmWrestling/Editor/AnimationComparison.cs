@@ -48,6 +48,7 @@ namespace ArmWrestlingVR.EditorTools
         private static int[] palmVertices;
         private static Camera handFront;
         private static Camera handSide;
+        private static Camera handBack;
         private static SphereCollider playerSphere;
         private static int mappedFingerBones;
         private static int route;
@@ -76,6 +77,7 @@ namespace ArmWrestlingVR.EditorTools
                 EditorSceneManager.OpenScene(SceneGenerator.MainScenePath, OpenSceneMode.Single);
                 var bootstrap = UnityEngine.Object.FindObjectOfType<RuntimeBootstrap>();
                 bootstrap.useHumanoidGrip = cross;
+                bootstrap.useGripSurfaceTargets = !HasArgument("-p2dlegacy");
                 if (cross)
                 {
                     var selected = Resources.Load<GripAvatarProfile>(HasArgument("-p2dlocal") ? "P2DLocal/Ch03Profile" : "P2D/RocketboxProfile");
@@ -143,6 +145,7 @@ namespace ArmWrestlingVR.EditorTools
                     {
                         Capture(handFront, Path.Combine(output, label, "hand-front-" + frame.ToString("D3") + ".png"));
                         Capture(handSide, Path.Combine(output, label, "hand-side-" + frame.ToString("D3") + ".png"));
+                        Capture(handBack, Path.Combine(output, label, "hand-back-" + frame.ToString("D3") + ".png"));
                     }
                     if (motionSweep)
                         Capture(playerCamera, Path.Combine(output, label, "player-" + frame.ToString("D3") + ".png"));
@@ -229,7 +232,7 @@ namespace ArmWrestlingVR.EditorTools
                 DateTime.Now.ToString("yyyyMMdd-HHmmss")));
             Directory.CreateDirectory(output);
             if (HasArgument("-p2d") || HasArgument("-p2b") || HasArgument("-p2c"))
-                collisionCapture = new CollisionCapture(avatar.CollisionExperiment, output, rig.transform);
+                collisionCapture = new CollisionCapture(avatar.CollisionExperiment, output, rig.transform, rig, animator);
             target = new RenderTexture(768, 576, 24);
             pixels = new Texture2D(target.width, target.height, TextureFormat.RGB24, false);
             data = new StreamWriter(Path.Combine(output, "measurements.csv"));
@@ -242,6 +245,8 @@ namespace ArmWrestlingVR.EditorTools
             {
                 handFront = View(app.deviceRoot, Vector3.back, Vector3.zero);
                 handSide = View(app.deviceRoot, Vector3.left, Vector3.zero);
+                handBack = View(app.deviceRoot, Vector3.right, Vector3.zero);
+                handBack.nearClipPlane = 0.02f;
                 handFront.nearClipPlane = handSide.nearClipPlane = 0.02f;
                 if (gripSweep) PrepareGripProbe();
             }
@@ -463,6 +468,8 @@ namespace ArmWrestlingVR.EditorTools
             handFront.transform.LookAt(grip, frame.up);
             handSide.transform.position = grip + frame.TransformVector(new Vector3(-0.30f, 0.10f, 0.07f));
             handSide.transform.LookAt(grip, frame.up);
+            handBack.transform.position = grip + frame.TransformVector(new Vector3(0.30f,0.10f,-0.07f));
+            handBack.transform.LookAt(grip,frame.up);
             if (handContactSweep)
             {
                 playerDetail.transform.position = playerCamera.transform.position;
@@ -475,7 +482,7 @@ namespace ArmWrestlingVR.EditorTools
         {
             // Measure the underside of the skinned elbow neighbourhood. This is a
             // sampled rendered surface, not a pressure/contact or triangle test.
-            skin.BakeMesh(baked);
+            skin.BakeMesh(baked,true);
             baked.GetVertices(Vertices);
             Matrix4x4 toDevice = rig.transform.worldToLocalMatrix * skin.transform.localToWorldMatrix;
             Vector3 underside = new Vector3(0f, float.PositiveInfinity, 0f);

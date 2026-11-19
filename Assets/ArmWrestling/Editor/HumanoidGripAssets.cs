@@ -34,13 +34,22 @@ namespace ArmWrestlingVR.EditorTools
                 var local = ScriptableObject.CreateInstance<GripAvatarProfile>();
                 local.prefab = localPrefab; local.modelScale = 1.12f;
                 local.originFromSeat = new Vector3(0f,-0.22f,-0.08f); local.footLift = 0f;
-                local.elbowSupportHeight = 0.109f; local.bodySideAtLimits = Vector2.zero; local.uprightAtLimits = Vector2.zero;
+                local.elbowSupportHeight = 0.121f; local.bodySideAtLimits = Vector2.zero; local.uprightAtLimits = Vector2.zero;
                 AssetDatabase.CreateAsset(local,localFolder + "/Ch03Profile.asset");
             }
+            var targets = AssetDatabase.LoadAssetAtPath<GripContactTargets>(folder + "/SurfaceTargets.asset");
+            if (targets == null)
+            {
+                targets = ScriptableObject.CreateInstance<GripContactTargets>();
+                AssetDatabase.CreateAsset(targets,folder + "/SurfaceTargets.asset");
+            }
+            definition.contactTargets = targets; EditorUtility.SetDirty(definition);
             AssetDatabase.SaveAssets();
             EditorSceneManager.OpenScene(SceneGenerator.MainScenePath,OpenSceneMode.Single);
             var bootstrap = Object.FindObjectOfType<RuntimeBootstrap>();
+            bootstrap.useGripSurfaceTargets = true;
             bootstrap.useHumanoidGrip = true; bootstrap.usePairedGrip = true;
+            bootstrap.legacyHumanoidGrip = Resources.Load<HumanoidGripDefinition>("P2D/LegacyHumanoidGrip");
             bootstrap.humanoidGrip = definition; bootstrap.playerAvatar = profile; bootstrap.opponentAvatar = profile;
             EditorSceneManager.MarkSceneDirty(bootstrap.gameObject.scene);
             EditorSceneManager.SaveScene(bootstrap.gameObject.scene);

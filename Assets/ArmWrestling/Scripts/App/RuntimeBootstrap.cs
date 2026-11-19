@@ -28,7 +28,8 @@ namespace ArmWrestlingVR
         public PairedCollisionMode pairedCollisions;
         public bool showCollisionGizmos;
         public bool useHumanoidGrip;
-        public HumanoidGripDefinition humanoidGrip;
+        public bool useGripSurfaceTargets = true;
+        public HumanoidGripDefinition humanoidGrip, legacyHumanoidGrip;
         public GripAvatarProfile playerAvatar, opponentAvatar;
         private PairedGripPose resolvedGrip;
 
@@ -65,7 +66,7 @@ namespace ArmWrestlingVR
             {
                 try
                 {
-                    resolvedGrip = HumanoidGripBuilder.Build(humanoidGrip, playerAvatar, opponentAvatar, out _, out _);
+                    resolvedGrip = HumanoidGripBuilder.Build(!useGripSurfaceTargets && legacyHumanoidGrip != null ? legacyHumanoidGrip : humanoidGrip, playerAvatar, opponentAvatar, out _, out _, useGripSurfaceTargets);
                     pair = resolvedGrip;
                     ArenaFactory.PairedProfile = opponentAvatar;
                     effectiveCollisions = PairedCollisionMode.ContactGrip;

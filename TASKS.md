@@ -10,7 +10,9 @@
 
 [执行任务书](docs/tasks/P2D-cross-avatar-paired-grip.md) · [调研技术参考](docs/research/P2D-cross-avatar-grip-references.md) · [P2-C 画廊基线](docs/validation/p2c-visual/README.md)
 
-[实际结果与限制](docs/P2D-cross-avatar-grip-result.md) · [公开 PNG/GIF](docs/validation/p2d-visual/README.md)。Ch03 画面只留本机；Rocketbox 负角端胸臂及两模型肘垫表面仍待改善。
+- [x] PR #11 修订：新增实际蒙皮表面的可视接触标记、双端点生成和主场景接入；保留首轮模式并以修正后的测量工具重录对照。
+
+[最新接触目标修订](docs/P2D-contact-targets-revision.md) · [新 PNG/GIF](docs/validation/p2d-contact-targets/README.md) · [实际结果与限制](docs/P2D-cross-avatar-grip-result.md) · [公开 PNG/GIF](docs/validation/p2d-visual/README.md)。Ch03 画面只留本机；Rocketbox 负角端胸臂及两模型肘垫表面仍待改善。
 
 ## 当前阶段：P2-C 动画与物理接触一轮集成（已集成主场景）
 

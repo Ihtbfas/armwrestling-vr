@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -61,10 +62,12 @@ namespace ArmWrestlingVR.EditorTools
                 bootstrap.pairedCollisions = PairedCollisionMode.Off;
                 bool grip = Array.IndexOf(args, "-p0grip") >= 0;
                 bool handContact = Array.IndexOf(args, "-p0handcontact") >= 0;
-                bool cross = Array.IndexOf(args,"-p0cross") >= 0;
+                bool crossLegacy = Array.IndexOf(args,"-p0crosslegacy") >= 0;
+                bool markerFallback = Array.IndexOf(args,"-p0crossmarkfallback") >= 0;
+                bool cross = crossLegacy || Array.IndexOf(args,"-p0cross") >= 0;
                 bool crossLocal = Array.IndexOf(args,"-p0crosslocal") >= 0;
                 bool crossMixed = Array.IndexOf(args,"-p0crossmixed") >= 0;
-                bool crossFallback = Array.IndexOf(args,"-p0crossfallback") >= 0;
+                bool crossFallback = markerFallback || Array.IndexOf(args,"-p0crossfallback") >= 0;
                 bool requestCross = cross || crossLocal || crossMixed || crossFallback;
                 bool contactGrip = requestCross || Array.IndexOf(args, "-p0contact") >= 0;
                 bool legacyContact = Array.IndexOf(args, "-p0contactlegacy") >= 0;
@@ -94,11 +97,20 @@ namespace ArmWrestlingVR.EditorTools
                 {
                     Require(bootstrap.humanoidGrip != null,"The main scene has no common Humanoid grip.");
                     bootstrap.useHumanoidGrip = true;
+                    bootstrap.useGripSurfaceTargets = !crossLegacy;
                     bootstrap.playerAvatar = Resources.Load<GripAvatarProfile>(crossLocal ? "P2DLocal/Ch03Profile" : "P2D/RocketboxProfile");
                     bootstrap.opponentAvatar = Resources.Load<GripAvatarProfile>((crossLocal || crossMixed) ? "P2DLocal/Ch03Profile" : "P2D/RocketboxProfile");
                     Require(bootstrap.playerAvatar != null && bootstrap.opponentAvatar != null,"Requested profiles not found.");
-                    if (crossFallback) bootstrap.opponentAvatar = ScriptableObject.CreateInstance<GripAvatarProfile>();
+                    if (markerFallback)
+                    {
+                        var copy = UnityEngine.Object.Instantiate(bootstrap.humanoidGrip);
+                        copy.contactTargets = UnityEngine.Object.Instantiate(copy.contactTargets);
+                        copy.contactTargets.player.heel = new Vector3(0f,10f,0f);
+                        bootstrap.humanoidGrip = copy;
+                    }
+                    else if (crossFallback) bootstrap.opponentAvatar = ScriptableObject.CreateInstance<GripAvatarProfile>();
                 }
+                SessionState.SetBool(ActiveKey + ".surfaceTargets",!crossLegacy);
                 SessionState.SetBool(ActiveKey + ".cross", requestCross && !crossFallback);
                 SessionState.SetBool(ActiveKey + ".crossLocal", crossLocal || crossMixed);
                 SessionState.SetBool(ActiveKey + ".motion", motion);
@@ -226,7 +238,15 @@ namespace ArmWrestlingVR.EditorTools
                             bool expectedCross = SessionState.GetBool(ActiveKey + ".cross",false);
                             Require(experiment.UsesHumanoidAdapter == expectedCross,"Requested Avatar resolver did not execute or fall back correctly.");
                             if (expectedCross)
-                                opponent += "\nHumanoidGrip=Common definition, profile-selected player/opponent, 15 fingers each";
+                            {
+                                bool expectedTargets = SessionState.GetBool(ActiveKey + ".surfaceTargets",false);
+                                Require(experiment.ResolvedContactPose != null && experiment.ResolvedContactPose.usesSurfaceTargets == expectedTargets,
+                                    "Requested surface target pose did not execute.");
+                                opponent += "\nHumanoidGrip=Common definition, profile-selected player/opponent, 15 fingers each\nSurfaceTargets=" + expectedTargets;
+                            }
+                            Require(!Resources.FindObjectsOfTypeAll<GameObject>().Any(go => go.name.EndsWith("(Clone)")
+                                && (go.hideFlags & HideFlags.DontSave) != 0 && go.GetComponent<Animator>() != null),
+                                "A temporary Humanoid calibration model leaked after initialization.");
                             if (experiment.Mode == PairedCollisionMode.ContactGrip && !expectedCross)
                             {
                                 var contact = Resources.Load<PairedGripPose>(PairedGripPose.ContactPoseResource);

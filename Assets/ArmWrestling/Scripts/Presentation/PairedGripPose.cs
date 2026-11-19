@@ -17,6 +17,8 @@ namespace ArmWrestlingVR
         [Serializable]
         public sealed class Hand
         {
+            public Vector3 palmDorsal;
+            public Vector3[] contactPoints = Array.Empty<Vector3>(), padPoints = Array.Empty<Vector3>(), padLocalPoints = Array.Empty<Vector3>(), contactNormals = Array.Empty<Vector3>();
             public float palmLength, palmWidth, palmThickness;
             public float collisionRadiusScale = 1f;
             public Vector3[] palmContactPoints = Array.Empty<Vector3>();
@@ -39,6 +41,7 @@ namespace ArmWrestlingVR
         }
 
         [Range(0f, 1f)] public float fingerStart;
+        public bool usesSurfaceTargets;
         public Hand player = new Hand();
         public Hand opponent = new Hand();
 

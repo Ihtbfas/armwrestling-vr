@@ -8,17 +8,19 @@ namespace ArmWrestlingVR.EditorTools
 {
     internal sealed class CollisionCapture : IDisposable
     {
-        internal const string Header = ",hand_proxy_pairs,hand_proxy_max_mm,torso_proxy_pairs,torso_proxy_max_mm,pad_proxy_pairs,pad_proxy_max_mm,digit_adjustment_deg,arm_swivel_deg,stopped_joints,chest_turn_deg,blocked_closure_excess_mm,contact_builds,closure_queries,contact_solve_ms,contact_build_ms,contact_build_queries,open_contact_depth_mm,contact_init_peak_ms,evaluation_ms,initial_root_contact_mm,final_root_contact_mm";
+        internal static readonly string Header = ",hand_proxy_pairs,hand_proxy_max_mm,torso_proxy_pairs,torso_proxy_max_mm,pad_proxy_pairs,pad_proxy_max_mm,digit_adjustment_deg,arm_swivel_deg,stopped_joints,chest_turn_deg,blocked_closure_excess_mm,contact_builds,closure_queries,contact_solve_ms,contact_build_ms,contact_build_queries,open_contact_depth_mm,contact_init_peak_ms,evaluation_ms,initial_root_contact_mm,final_root_contact_mm" + string.Concat(Enumerable.Range(0,20).Select(i => ","+(i<10 ? "pad_marker_error_" : "pad_skin_vertex_gap_")+(i%10<5 ? "player_" : "opponent_")+(i%5)+"_mm"));
         private static readonly CultureInfo Format = CultureInfo.InvariantCulture;
         private readonly AvatarCollisionExperiment experiment;
         private readonly StreamWriter details;
         private readonly Transform device;
+        private readonly GripTargetSamples targetSamples;
 
-        internal CollisionCapture(AvatarCollisionExperiment experiment, string folder, Transform device)
+        internal CollisionCapture(AvatarCollisionExperiment experiment, string folder, Transform device, VirtualArmRig rig, Animator opponent)
         {
             this.experiment = experiment != null && experiment.ProxyCount > 0
                 ? experiment : throw new InvalidOperationException("The P2-B collision proxies did not start.");
             this.device = device;
+            targetSamples = new GripTargetSamples(rig,opponent,experiment);
             details = new StreamWriter(Path.Combine(folder, "collision-pairs.csv"));
             details.WriteLine("frame,angle,region,first,second,depth_mm,dir_x,dir_y,dir_z,origin_x,origin_y,origin_z");
         }
@@ -41,7 +43,7 @@ namespace ArmWrestlingVR.EditorTools
             }
             return Columns(AvatarCollisionExperiment.Region.Hands) + Columns(AvatarCollisionExperiment.Region.Torso)
                 + Columns(AvatarCollisionExperiment.Region.Pads)
-                + string.Format(Format, ",{0:F4},{1:F4},{2},{3:F4},{4:F4},{5},{6},{7:F4},{8:F4},{9},{10:F4},{11:F4},{12:F4},{13:F4},{14:F4}", experiment.MaxFingerCorrection, experiment.ArmCorrection, experiment.StoppedJoints, experiment.ChestTurn, experiment.BlockedClosureExcess * 1000f, experiment.ContactBuilds, experiment.ClosureQueries, experiment.ContactSolveMilliseconds, experiment.ContactBuildMilliseconds, experiment.ContactBuildQueries, experiment.OpenContactDepth * 1000f, experiment.MaxContactSolveMilliseconds, experiment.EvaluationMilliseconds, experiment.InitialRootContactDepth*1000f, experiment.FinalRootContactDepth*1000f);
+                + string.Format(Format, ",{0:F4},{1:F4},{2},{3:F4},{4:F4},{5},{6},{7:F4},{8:F4},{9},{10:F4},{11:F4},{12:F4},{13:F4},{14:F4}", experiment.MaxFingerCorrection, experiment.ArmCorrection, experiment.StoppedJoints, experiment.ChestTurn, experiment.BlockedClosureExcess * 1000f, experiment.ContactBuilds, experiment.ClosureQueries, experiment.ContactSolveMilliseconds, experiment.ContactBuildMilliseconds, experiment.ContactBuildQueries, experiment.OpenContactDepth * 1000f, experiment.MaxContactSolveMilliseconds, experiment.EvaluationMilliseconds, experiment.InitialRootContactDepth*1000f, experiment.FinalRootContactDepth*1000f) + targetSamples.Record();
         }
 
         internal void DrawOverlay(Camera camera, Texture2D image, AvatarCollisionExperiment.Region region)

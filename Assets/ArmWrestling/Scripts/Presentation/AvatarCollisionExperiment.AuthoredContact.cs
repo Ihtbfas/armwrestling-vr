@@ -7,6 +7,7 @@ namespace ArmWrestlingVR
     {
         public bool previewClosedPose;
         private PairedGripPose contactPose;
+        public PairedGripPose ResolvedContactPose => contactPose;
         private readonly Quaternion[] contactPlayer = new Quaternion[15];
         private readonly Quaternion[] contactOpponent = new Quaternion[15];
         private readonly float[] closure = new float[10];

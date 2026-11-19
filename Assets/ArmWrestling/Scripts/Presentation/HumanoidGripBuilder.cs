@@ -14,7 +14,7 @@ namespace ArmWrestlingVR
         }
 
         public static PairedGripPose Build(HumanoidGripDefinition definition, GripAvatarProfile player, GripAvatarProfile opponent,
-            out Measurement playerSize, out Measurement opponentSize)
+            out Measurement playerSize, out Measurement opponentSize, bool useSurfaceTargets = true)
         {
             if (definition == null || player == null || opponent == null || !player.IsUsable || !opponent.IsUsable) throw new InvalidOperationException("Select two valid Humanoid profiles.");
             var pose = ScriptableObject.CreateInstance<PairedGripPose>();
@@ -25,7 +25,8 @@ namespace ArmWrestlingVR
                 pose.player = Resolve(definition, player, true, out playerSize);
                 pose.opponent = Resolve(definition, opponent, false, out opponentSize);
                 pose.fingerStart = definition.fingerStart;
-                PairedPalmContactFit.Fit(pose,definition.palmNormal,0.001f);
+                if (useSurfaceTargets && definition.contactTargets != null) PairedSurfaceGrip.Resolve(pose,definition.contactTargets,player,opponent,definition.palmContactCenter);
+                else PairedPalmContactFit.Fit(pose,definition.palmNormal,0.001f);
                 if (!pose.HasContactEndpoints) throw new InvalidOperationException("Invalid resolved hand endpoints.");
                 return pose;
             }
@@ -81,6 +82,7 @@ namespace ArmWrestlingVR
                 for (int i = 0; i < 15; i++)
                     if (animator.GetBoneTransform((HumanBodyBones)((int)HumanBodyBones.LeftThumbProximal+i)) != null) size.leftFingers++;
                 size.thickness = thickness; size.palmarWebInset = palmarInset;
+                hand.palmDorsal = Quaternion.Inverse(wrist.rotation)*dorsal;
                 hand.palmContactPoints = palmPoints;
                 hand.collisionRadiusScale = profile.contactRadiusScale;
                 hand.palmLength = size.palmLength; hand.palmWidth = size.palmWidth; hand.palmThickness = size.thickness;
@@ -89,7 +91,7 @@ namespace ArmWrestlingVR
                 Quaternion basis = Quaternion.LookRotation(forward,dorsal);
                 Quaternion desired = Quaternion.LookRotation(desiredForward,desiredDorsal);
                 Quaternion delta = desired * Quaternion.Inverse(basis);
-                delta = Quaternion.AngleAxis(player ? profile.playerRoll : profile.opponentRoll,desiredForward) * delta;
+                delta = Quaternion.AngleAxis(player ? definition.palmRoll.x+profile.playerRoll : definition.palmRoll.y+profile.opponentRoll,desiredForward) * delta;
                 hand.wristRotation = delta * wrist.rotation;
                 // Align palm centres; forcing opposite right-hand webs to coincide offsets the palms tangentially.
                 for (int i = 0; i < 15; i++) fingers[i].localRotation = Quaternion.Slerp(hand.openFingerRotations[i],hand.fingerRotations[i],definition.fingerStart);
