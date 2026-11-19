@@ -1,5 +1,15 @@
 # TASKS
 
+## 当前阶段：P2-B 碰撞感知人物动画（待执行）
+
+- [ ] 验证 Rocketbox 的手—手、上臂—胸部及肘垫穿插，建立合理尺寸的骨骼碰撞代理和 Editor 可见诊断。
+- [ ] 先在零位复核碰撞与真实画面，再对 1～2 处明显穿模尝试有限骨骼/身体姿态修正。
+- [ ] 不改变共同 Grip Anchor、既有预制动画/IK 主流程；保留不带碰撞修正的 P2-A 回退。
+- [ ] 同机位对比 0°、±30° 与往返视频、碰撞诊断和肘/腕/掌心回退；实际 Editor Play 回归。
+- [ ] 提交简明实验结论与真实证据，不宣称已经实现完整人体物理仿真或全网格无穿模。
+
+[任务书](docs/tasks/P2B-collision-aware-animation.md) · [参考与调研](docs/research/P2B-unity-collision-aware-animation.md)
+
 ## 当前阶段：P2-A 正常人物与成对扳手腕握姿（已完成 Editor 原型）
 
 - [x] 先调研并试用 MIT Rocketbox、CC0 MakeHuman 等真实人物，验证贴图、Humanoid 与全部手指骨骼。

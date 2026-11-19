@@ -28,4 +28,4 @@
 
 ## 本阶段
 
-当前分支 `feat/p2a-avatar-paired-grip`：执行 [P2-A 正常人物与成对握姿原型](docs/tasks/P2A-avatar-paired-grip-prototype.md)。先查 [调研参考](docs/research/P2A-avatar-and-grip-references.md) 和来源许可证，再试少量真人外观资源。优先人工制作正确的中立双手扣握姿态，并验证正常人物贴图与完整手骨；旧 P1-E、胶囊回退及 Unity 离线比赛必须保留。真实模型/握姿未实际 Editor 验证前，不要仅凭原理宣称成功。
+当前分支 `feat/p2b-collision-aware-animation`：执行 [P2-B Unity 碰撞感知动画原型](docs/tasks/P2B-collision-aware-animation.md)，并阅读 [官方接口和技术调研](docs/research/P2B-unity-collision-aware-animation.md)。以 P2-A Rocketbox + 成对握姿为基线。先添加可视碰撞诊断，再尝试有限局部修正；不可仅新增 Collider 就声称实现防穿模。保留 `Grip Anchor` 运动、现有 IK/骨骼动画和胶囊回退，不开展全身物理布娃娃或 PC/STM32 联调。
