@@ -4,6 +4,24 @@
 
 四指更接近包握，胸臂相交明显减轻。**虎口、拇指根部和部分指节仍相交，自然扣握尚未完全完成。** 旧代理的手部峰值比首轮更差，不能宣称全手无穿模。这仍是 PhysX 查询约束的骨骼动画，不是 Rigidbody/Joint 动力学手。
 
+## GitHub 可查看证据
+
+[完整画廊：第一人称、正侧面、三角度关键帧与许可](validation/p2c-visual/README.md)。PNG 左旧右新，GIF 上旧下新：Before 为 `41ef8ae` 的 Legacy 行为，After 为 `2370f43`。画面来自本轮上述版本的真实 Editor 采集，发布时运行代码没有变化；本次整理没有新增 Editor／PICO 测试。只公开 MIT Rocketbox 与原创场景，原高清录像和受限资源保留本机。
+
+![零位双手近景对照](validation/p2c-visual/neutral-hands.png)
+
+![零位正面对照](validation/p2c-visual/neutral-front.png)
+
+![零位完整侧面对照](validation/p2c-visual/neutral-side.png)
+
+![双手连续动作对照，6 秒，上旧下新](validation/p2c-visual/hands-motion.gif)
+
+![身体正面连续动作对照](validation/p2c-visual/body-front-motion.gif)
+
+![身体完整侧面连续动作对照](validation/p2c-visual/body-side-motion.gif)
+
+[−30°／0°／+30° 双手](validation/p2c-visual/keyframes-hands.png) · [正面](validation/p2c-visual/keyframes-front.png) · [完整侧面](validation/p2c-visual/keyframes-side.png)。原采集保持相同相机、机械握点和片段相位；没有裁剪、补绘或隐藏穿模。GIF 为抽帧压缩播放，不代表头显帧率或实时动力学手。
+
 ## 本次实际修改
 
 - `ContactPairedGrip.asset` 独立保存双方腕位姿和各 15 个指骨的 open/closed 端点。四指用 Humanoid 屈伸轴搭建明确端点，再经 Editor 画面调整；拇指按对方食指虎口的静态导向制作端点。运行时不再猜世界旋转轴。拇指主要保持预制姿势，仅有限闭合。
@@ -74,6 +92,6 @@ $unity = "D:\Unity\Hub\Editor\2022.3.62f3c1\Editor\Unity.exe"
 - `.p0-local/p2c-contact/20261119-151907/`：反向查询测试画面和 CSV。
 - `.p0-local/p2c-contact/refine-*.log` 及对应 `.txt`：本轮采集、比赛回归日志；`.p0-local/p2c-refinement/`：修订前通用截图/报告备份及资源缺失测试临时目录（测试后资源已还原）。
 
-三段视频为采集帧按 30 fps 编码、约 6 秒，非头显实时录屏。所有证据只保存在本机。
+三段高清视频为采集帧按 30 fps 编码、约 6 秒，非头显实时录屏。原始序列、高清视频及完整 CSV 保留本机；少量授权明确的 PNG／GIF 已发布到上方画廊，附 Rocketbox MIT 许可。
 
 下一步应使用可编辑配对姿态精修虎口的蒙皮和端点关系，先减少闭合起点交叠，再评估严格接触限制。保留胸臂布局，结合实物测量统一标定，不建议继续扩大自动旋转搜索。

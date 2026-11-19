@@ -11,6 +11,7 @@
 [完整任务](docs/tasks/P2C-physics-animation-integrated-implementation.md) · [现成方案参考](docs/research/P2C-physical-interaction-patterns.md)
 
 - [ ] 自然扣握验收：虎口、拇指根部和部分指节交叠仍待修正，不能将集成完成等同于视觉完成。
+- [x] 公开合规视觉证据：零位和三角度 PNG、双手及身体正侧视 GIF 已整理到 [P2-C 画廊](docs/validation/p2c-visual/README.md)，保留 MIT 归属及原始本机记录。后续视觉修改按 AGENTS 同步更新可查看证据。
 
 [本轮结果与复现](docs/P2C-physical-interaction-result.md)。本 PR 修订已使用可编辑端点、同步闭合和坐姿适配，胸臂相交减轻；虎口仍有交叠、手部旧代理峰值有回退。自然扣握仍待完善，保留 LegacyContactGrip 及原模式对照。
 

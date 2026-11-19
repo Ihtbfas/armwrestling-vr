@@ -52,6 +52,8 @@
 
 ## P2-C 主场景接触握持
 
+可在 GitHub 直接查看 [P2-C 视觉画廊：零位、±30° 与连续 GIF](docs/validation/p2c-visual/README.md)。PNG 左旧右新，GIF 上旧下新；仍可看到虎口穿模和坐姿的剩余问题。
+
 主场景现在默认启用 Rocketbox 的 **ContactGrip**。使用可编辑 open/closed 配对端点、同步接触闭合和工作肘侧坐姿；原动画和机械握点继续驱动比赛。虎口仍有交叠，尚未完成自然握姿。Runtime Bootstrap 的 **Paired Collisions** 可选 LegacyContactGrip 回看首轮 P2-C，或 Off／Diagnose／Correct 回看 P2-A／P2-B，关闭 **Use Paired Grip** 使用胶囊。见 [集成结果、限制与证据](docs/P2C-physical-interaction-result.md)。
 
 ## 实际验证与交接

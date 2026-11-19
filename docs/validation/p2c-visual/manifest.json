@@ -1,0 +1,129 @@
+{
+  "captured_runtime_ref": "2370f432212f04b0f94d1d5429b236a01b09fa9c",
+  "before_behavior_ref": "41ef8ae0970dbfb86ac11d8a5f58bd2c989308c1",
+  "before_mode": "LegacyContactGrip",
+  "after_mode": "ContactGrip",
+  "validation": "Unity Editor Play / 2022.3.62f3c1 / Windows Direct3D11",
+  "source_folders": [
+    ".p0-local/p2c-contact/20261119-145142/legacy",
+    ".p0-local/p2c-contact/20261119-151827/contact"
+  ],
+  "files": {
+    "neutral-hands.png": {
+      "angle": 0,
+      "camera": "eye",
+      "layout": "before left / after right",
+      "bytes": 589725,
+      "sha256": "9c7c896589e8acbb7d3be0ae894a193040ae3b296c12454178962c37cf01ba3d"
+    },
+    "keyframes-hands.png": {
+      "angles_top_to_bottom": [
+        -30,
+        0,
+        30
+      ],
+      "camera": "eye",
+      "layout": "before left / after right; original uncropped frames",
+      "bytes": 1567048,
+      "sha256": "36a68e04bcf783879a6b38c82c0af00dd9195376aa95a5c7805813ac06ef8fbf"
+    },
+    "neutral-front.png": {
+      "angle": 0,
+      "camera": "front",
+      "layout": "before left / after right",
+      "bytes": 175361,
+      "sha256": "0eac3221e22aab251f91128b7d3e9719d8ac60ba9617b6fcd6c6f7a976de9595"
+    },
+    "keyframes-front.png": {
+      "angles_top_to_bottom": [
+        -30,
+        0,
+        30
+      ],
+      "camera": "front",
+      "layout": "before left / after right; original uncropped frames",
+      "bytes": 511114,
+      "sha256": "8d11920d54d76cc6f10403f1219cefbc6acf53ce5f08d6135a2365abf8a91a23"
+    },
+    "neutral-side.png": {
+      "angle": 0,
+      "camera": "side",
+      "layout": "before left / after right",
+      "bytes": 210573,
+      "sha256": "61e1fc4e5684482cf1c77dbadc624d349c9744cc3fc97f6c3ccf066471169f63"
+    },
+    "keyframes-side.png": {
+      "angles_top_to_bottom": [
+        -30,
+        0,
+        30
+      ],
+      "camera": "side",
+      "layout": "before left / after right; original uncropped frames",
+      "bytes": 629153,
+      "sha256": "209dedcddb3f06c5f29765278099ba4252c35ec94ac2c52eefeb283f833e48f2"
+    },
+    "neutral-player.png": {
+      "angle": 0,
+      "camera": "player",
+      "layout": "before left / after right",
+      "bytes": 208809,
+      "sha256": "68b428f46f0064d3365d99e6f1d4bff16184de8605caa5fcd51d752a4a3debd0"
+    },
+    "hands-motion.gif": {
+      "fps": 8,
+      "frames": 48,
+      "seconds": 6.01,
+      "colors": 96,
+      "camera_sequence": "e",
+      "layout": "before top / after bottom; no crop",
+      "angle_motion": "-30 -> 0 -> +30 -> 0 -> -30",
+      "bytes": 7977373,
+      "sha256": "3865b4aa75fa4e4a38831115b97b842a823d9e030d7fc6fa8576cc9b2fc51a4a"
+    },
+    "body-front-motion.gif": {
+      "fps": 10,
+      "frames": 60,
+      "seconds": 6.0,
+      "colors": 128,
+      "camera_sequence": "wide-front",
+      "layout": "before top / after bottom; no crop",
+      "angle_motion": "-30 -> 0 -> +30 -> 0 -> -30",
+      "bytes": 2470827,
+      "sha256": "dcd29937d9815a6a823a0776289b94a8f6e42ec62b9c602313be30b7c6927272"
+    },
+    "body-side-motion.gif": {
+      "fps": 10,
+      "frames": 60,
+      "seconds": 6.0,
+      "colors": 128,
+      "camera_sequence": "wide-side",
+      "layout": "before top / after bottom; no crop",
+      "angle_motion": "-30 -> 0 -> +30 -> 0 -> -30",
+      "bytes": 3397327,
+      "sha256": "4e684f4541af2901d8634117ae251c0ef6033e41c84386147207188e2f42ac17"
+    }
+  },
+  "source_keyframes": {
+    ".p0-local/p2c-contact/20261119-145142/legacy/eye-045.png": "e045994d6129e4f0fcd998a5324fe138d5e2884ab6419546d6b9a5feb7eedb3e",
+    ".p0-local/p2c-contact/20261119-151827/contact/eye-045.png": "441d6d1c2760fc908e43000d4b9d86525bbd75f59f71e8fe018dc8ec33f8b11f",
+    ".p0-local/p2c-contact/20261119-145142/legacy/eye-000.png": "b86de12d3e5922ab250293632913e654b6472f4e2ea08724ae7a9fa431adc55b",
+    ".p0-local/p2c-contact/20261119-151827/contact/eye-000.png": "75dff7dd619f2892c2d2572cb21fe86002785fe35b063c886ceec28085dc80f9",
+    ".p0-local/p2c-contact/20261119-145142/legacy/eye-090.png": "d57d6322c274ebbabe477c8edb5c0c34ce82e2d7e7059078c928dd15a4834139",
+    ".p0-local/p2c-contact/20261119-151827/contact/eye-090.png": "8cb481ed36e0f16bd1de75bb59449b54104111cfd1908073817194114265eda5",
+    ".p0-local/p2c-contact/20261119-145142/legacy/front-045.png": "015cdc8f9a75a1721421612adbfdbfae15a780a849014f99a2329f1cf74f81b6",
+    ".p0-local/p2c-contact/20261119-151827/contact/front-045.png": "6a889b67cbb9954b1dbe012c61113452ee99e2ba23f270acc983430fde66f1e0",
+    ".p0-local/p2c-contact/20261119-145142/legacy/front-000.png": "17f05b4cf447305cba869fe431e7e30ba3fe595990cd703cd7a605d0fe5c7ca0",
+    ".p0-local/p2c-contact/20261119-151827/contact/front-000.png": "d84dcfcfd186b0f1ada2a77ff7e66134af5c002f0b2e1c8a29df2a945ec6b645",
+    ".p0-local/p2c-contact/20261119-145142/legacy/front-090.png": "6439dc9392c246f9a9bec22f9e4ababc9448266e30bf571f0321864208ec45e9",
+    ".p0-local/p2c-contact/20261119-151827/contact/front-090.png": "88539662c1e08fbfe8de2b6f04db287a50dd615a06cc584ec96b81a21a150d33",
+    ".p0-local/p2c-contact/20261119-145142/legacy/side-045.png": "300239a3db2a74aadaa8aab53fc84c5986199911d8a94b263e6eda9cbd8b1277",
+    ".p0-local/p2c-contact/20261119-151827/contact/side-045.png": "0635f0d6a21d0c7f7cdb12a8875fe8131c3bafa62ee62d7ffe8ab8a34fc98330",
+    ".p0-local/p2c-contact/20261119-145142/legacy/side-000.png": "b8f04e55c8cb81b9c734a54239be31cf91cdb3645bfee0b4b04b91919b646e8a",
+    ".p0-local/p2c-contact/20261119-151827/contact/side-000.png": "4a70bdb5082ad28093319981931323e59afc21a0a16a189f732b1a9b78f354ad",
+    ".p0-local/p2c-contact/20261119-145142/legacy/side-090.png": "cac87a785816a335cc3d421c7ab9101fe3d78081fe132796b71f2d43ea026768",
+    ".p0-local/p2c-contact/20261119-151827/contact/side-090.png": "4785e076e1c94d134e5dc35dca3dbd4fbc0c4db75c1a4bf1f2630d9b438e18a1",
+    ".p0-local/p2c-contact/20261119-145142/legacy/player-045.png": "d24875f11d53e6ad9a8a1059c98b21bed692e232926618f96afc79d41a5e2088",
+    ".p0-local/p2c-contact/20261119-151827/contact/player-045.png": "9c46730fe4dda5ea789d182c4f86acbf36d079c967d83f8a354ef5f60edf81f5"
+  }
+}
