@@ -28,4 +28,4 @@
 
 ## 本阶段
 
-当前分支 `feat/p2b-collision-aware-animation`：执行 [P2-B Unity 碰撞感知动画原型](docs/tasks/P2B-collision-aware-animation.md)，并阅读 [官方接口和技术调研](docs/research/P2B-unity-collision-aware-animation.md)。以 P2-A Rocketbox + 成对握姿为基线。先添加可视碰撞诊断，再尝试有限局部修正；不可仅新增 Collider 就声称实现防穿模。保留 `Grip Anchor` 运动、现有 IK/骨骼动画和胶囊回退，不开展全身物理布娃娃或 PC/STM32 联调。
+当前分支 `feat/p2c-physical-grip-integration`：执行 [P2-C 物理交互验证后直接集成](docs/tasks/P2C-physics-animation-integrated-implementation.md)，结合 [成熟案例参考](docs/research/P2C-physical-interaction-patterns.md)。**这是单轮完整交付：快速调研 → 必要小试 → 选定方案 → 直接进入 `ArmWrestlingMain` → 真正 Editor Play 回归和证据。** Codex 有权自主调试、换方案与实现；不需成功后再回用户确认。不可仅新增检测代理而宣称物理响应，或为减少碰撞而破坏共同 Grip Anchor、肘垫和人物动作。P2-A/P2-B 现有模式要可回退。

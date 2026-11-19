@@ -1,5 +1,15 @@
 # TASKS
 
+## 当前阶段：P2-C 动画与物理接触一轮集成（待执行）
+
+- [ ] 从 Unity 官方 XRI、Auto Hand/Hurricane VR、Adaptive Hands 等成熟思路中筛选兼容方案并做最小验证。
+- [ ] 一旦找到实际可行的接触限制/物理响应方法，**同一轮直接接入 ArmWrestlingMain、调试并回归**，不要止步于孤立原型。
+- [ ] 优先改善双手指节/掌面与上臂—躯干的明显穿模，不破坏原单轴握点、预制动画、肘部支撑与人体自然性。
+- [ ] 同机位记录 0°、±30° 和往返真实画面、碰撞/物理响应数据及负面代价，保留 P2-A/P2-B 诊断与胶囊回退。
+- [ ] 交付可切换模式、结果文档、Editor Play 回归和新 PR；不要求对每个小决策再授权。
+
+[完整任务](docs/tasks/P2C-physics-animation-integrated-implementation.md) · [现成方案参考](docs/research/P2C-physical-interaction-patterns.md)
+
 ## 当前阶段：P2-B 碰撞感知人物动画（已完成 Editor 实验）
 
 - [x] 验证 Rocketbox 的手—手、上臂—胸部及肘垫穿插，建立合理尺寸的骨骼碰撞代理和 Editor 可见诊断。
