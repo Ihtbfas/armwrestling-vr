@@ -1,5 +1,15 @@
 # TASKS
 
+## 当前阶段：P2-D 跨人物通用握姿与自然接触（待执行）
+
+- [ ] 从 P2-C Rocketbox 专属 wrist/finger localRotation 中拆出可在不同 Humanoid 上表达的握姿与接触语义。
+- [ ] 建立简洁可编辑的 Avatar 适配配置；更换模型不需要改核心 C#，允许手型差异引起的小量配置/姿态覆盖。
+- [ ] 用**第二套不同骨架**真实测试（本地 Ch03 或许可明确且不同骨骼的模型），不能仅用 Rocketbox 缩放代替。
+- [ ] 先纠正零位虎口和拇指根部原有穿入，再让 ContactGrip 逐指限位与 Animator/IK、主场景整体协调；维护 P2-C 原有回退。
+- [ ] 同一轮从小验证直接集成，完成两个骨架在零位、±30° 和实际比赛的 Editor Play，以及合规 PNG/GIF 可查看证据。
+
+[执行任务书](docs/tasks/P2D-cross-avatar-paired-grip.md) · [调研技术参考](docs/research/P2D-cross-avatar-grip-references.md) · [P2-C 画廊基线](docs/validation/p2c-visual/README.md)
+
 ## 当前阶段：P2-C 动画与物理接触一轮集成（已集成主场景）
 
 - [x] 从 Unity 官方 XRI、Auto Hand/Hurricane VR、Adaptive Hands 等成熟思路中筛选兼容方案并做最小验证。

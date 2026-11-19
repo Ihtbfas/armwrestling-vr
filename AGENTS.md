@@ -36,4 +36,4 @@
 
 ## 本阶段
 
-当前分支 `feat/p2c-physical-grip-integration`：执行 [P2-C 物理交互验证后直接集成](docs/tasks/P2C-physics-animation-integrated-implementation.md)，结合 [成熟案例参考](docs/research/P2C-physical-interaction-patterns.md)。**这是单轮完整交付：快速调研 → 必要小试 → 选定方案 → 直接进入 `ArmWrestlingMain` → 真正 Editor Play 回归和证据。** Codex 有权自主调试、换方案与实现；不需成功后再回用户确认。不可仅新增检测代理而宣称物理响应，或为减少碰撞而破坏共同 Grip Anchor、肘垫和人物动作。P2-A/P2-B 现有模式要可回退。
+当前分支 `feat/p2d-cross-avatar-grip`：执行 [P2-D 跨人物握姿重定向及主场景直接集成](docs/tasks/P2D-cross-avatar-paired-grip.md)，参考 [已有成熟方案调研](docs/research/P2D-cross-avatar-grip-references.md)。以 P2-C 的 Rocketbox+ContactGrip 为基线并保留回退；**同一轮完成：调研 → 小试 → 换第二套不同骨架实测 → 直接接入主场景 → Editor 回归/PNG/GIF**。通用握姿与模型特定几何分离；允许可编辑的 Avatar 配置校准，但不允许在核心代码写死具体 FBX / 指骨四元数，也不允许未实测就宣称跨人物可复用。旧的 P2-C 画廊和可运行模式必须保留。
