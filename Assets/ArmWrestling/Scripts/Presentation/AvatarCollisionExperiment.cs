@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 namespace ArmWrestlingVR
 {
-    public enum PairedCollisionMode { Off, Diagnose, Correct, ContactGrip }
+    public enum PairedCollisionMode { Off, Diagnose, Correct, ContactGrip, LegacyContactGrip }
 
     // The active query colliders belong to an isolated, unsimulated physics scene.
     // ComputePenetration takes the actual bone poses explicitly.
@@ -48,6 +48,7 @@ namespace ArmWrestlingVR
         public IReadOnlyList<Contact> Contacts => contacts;
         public int ProxyCount => proxies.Count;
         public int EvaluationCount { get; private set; }
+        public double EvaluationMilliseconds { get; private set; }
 
         private readonly List<Proxy> proxies = new List<Proxy>();
         private readonly List<Contact> contacts = new List<Contact>();
@@ -173,6 +174,7 @@ namespace ArmWrestlingVR
 
         public void Evaluate()
         {
+            long started = System.Diagnostics.Stopwatch.GetTimestamp();
             player.RestorePairedFingers();
             MaxFingerCorrection = 0f;
             ArmCorrection = 0f;
@@ -184,8 +186,10 @@ namespace ArmWrestlingVR
             EvaluationCount++;
             foreach (var proxy in proxies) proxy.pose = proxy.sample();
             if (mode == PairedCollisionMode.Correct) CorrectPose();
-            if (mode == PairedCollisionMode.ContactGrip) SolveContactGrip();
+            if (mode == PairedCollisionMode.ContactGrip) SolveAuthoredContact();
+            if (mode == PairedCollisionMode.LegacyContactGrip) SolveContactGrip();
             CollectContacts();
+            EvaluationMilliseconds = (System.Diagnostics.Stopwatch.GetTimestamp() - started) * 1000.0 / System.Diagnostics.Stopwatch.Frequency;
         }
 
         partial void CorrectPose();
@@ -225,6 +229,7 @@ namespace ArmWrestlingVR
 
         private void OnDestroy()
         {
+            DisposeContactSurfaces();
             if (queryScene.IsValid() && queryScene.isLoaded && SceneManager.sceneCount > 1)
                 SceneManager.UnloadSceneAsync(queryScene);
         }

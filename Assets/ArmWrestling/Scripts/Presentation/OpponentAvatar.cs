@@ -275,7 +275,10 @@ namespace ArmWrestlingVR
             if (upperArmLength <= 0f || forearmLength <= 0f) return false;
             // The pad top is at 95 mm. The elbow bone sits above the sampled
             // skin. A straight forearm-to-palm line gives a sphere about grip.
-            float boneY = UsesPairedGrip ? 0.130f : 0.109f;
+            bool contactLayout = CollisionExperiment != null && CollisionExperiment.Mode == PairedCollisionMode.ContactGrip;
+            // The revised shoulder pose lowers the sampled elbow underside by
+            // about 4.5 mm. Compensate at the support target, not by moving the pad.
+            float boneY = UsesPairedGrip ? (contactLayout ? 0.135f : 0.130f) : 0.109f;
             Vector3 g = frame.InverseTransformPoint(target);
             float radius = (forearmLength + extension) / frame.lossyScale.x;
             float vertical = g.y - boneY;
@@ -308,7 +311,16 @@ namespace ArmWrestlingVR
             float weight = Mathf.SmoothStep(0f, 1f, Mathf.Abs(angle) / 30f);
             Vector3 offset = Vector3.Lerp(Neutral.position, endpoint.position, weight);
             if (angle < 0f) offset += OpponentLimitBodyOffset * limitWeight;
+            if (CollisionExperiment != null && CollisionExperiment.Mode == PairedCollisionMode.ContactGrip)
+            {
+                // Shift the seated body towards its working elbow. The original
+                // centred torso made the right humerus cross the chest at negative angles.
+                float side = Mathf.Lerp(0.16f, 0.02f, Mathf.InverseLerp(-30f, 30f, angle));
+                offset += new Vector3(side, 0f, 0f);
+            }
             Quaternion lean = Quaternion.Slerp(Neutral.rotation, endpoint.rotation, weight);
+            if (CollisionExperiment != null && CollisionExperiment.Mode == PairedCollisionMode.ContactGrip)
+                lean = Quaternion.AngleAxis(Mathf.Lerp(13f, 7f, Mathf.InverseLerp(-30f, 30f, angle)), Vector3.right) * lean;
             animator.bodyPosition = frame.TransformPoint(restBodyPosition + offset);
             animator.bodyRotation = frame.rotation * lean * restBodyRotation;
         }

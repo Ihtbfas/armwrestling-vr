@@ -58,7 +58,11 @@ namespace ArmWrestlingVR.EditorTools
                 bool grip = Array.IndexOf(args, "-p0grip") >= 0;
                 bool handContact = Array.IndexOf(args, "-p0handcontact") >= 0;
                 bool contactGrip = Array.IndexOf(args, "-p0contact") >= 0;
-                bool collision = contactGrip || Array.IndexOf(args, "-p0collision") >= 0;
+                bool legacyContact = Array.IndexOf(args, "-p0contactlegacy") >= 0;
+                bool missingContact = Array.IndexOf(args, "-p0contactfallback") >= 0;
+                if (missingContact) Require(Resources.Load<PairedGripPose>(PairedGripPose.ContactPoseResource) == null,
+                    "The contact fallback test requires the new pose to be absent.");
+                bool collision = missingContact || legacyContact || contactGrip || Array.IndexOf(args, "-p0collision") >= 0;
                 bool paired = collision || Array.IndexOf(args, "-p0pairedgrip") >= 0;
                 if (paired)
                 {
@@ -72,7 +76,7 @@ namespace ArmWrestlingVR.EditorTools
                         "The requested avatar is missing.");
                     bootstrap.useOriginalArt = !paired; // Play copy only; never save the scene.
                     bootstrap.usePairedGrip = paired;
-                    bootstrap.pairedCollisions = contactGrip ? PairedCollisionMode.ContactGrip : collision ? PairedCollisionMode.Correct : PairedCollisionMode.Off;
+                    bootstrap.pairedCollisions = legacyContact ? PairedCollisionMode.LegacyContactGrip : (missingContact || contactGrip) ? PairedCollisionMode.ContactGrip : collision ? PairedCollisionMode.Correct : PairedCollisionMode.Off;
                     bootstrap.useExperimentalGrip = grip;
                     bootstrap.useCharacterMotion = motion;
                     bootstrap.useHandContact = handContact;
@@ -82,6 +86,7 @@ namespace ArmWrestlingVR.EditorTools
                 SessionState.SetBool(ActiveKey + ".paired", paired);
                 SessionState.SetBool(ActiveKey + ".collision", collision);
                 SessionState.SetBool(ActiveKey + ".contactGrip", contactGrip);
+                SessionState.SetBool(ActiveKey + ".legacyContact", legacyContact || missingContact);
                 SessionState.SetBool(ActiveKey, true);
                 SessionState.SetString(ActiveKey + ".scene", scenePath);
                 EditorApplication.EnterPlaymode();
@@ -193,11 +198,20 @@ namespace ArmWrestlingVR.EditorTools
                         Require(expectCollision == (experiment != null), "The requested collision mode did not start.");
                         if (expectCollision)
                         {
-                            Require(experiment.Mode == (SessionState.GetBool(ActiveKey + ".contactGrip", false) ? PairedCollisionMode.ContactGrip : PairedCollisionMode.Correct) && experiment.EvaluationCount > 0
+                            Require(experiment.Mode == (SessionState.GetBool(ActiveKey + ".legacyContact", false) ? PairedCollisionMode.LegacyContactGrip : SessionState.GetBool(ActiveKey + ".contactGrip", false) ? PairedCollisionMode.ContactGrip : PairedCollisionMode.Correct) && experiment.EvaluationCount > 0
                                 && experiment.MaxFingerCorrection > 0f, "The collision correction did not execute.");
                             opponent += "\nCollision=" + experiment.Mode + ", proxies=" + experiment.ProxyCount;
-                            if (experiment.Mode == PairedCollisionMode.ContactGrip)
+                            if (experiment.Mode == PairedCollisionMode.ContactGrip || experiment.Mode == PairedCollisionMode.LegacyContactGrip)
                                 Require(experiment.StoppedJoints > 0 && experiment.BlockedClosureExcess > 0f, "Contact did not limit finger closure.");
+                            if (experiment.Mode == PairedCollisionMode.ContactGrip)
+                            {
+                                var contact = Resources.Load<PairedGripPose>(PairedGripPose.ContactPoseResource);
+                                Require(contact != null && contact.HasContactEndpoints && experiment.ContactBuilds > 0
+                                    && !experiment.previewClosedPose, "Authored contact endpoints were not used.");
+                                Require(Vector3.Distance(model.DesiredRightWrist, contact.opponent.WorldWrist(app.armRig.gripAnchor).position) < 0.00001f,
+                                    "The main scene did not use the saved contact wrist pose.");
+                                opponent += "\nContact=Authored endpoints, cached simultaneous closure";
+                            }
                         }
                         opponent += "\nPairedGrip=Rocketbox opponent and player";
                     }

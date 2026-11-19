@@ -78,7 +78,7 @@ namespace ArmWrestlingVR.EditorTools
                 bootstrap.usePairedGrip = paired;
                 bootstrap.pairedCollisions = PairedCollisionMode.Off;
                 if (HasArgument("-p2b") || HasArgument("-p2c"))
-                    bootstrap.pairedCollisions = HasArgument("-p2c") ? PairedCollisionMode.ContactGrip : HasArgument("-p2bcorrect") ? PairedCollisionMode.Correct : PairedCollisionMode.Diagnose;
+                    bootstrap.pairedCollisions = HasArgument("-p2c") ? (HasArgument("-p2clegacy") ? PairedCollisionMode.LegacyContactGrip : PairedCollisionMode.ContactGrip) : HasArgument("-p2bcorrect") ? PairedCollisionMode.Correct : PairedCollisionMode.Diagnose;
                 bootstrap.useCharacterMotion = HasArgument("-p1e") || (HasArgument("-p1d") && !HasArgument("-p1dbaseline"));
                 bootstrap.useHandContact = HasArgument("-p1e") && !HasArgument("-p1ebaseline");
                 SessionState.SetBool(ActiveKey, true);
@@ -98,7 +98,7 @@ namespace ArmWrestlingVR.EditorTools
                 if (animator == null) Setup();
                 if (animator == null) return;
 
-                string label = collisionCapture != null ? (HasArgument("-p2c") ? "contact" : HasArgument("-p2bcorrect") ? "corrected" : "baseline")
+                string label = collisionCapture != null ? (HasArgument("-p2c") ? (HasArgument("-p2clegacy") ? "legacy" : HasArgument("-p2cpose") ? "authored-closed" : "contact") : HasArgument("-p2bcorrect") ? "corrected" : "baseline")
                     : pairedGripSweep ? "p2a" : handContactSweep ? (HasArgument("-p1ebaseline") ? "p1d" : "p1e")
                     : motionSweep ? (motionBaseline ? "baseline" : "motion")
                     : gripSweep ? (route == 0 ? "baseline" : "grip")
@@ -181,6 +181,10 @@ namespace ArmWrestlingVR.EditorTools
             avatar = UnityEngine.Object.FindObjectOfType<OpponentAvatar>();
             if (avatar == null) throw new InvalidOperationException("The humanoid opponent was not instantiated.");
             animator = avatar.GetComponent<Animator>();
+            if (avatar.CollisionExperiment != null) {
+                avatar.CollisionExperiment.previewClosedPose = HasArgument("-p2cpose");
+                avatar.CollisionExperiment.reverseContactOrder = HasArgument("-p2creverse");
+            }
             if (!animator.isHuman || !animator.avatar.isValid)
                 throw new InvalidOperationException("Ch03 needs a valid Humanoid Avatar.");
 

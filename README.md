@@ -52,7 +52,7 @@
 
 ## P2-C 主场景接触握持
 
-主场景现在默认启用 Rocketbox 的 **ContactGrip**。指节沿张开到预制握姿的路径闭合，遇接触后停止；原动画和机械握点继续驱动比赛。Runtime Bootstrap 的 **Paired Collisions** 可选 Off／Diagnose／Correct 回看 P2-A／P2-B，关闭 **Use Paired Grip** 使用胶囊。见 [集成结果、限制与证据](docs/P2C-physical-interaction-result.md)。
+主场景现在默认启用 Rocketbox 的 **ContactGrip**。使用可编辑 open/closed 配对端点、同步接触闭合和工作肘侧坐姿；原动画和机械握点继续驱动比赛。虎口仍有交叠，尚未完成自然握姿。Runtime Bootstrap 的 **Paired Collisions** 可选 LegacyContactGrip 回看首轮 P2-C，或 Off／Diagnose／Correct 回看 P2-A／P2-B，关闭 **Use Paired Grip** 使用胶囊。见 [集成结果、限制与证据](docs/P2C-physical-interaction-result.md)。
 
 ## 实际验证与交接
 

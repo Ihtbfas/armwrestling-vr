@@ -39,7 +39,18 @@ namespace ArmWrestlingVR
 
             // Optional art is restored locally with its original GUIDs. Decide before
             // BuildArms so a public checkout keeps both capsule arms when art is absent.
+            var effectiveCollisions = pairedCollisions;
             var pair = usePairedGrip ? Resources.Load<PairedGripPose>(PairedGripPose.PoseResource) : null;
+            if (pair != null && pairedCollisions == PairedCollisionMode.ContactGrip)
+            {
+                var contactPose = Resources.Load<PairedGripPose>(PairedGripPose.ContactPoseResource);
+                if (contactPose != null && contactPose.HasContactEndpoints) pair = contactPose;
+                else
+                {
+                    effectiveCollisions = PairedCollisionMode.LegacyContactGrip;
+                    Debug.LogWarning("[P2-C] Authored contact pose is missing or incomplete. Using the legacy paired grip and solver.");
+                }
+            }
             var rocketbox = pair != null && pair.IsComplete
                 ? Resources.Load<GameObject>(PairedGripPose.AvatarResource) : null;
             var rocketAnimator = rocketbox != null ? rocketbox.GetComponent<Animator>() : null;
@@ -61,8 +72,8 @@ namespace ArmWrestlingVR
                 {
                     opponent.EnableCharacterMotion(app, false);
                     opponent.SetPairedGrip(pair.opponent);
-                    if (pairedCollisions != PairedCollisionMode.Off)
-                        opponent.EnableCollisionExperiment(app.armRig, pairedCollisions, showCollisionGizmos);
+                    if (effectiveCollisions != PairedCollisionMode.Off)
+                        opponent.EnableCollisionExperiment(app.armRig, effectiveCollisions, showCollisionGizmos);
                 }
                 app.armRig.ApplyAngle(0f);
             }

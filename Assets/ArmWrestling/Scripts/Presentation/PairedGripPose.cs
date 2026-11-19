@@ -10,6 +10,7 @@ namespace ArmWrestlingVR
     {
         public const string AvatarResource = "P2A/Male_Adult_01";
         public const string PoseResource = "P2A/NeutralPairedGrip";
+        public const string ContactPoseResource = "P2A/ContactPairedGrip";
         public const int FingerCount = 15;
         public const float AvatarScale = 0.94f;
 
@@ -19,6 +20,7 @@ namespace ArmWrestlingVR
             public Vector3 wristPosition;
             public Quaternion wristRotation = Quaternion.identity;
             public Quaternion[] fingerRotations = new Quaternion[FingerCount];
+            public Quaternion[] openFingerRotations = Array.Empty<Quaternion>();
 
             public Pose WorldWrist(Transform anchor) =>
                 new Pose(anchor.TransformPoint(wristPosition), anchor.rotation * wristRotation);
@@ -31,10 +33,15 @@ namespace ArmWrestlingVR
             }
         }
 
+        [Range(0f, 1f)] public float fingerStart;
         public Hand player = new Hand();
         public Hand opponent = new Hand();
 
         public bool IsComplete => IsAuthored(player) && IsAuthored(opponent);
+        public bool HasContactEndpoints => IsComplete && IsFinite(fingerStart) && fingerStart >= 0f && fingerStart <= 1f
+            && IsOpenAuthored(player) && IsOpenAuthored(opponent);
+        private static bool IsOpenAuthored(Hand hand) => hand.openFingerRotations != null
+            && hand.openFingerRotations.Length == FingerCount && Array.TrueForAll(hand.openFingerRotations, IsRotation);
         private static bool IsAuthored(Hand hand) => hand != null && hand.fingerRotations != null
             && hand.fingerRotations.Length == FingerCount && Array.TrueForAll(hand.fingerRotations, IsRotation)
             && IsRotation(hand.wristRotation) && IsFinite(hand.wristPosition.sqrMagnitude);

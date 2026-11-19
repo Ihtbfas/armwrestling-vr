@@ -10,7 +10,9 @@
 
 [完整任务](docs/tasks/P2C-physics-animation-integrated-implementation.md) · [现成方案参考](docs/research/P2C-physical-interaction-patterns.md)
 
-[本轮结果与复现](docs/P2C-physical-interaction-result.md)。接触闭合已进入主场景，胸臂与掌根仍有交叠，继续保留原模式对照。
+- [ ] 自然扣握验收：虎口、拇指根部和部分指节交叠仍待修正，不能将集成完成等同于视觉完成。
+
+[本轮结果与复现](docs/P2C-physical-interaction-result.md)。本 PR 修订已使用可编辑端点、同步闭合和坐姿适配，胸臂相交减轻；虎口仍有交叠、手部旧代理峰值有回退。自然扣握仍待完善，保留 LegacyContactGrip 及原模式对照。
 
 ## 当前阶段：P2-B 碰撞感知人物动画（已完成 Editor 实验）
 
