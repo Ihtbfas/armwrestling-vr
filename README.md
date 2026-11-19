@@ -2,7 +2,7 @@
 
 单自由度力反馈扳手腕的正式 Unity/VR 工程。P0 已接管同学交付的 `banshouwan/test1`，保留原场景和代码路径，工程入口就是本仓库根目录。
 
-`main` 是 P0～P1-E 的 Windows Editor 离线演示基线，功能提交为 [`e1a3ad9`](https://github.com/Ihtbfas/armwrestling-vr/commit/e1a3ad92cf3f51bc5c261ddbf6a04712b6e9703a)。公开 clone 可直接使用胶囊模式。本机 P1-E 人物模式包含玩家蒙皮手臂、对手预制动画与 IK、肘部支撑和双手握姿。
+`main` 是 P0～P1-E 的 Windows Editor 离线演示基线，功能提交为 [`e1a3ad9`](https://github.com/Ihtbfas/armwrestling-vr/commit/e1a3ad92cf3f51bc5c261ddbf6a04712b6e9703a)。本分支 P2-C 主场景默认使用 MIT Rocketbox 接触握持，胶囊模式保留回退。本机 P1-E 人物模式包含玩家蒙皮手臂、对手预制动画与 IK、肘部支撑和双手握姿。
 
 ## 最简运行（Windows）
 
@@ -13,7 +13,7 @@
 
 默认使用离线模拟，运行不需要 PC 控制程序、STM32 或头显。桌面自动 OpenXR 初始化默认关闭；PCVR 需自行在 Standalone XR 设置中启用并配置运行时，本轮未验证。
 
-**公开版本**使用原代码已有的胶囊对手和纯色环境回退。人物 FBX、HDRI、字体许可未确认，文件及其原 `.meta` 保留在本机、不上传；有原 ZIP 可按 [恢复说明](docs/third-party-assets.md)还原美术资源，并在主场景 Runtime Bootstrap 勾选 **Use Original Art** 查看原人物/HDRI。原人物的姿态和材质仍需调整，默认关闭此开关。Windows 内置动态字体回退已在本机检查，其他机器/Android 的中文字形仍需复核。
+**胶囊回退**：关闭 Runtime Bootstrap 的 **Use Paired Grip**。原 Ch03 人物 FBX、HDRI、字体许可未确认，文件及其原 `.meta` 保留在本机、不上传；有原 ZIP 可按 [恢复说明](docs/third-party-assets.md)还原美术资源，并在主场景 Runtime Bootstrap 勾选 **Use Original Art** 查看原人物/HDRI。原人物的姿态和材质仍需调整，默认关闭此开关。Windows 内置动态字体回退已在本机检查，其他机器/Android 的中文字形仍需复核。
 
 `ArmWrestlingPreview.unity` 保留作静态摆位参考；它的部分按钮回调未随场景保存，不能代替主场景做完整 Play 演示。不要为了首次运行执行“一键初始化”或重新生成全部场景。
 
@@ -38,17 +38,21 @@
 完整人物模式需要本机的 `Ch03.fbx` 和原 `.meta`，以及从 Ch03 生成的 `P1DLocalPlayerArm.asset`。HDRI 和字体为可选资源。仓库的公开 clone 提供动画和代码，人物原件与衍生网格仅在本机提供。
 
 1. 用原交付 ZIP [恢复本地素材](docs/third-party-assets.md)。如缺少玩家裁切资源，运行 **扳手腕 → P1-D → Prepare Local Player Arm**。
-2. 打开主场景，在 **Runtime Bootstrap** 勾选 **Use Original Art**、**Use Character Motion**、**Use Hand Contact**，然后 Play。关掉 **Use Hand Contact** 可回看 P1-D，关掉 **Use Original Art** 即回到默认胶囊。
+2. 打开主场景，在 **Runtime Bootstrap** 关闭 **Use Paired Grip**，勾选 **Use Original Art**、**Use Character Motion**、**Use Hand Contact**，然后 Play。关掉 **Use Hand Contact** 可回看 P1-D，关掉 **Use Original Art** 即回到默认胶囊。
 
 见 [P1-E 运行、对照与本机证据](docs/P1E-hand-contact-result.md)。
 
 ## P2-A Rocketbox 人物与成对握姿
 
-在主场景 **Runtime Bootstrap** 勾选 **Use Paired Grip** 后 Play。该模式使用随仓库分发的 MIT Rocketbox 人物、原有比赛动画和统一的双手姿态。默认胶囊和本机 P1-E 可继续运行。见 [人物许可、姿态编辑与 Editor 验证](docs/P2A-avatar-and-paired-grip-result.md)。
+在主场景 **Runtime Bootstrap** 勾选 **Use Paired Grip** 后 Play。该模式使用随仓库分发的 MIT Rocketbox 人物、原有比赛动画和统一的双手姿态。胶囊回退和本机 P1-E 可继续运行。见 [人物许可、姿态编辑与 Editor 验证](docs/P2A-avatar-and-paired-grip-result.md)。
 
 ## P2-B 碰撞诊断与修正试验
 
 在 Rocketbox 模式下用 **Paired Collisions** 切换 **Off**、**Diagnose**、**Correct**。**Show Collision Gizmos** 在 Scene 视图显示代理体与分离方向。见 [P2-B 实验、对照与复现](docs/P2B-collision-experiment-result.md)。
+
+## P2-C 主场景接触握持
+
+主场景现在默认启用 Rocketbox 的 **ContactGrip**。指节沿张开到预制握姿的路径闭合，遇接触后停止；原动画和机械握点继续驱动比赛。Runtime Bootstrap 的 **Paired Collisions** 可选 Off／Diagnose／Correct 回看 P2-A／P2-B，关闭 **Use Paired Grip** 使用胶囊。见 [集成结果、限制与证据](docs/P2C-physical-interaction-result.md)。
 
 ## 实际验证与交接
 
@@ -64,7 +68,7 @@ New-Item -ItemType Directory .p0-local -Force | Out-Null
 python tools/check_import.py
 ```
 
-验证命令默认跑胶囊模式。准备好本地人物资源后，追加 `-p0handcontact` 可重跑 P1-E。工具进入实际 Play、调用现有 UI 按钮并检查角度与结算，失败时返回非零退出码。日志和截图保存在 `.p0-local/`。静态 GUID 检查需要先让 UPM 完成解析。
+验证命令默认跑胶囊模式，追加 `-p0contact` 跑主场景 ContactGrip。准备好本地人物资源后，追加 `-p0handcontact` 可重跑 P1-E。工具进入实际 Play、调用现有 UI 按钮并检查角度与结算，失败时返回非零退出码。日志和截图保存在 `.p0-local/`。静态 GUID 检查需要先让 UPM 完成解析。
 
 PC 控制仓库独立维护：[Ihtbfas/armwrestling](https://github.com/Ihtbfas/armwrestling)。UDP 以其 [V0.1 文档](https://github.com/Ihtbfas/armwrestling/blob/main/docs/vr-udp-v01.md)为准。本轮不修改控制仓库或协议。原网络客户端的角色 ID 与当前 PC 人物库尚需对齐，正式联网前先处理交接文档中的问题。
 

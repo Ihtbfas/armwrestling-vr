@@ -2,6 +2,8 @@
 
 > **执行要求：一轮完成“快速调研 → 最小验证 → 选优 → 直接修改主场景 → 回归与交付”**。不要在小实验成功后只提交研究报告并等待下一轮授权。基于 P2-B `6d2bd41`、PR #9（base P2-A，未合并）；工作分支 `feat/p2c-physical-grip-integration`，任务完成后 PR base 应为 `feat/p2b-collision-aware-animation`。
 
+[本轮实施结果](../P2C-physical-interaction-result.md)。已集成接触限制，剩余交叠如实记录。
+
 ## 核心目标
 
 当前 Rocketbox 外观更真实，但握姿仍似钩爪、手—手与上臂—胸部仍明显穿模。P2-B 已配置 44 个代理并可诊断，却只有有限的事后关节纠偏，且让肘活动和单帧跳动增加。

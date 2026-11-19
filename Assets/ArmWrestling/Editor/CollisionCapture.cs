@@ -8,7 +8,7 @@ namespace ArmWrestlingVR.EditorTools
 {
     internal sealed class CollisionCapture : IDisposable
     {
-        internal const string Header = ",hand_proxy_pairs,hand_proxy_max_mm,torso_proxy_pairs,torso_proxy_max_mm,pad_proxy_pairs,pad_proxy_max_mm,digit_adjustment_deg,arm_swivel_deg";
+        internal const string Header = ",hand_proxy_pairs,hand_proxy_max_mm,torso_proxy_pairs,torso_proxy_max_mm,pad_proxy_pairs,pad_proxy_max_mm,digit_adjustment_deg,arm_swivel_deg,stopped_joints,chest_turn_deg,blocked_closure_excess_mm";
         private static readonly CultureInfo Format = CultureInfo.InvariantCulture;
         private readonly AvatarCollisionExperiment experiment;
         private readonly StreamWriter details;
@@ -41,7 +41,7 @@ namespace ArmWrestlingVR.EditorTools
             }
             return Columns(AvatarCollisionExperiment.Region.Hands) + Columns(AvatarCollisionExperiment.Region.Torso)
                 + Columns(AvatarCollisionExperiment.Region.Pads)
-                + string.Format(Format, ",{0:F4},{1:F4}", experiment.MaxFingerCorrection, experiment.ArmCorrection);
+                + string.Format(Format, ",{0:F4},{1:F4},{2},{3:F4},{4:F4}", experiment.MaxFingerCorrection, experiment.ArmCorrection, experiment.StoppedJoints, experiment.ChestTurn, experiment.BlockedClosureExcess * 1000f);
         }
 
         internal void DrawOverlay(Camera camera, Texture2D image, AvatarCollisionExperiment.Region region)

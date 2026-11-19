@@ -69,15 +69,16 @@ namespace ArmWrestlingVR.EditorTools
         {
             try
             {
-                bool paired = HasArgument("-p2a") || HasArgument("-p2b");
+                bool paired = HasArgument("-p2a") || HasArgument("-p2b") || HasArgument("-p2c");
                 if (!paired && Resources.Load<GameObject>("Characters/Ch03") == null)
                     throw new InvalidOperationException("Restore the local Ch03 asset first.");
                 EditorSceneManager.OpenScene(SceneGenerator.MainScenePath, OpenSceneMode.Single);
                 var bootstrap = UnityEngine.Object.FindObjectOfType<RuntimeBootstrap>();
                 bootstrap.useOriginalArt = !paired;
                 bootstrap.usePairedGrip = paired;
-                if (HasArgument("-p2b"))
-                    bootstrap.pairedCollisions = HasArgument("-p2bcorrect") ? PairedCollisionMode.Correct : PairedCollisionMode.Diagnose;
+                bootstrap.pairedCollisions = PairedCollisionMode.Off;
+                if (HasArgument("-p2b") || HasArgument("-p2c"))
+                    bootstrap.pairedCollisions = HasArgument("-p2c") ? PairedCollisionMode.ContactGrip : HasArgument("-p2bcorrect") ? PairedCollisionMode.Correct : PairedCollisionMode.Diagnose;
                 bootstrap.useCharacterMotion = HasArgument("-p1e") || (HasArgument("-p1d") && !HasArgument("-p1dbaseline"));
                 bootstrap.useHandContact = HasArgument("-p1e") && !HasArgument("-p1ebaseline");
                 SessionState.SetBool(ActiveKey, true);
@@ -97,7 +98,7 @@ namespace ArmWrestlingVR.EditorTools
                 if (animator == null) Setup();
                 if (animator == null) return;
 
-                string label = collisionCapture != null ? (HasArgument("-p2bcorrect") ? "corrected" : "baseline")
+                string label = collisionCapture != null ? (HasArgument("-p2c") ? "contact" : HasArgument("-p2bcorrect") ? "corrected" : "baseline")
                     : pairedGripSweep ? "p2a" : handContactSweep ? (HasArgument("-p1ebaseline") ? "p1d" : "p1e")
                     : motionSweep ? (motionBaseline ? "baseline" : "motion")
                     : gripSweep ? (route == 0 ? "baseline" : "grip")
@@ -203,16 +204,16 @@ namespace ArmWrestlingVR.EditorTools
             front = View(app.deviceRoot, new Vector3(-0.28f, 0.82f, -1.42f), new Vector3(0f, 0.18f, 0.34f));
             side = View(app.deviceRoot, new Vector3(-1.98f, 0.43f, 0.35f), new Vector3(-0.07f, -0.15f, 0.33f));
             gripSweep = HasArgument("-p1c");
-            pairedGripSweep = HasArgument("-p2a") || HasArgument("-p2b");
+            pairedGripSweep = HasArgument("-p2a") || HasArgument("-p2b") || HasArgument("-p2c");
             handContactSweep = pairedGripSweep || HasArgument("-p1e");
             motionSweep = handContactSweep || HasArgument("-p1d");
             motionBaseline = HasArgument("-p1dbaseline");
             contactSweep = gripSweep || motionSweep || HasArgument("-p1b");
-            output = Path.GetFullPath(Path.Combine(".p0-local", HasArgument("-p2b") ? "p2b-collision" : pairedGripSweep ? "p2a-avatar" : handContactSweep ? "p1e-hand-contact" : motionSweep ? "p1d-motion"
+            output = Path.GetFullPath(Path.Combine(".p0-local", HasArgument("-p2c") ? "p2c-contact" : HasArgument("-p2b") ? "p2b-collision" : pairedGripSweep ? "p2a-avatar" : handContactSweep ? "p1e-hand-contact" : motionSweep ? "p1d-motion"
                 : gripSweep ? "p1c-grip" : contactSweep ? "p1b-contact" : "p1-animation",
                 DateTime.Now.ToString("yyyyMMdd-HHmmss")));
             Directory.CreateDirectory(output);
-            if (HasArgument("-p2b"))
+            if (HasArgument("-p2b") || HasArgument("-p2c"))
                 collisionCapture = new CollisionCapture(avatar.CollisionExperiment, output, rig.transform);
             target = new RenderTexture(768, 576, 24);
             pixels = new Texture2D(target.width, target.height, TextureFormat.RGB24, false);

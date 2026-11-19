@@ -1,14 +1,16 @@
 # TASKS
 
-## 当前阶段：P2-C 动画与物理接触一轮集成（待执行）
+## 当前阶段：P2-C 动画与物理接触一轮集成（已集成主场景）
 
-- [ ] 从 Unity 官方 XRI、Auto Hand/Hurricane VR、Adaptive Hands 等成熟思路中筛选兼容方案并做最小验证。
-- [ ] 一旦找到实际可行的接触限制/物理响应方法，**同一轮直接接入 ArmWrestlingMain、调试并回归**，不要止步于孤立原型。
-- [ ] 优先改善双手指节/掌面与上臂—躯干的明显穿模，不破坏原单轴握点、预制动画、肘部支撑与人体自然性。
-- [ ] 同机位记录 0°、±30° 和往返真实画面、碰撞/物理响应数据及负面代价，保留 P2-A/P2-B 诊断与胶囊回退。
-- [ ] 交付可切换模式、结果文档、Editor Play 回归和新 PR；不要求对每个小决策再授权。
+- [x] 从 Unity 官方 XRI、Auto Hand/Hurricane VR、Adaptive Hands 等成熟思路中筛选兼容方案并做最小验证。
+- [x] 一旦找到实际可行的接触限制/物理响应方法，**同一轮直接接入 ArmWrestlingMain、调试并回归**，不要止步于孤立原型。
+- [x] 优先改善双手指节/掌面与上臂—躯干的明显穿模，不破坏原单轴握点、预制动画、肘部支撑与人体自然性。
+- [x] 同机位记录 0°、±30° 和往返真实画面、碰撞/物理响应数据及负面代价，保留 P2-A/P2-B 诊断与胶囊回退。
+- [x] 交付可切换模式、结果文档、Editor Play 回归和新 PR；不要求对每个小决策再授权。
 
 [完整任务](docs/tasks/P2C-physics-animation-integrated-implementation.md) · [现成方案参考](docs/research/P2C-physical-interaction-patterns.md)
+
+[本轮结果与复现](docs/P2C-physical-interaction-result.md)。接触闭合已进入主场景，胸臂与掌根仍有交叠，继续保留原模式对照。
 
 ## 当前阶段：P2-B 碰撞感知人物动画（已完成 Editor 实验）
 

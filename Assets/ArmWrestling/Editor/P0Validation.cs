@@ -50,9 +50,15 @@ namespace ArmWrestlingVR.EditorTools
                     if (args[i] == "-p0scene") scenePath = args[i + 1];
                 EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
                 var bootstrap = UnityEngine.Object.FindObjectOfType<RuntimeBootstrap>();
+                if (Array.IndexOf(args, "-p0contact") >= 0)
+                    Require(bootstrap.usePairedGrip && bootstrap.pairedCollisions == PairedCollisionMode.ContactGrip,
+                        "Main scene is not configured for integrated contact grip.");
+                bootstrap.usePairedGrip = false;
+                bootstrap.pairedCollisions = PairedCollisionMode.Off;
                 bool grip = Array.IndexOf(args, "-p0grip") >= 0;
                 bool handContact = Array.IndexOf(args, "-p0handcontact") >= 0;
-                bool collision = Array.IndexOf(args, "-p0collision") >= 0;
+                bool contactGrip = Array.IndexOf(args, "-p0contact") >= 0;
+                bool collision = contactGrip || Array.IndexOf(args, "-p0collision") >= 0;
                 bool paired = collision || Array.IndexOf(args, "-p0pairedgrip") >= 0;
                 if (paired)
                 {
@@ -66,7 +72,7 @@ namespace ArmWrestlingVR.EditorTools
                         "The requested avatar is missing.");
                     bootstrap.useOriginalArt = !paired; // Play copy only; never save the scene.
                     bootstrap.usePairedGrip = paired;
-                    bootstrap.pairedCollisions = collision ? PairedCollisionMode.Correct : PairedCollisionMode.Off;
+                    bootstrap.pairedCollisions = contactGrip ? PairedCollisionMode.ContactGrip : collision ? PairedCollisionMode.Correct : PairedCollisionMode.Off;
                     bootstrap.useExperimentalGrip = grip;
                     bootstrap.useCharacterMotion = motion;
                     bootstrap.useHandContact = handContact;
@@ -75,6 +81,7 @@ namespace ArmWrestlingVR.EditorTools
                 SessionState.SetBool(ActiveKey + ".handContact", handContact);
                 SessionState.SetBool(ActiveKey + ".paired", paired);
                 SessionState.SetBool(ActiveKey + ".collision", collision);
+                SessionState.SetBool(ActiveKey + ".contactGrip", contactGrip);
                 SessionState.SetBool(ActiveKey, true);
                 SessionState.SetString(ActiveKey + ".scene", scenePath);
                 EditorApplication.EnterPlaymode();
@@ -186,9 +193,11 @@ namespace ArmWrestlingVR.EditorTools
                         Require(expectCollision == (experiment != null), "The requested collision mode did not start.");
                         if (expectCollision)
                         {
-                            Require(experiment.Mode == PairedCollisionMode.Correct && experiment.EvaluationCount > 0
+                            Require(experiment.Mode == (SessionState.GetBool(ActiveKey + ".contactGrip", false) ? PairedCollisionMode.ContactGrip : PairedCollisionMode.Correct) && experiment.EvaluationCount > 0
                                 && experiment.MaxFingerCorrection > 0f, "The collision correction did not execute.");
-                            opponent += "\nCollision=Correct, proxies=" + experiment.ProxyCount;
+                            opponent += "\nCollision=" + experiment.Mode + ", proxies=" + experiment.ProxyCount;
+                            if (experiment.Mode == PairedCollisionMode.ContactGrip)
+                                Require(experiment.StoppedJoints > 0 && experiment.BlockedClosureExcess > 0f, "Contact did not limit finger closure.");
                         }
                         opponent += "\nPairedGrip=Rocketbox opponent and player";
                     }

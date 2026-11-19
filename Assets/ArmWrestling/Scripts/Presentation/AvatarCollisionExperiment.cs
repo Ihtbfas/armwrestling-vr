@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 namespace ArmWrestlingVR
 {
-    public enum PairedCollisionMode { Off, Diagnose, Correct }
+    public enum PairedCollisionMode { Off, Diagnose, Correct, ContactGrip }
 
     // The active query colliders belong to an isolated, unsimulated physics scene.
     // ComputePenetration takes the actual bone poses explicitly.
@@ -62,6 +62,8 @@ namespace ArmWrestlingVR
         internal void Bind(VirtualArmRig rig, Animator opponentAnimator, PlayerArmVisual playerArm)
         {
             player = playerArm;
+            bodyAnimator = opponentAnimator;
+            chestJoint = Bone(opponentAnimator, HumanBodyBones.Chest);
             deviceFrame = rig.transform;
             opponentShoulder = Bone(opponentAnimator, HumanBodyBones.RightUpperArm);
             opponentWrist = Bone(opponentAnimator, HumanBodyBones.RightHand);
@@ -182,6 +184,7 @@ namespace ArmWrestlingVR
             EvaluationCount++;
             foreach (var proxy in proxies) proxy.pose = proxy.sample();
             if (mode == PairedCollisionMode.Correct) CorrectPose();
+            if (mode == PairedCollisionMode.ContactGrip) SolveContactGrip();
             CollectContacts();
         }
 

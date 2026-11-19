@@ -152,6 +152,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   verbose: 1
+  useOriginalArt: 0
+  useCharacterMotion: 0
+  useHandContact: 0
+  usePairedGrip: 1
+  pairedCollisions: 3
+  showCollisionGizmos: 0
 --- !u!4 &1452332916
 Transform:
   m_ObjectHideFlags: 0
