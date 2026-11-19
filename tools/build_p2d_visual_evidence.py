@@ -59,6 +59,9 @@ def main():
                 manifest["source_keyframes"][str(source.relative_to(ROOT).as_posix())] = digest(source)
         path = output / f"keyframes-{view}.png"
         sheet.save(path, optimize=True)
+        while path.stat().st_size >= 1024 * 1024 and sheet.width > 900:
+            sheet = sheet.resize((round(sheet.width * 0.9), round(sheet.height * 0.9)), Image.Resampling.LANCZOS)
+            sheet.save(path, optimize=True)
         manifest["files"][path.name] = {"angles": [-30, 0, 30], "camera": stem, "layout": "before left / after right"}
     for view, sequence in (("hands", "e"), ("body-front", "wide-front"), ("body-side", "wide-side")):
         path = output / f"{view}-motion.gif"
@@ -71,7 +74,8 @@ def main():
         info.update(bytes=path.stat().st_size, sha256=digest(path))
         print(name, info["bytes"])
     shutil.copyfile(ROOT / "Assets/ArmWrestling/Resources/P2A/ROCKETBOX-LICENSE.txt", output / "ROCKETBOX-LICENSE.txt")
-    shutil.copyfile(font_path.with_name("LICENSE_DEJAVU"), output / "DEJAVU-LICENSE.txt")
+    (output / "DEJAVU-LICENSE.txt").write_text(
+        "\n".join(line.rstrip() for line in font_path.with_name("LICENSE_DEJAVU").read_text(encoding="utf-8").splitlines()) + "\n", encoding="utf-8")
     (output / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
 

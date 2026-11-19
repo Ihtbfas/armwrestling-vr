@@ -40,3 +40,6 @@ Thumbs.db
 # P2-D local Humanoid profiles reference withheld Ch03; never publish.
 /Assets/ArmWrestling/Resources/P2DLocal/
 /Assets/ArmWrestling/Resources/P2DLocal.meta
+
+# Python evidence tools
+/tools/__pycache__/
