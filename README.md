@@ -2,7 +2,7 @@
 
 单自由度力反馈扳手腕的正式 Unity/VR 工程。P0 已接管同学交付的 `banshouwan/test1`，保留原场景和代码路径，工程入口就是本仓库根目录。
 
-`main` 是 P0～P1-E 的 Windows Editor 离线演示基线，功能提交为 [`e1a3ad9`](https://github.com/Ihtbfas/armwrestling-vr/commit/e1a3ad92cf3f51bc5c261ddbf6a04712b6e9703a)。本分支 P2-C 主场景默认使用 MIT Rocketbox 接触握持，胶囊模式保留回退。本机 P1-E 人物模式包含玩家蒙皮手臂、对手预制动画与 IK、肘部支撑和双手握姿。
+`main` 是 P0～P1-E 的 Windows Editor 离线演示基线，功能提交为 [`e1a3ad9`](https://github.com/Ihtbfas/armwrestling-vr/commit/e1a3ad92cf3f51bc5c261ddbf6a04712b6e9703a)。本分支 P2-D 主场景默认使用 Humanoid 通用握姿与 MIT Rocketbox 人物（自然扣握尚未验收），胶囊模式保留回退。本机 P1-E 人物模式包含玩家蒙皮手臂、对手预制动画与 IK、肘部支撑和双手握姿。
 
 ## 最简运行（Windows）
 
@@ -13,7 +13,7 @@
 
 默认使用离线模拟，运行不需要 PC 控制程序、STM32 或头显。桌面自动 OpenXR 初始化默认关闭；PCVR 需自行在 Standalone XR 设置中启用并配置运行时，本轮未验证。
 
-**胶囊回退**：关闭 Runtime Bootstrap 的 **Use Paired Grip**。原 Ch03 人物 FBX、HDRI、字体许可未确认，文件及其原 `.meta` 保留在本机、不上传；有原 ZIP 可按 [恢复说明](docs/third-party-assets.md)还原美术资源，并在主场景 Runtime Bootstrap 勾选 **Use Original Art** 查看原人物/HDRI。原人物的姿态和材质仍需调整，默认关闭此开关。Windows 内置动态字体回退已在本机检查，其他机器/Android 的中文字形仍需复核。
+**胶囊回退**：关闭 Runtime Bootstrap 的 **Use Humanoid Grip**、**Use Paired Grip** 和 **Use Original Art**。原 Ch03 人物 FBX、HDRI、字体许可未确认，文件及其原 `.meta` 保留在本机、不上传；有原 ZIP 可按 [恢复说明](docs/third-party-assets.md)还原美术资源，并在主场景 Runtime Bootstrap 勾选 **Use Original Art** 查看原人物/HDRI。原人物的姿态和材质仍需调整，默认关闭此开关。Windows 内置动态字体回退已在本机检查，其他机器/Android 的中文字形仍需复核。
 
 `ArmWrestlingPreview.unity` 保留作静态摆位参考；它的部分按钮回调未随场景保存，不能代替主场景做完整 Play 演示。不要为了首次运行执行“一键初始化”或重新生成全部场景。
 
@@ -50,11 +50,17 @@
 
 在 Rocketbox 模式下用 **Paired Collisions** 切换 **Off**、**Diagnose**、**Correct**。**Show Collision Gizmos** 在 Scene 视图显示代理体与分离方向。见 [P2-B 实验、对照与复现](docs/P2B-collision-experiment-result.md)。
 
+## P2-D 跨人物握姿
+
+主场景已接入共享 `HumanoidGripDefinition` 与独立玩家/对手 `GripAvatarProfile`。可在 Runtime Bootstrap 选择人物配置，无需改 C#；Rocketbox 与本机 Ch03 两套不同骨架均已实际 Editor 扫角及比赛回归。人物切换、骨映射要求、几何限制见 [P2-D 结果](docs/P2D-cross-avatar-grip-result.md)，真实 PNG/GIF 见 [公开画廊](docs/validation/p2d-visual/README.md)。**松握、指节交错及部分肘垫/胸臂问题仍在，跨骨架运行通过不等于自然握姿完成。**
+
+以下历史 P2-A～P2-C / P1-E 模式先关闭 **Use Humanoid Grip** 再使用原开关；P2-C 与胶囊回退均保留。原有 P2-C 画廊未覆盖。
+
 ## P2-C 主场景接触握持
 
 可在 GitHub 直接查看 [P2-C 视觉画廊：零位、±30° 与连续 GIF](docs/validation/p2c-visual/README.md)。PNG 左旧右新，GIF 上旧下新；仍可看到虎口穿模和坐姿的剩余问题。
 
-主场景现在默认启用 Rocketbox 的 **ContactGrip**。使用可编辑 open/closed 配对端点、同步接触闭合和工作肘侧坐姿；原动画和机械握点继续驱动比赛。虎口仍有交叠，尚未完成自然握姿。Runtime Bootstrap 的 **Paired Collisions** 可选 LegacyContactGrip 回看首轮 P2-C，或 Off／Diagnose／Correct 回看 P2-A／P2-B，关闭 **Use Paired Grip** 使用胶囊。见 [集成结果、限制与证据](docs/P2C-physical-interaction-result.md)。
+关闭新 **Use Humanoid Grip** 后，**Use Paired Grip + ContactGrip** 可回看原 P2-C。使用可编辑 open/closed 配对端点、同步接触闭合和工作肘侧坐姿；原动画和机械握点继续驱动比赛。虎口仍有交叠，尚未完成自然握姿。Runtime Bootstrap 的 **Paired Collisions** 可选 LegacyContactGrip 回看首轮 P2-C，或 Off／Diagnose／Correct 回看 P2-A／P2-B，关闭 **Use Paired Grip** 使用胶囊。见 [集成结果、限制与证据](docs/P2C-physical-interaction-result.md)。
 
 ## 实际验证与交接
 

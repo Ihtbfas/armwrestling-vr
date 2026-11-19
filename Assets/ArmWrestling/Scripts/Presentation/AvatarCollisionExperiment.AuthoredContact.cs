@@ -16,6 +16,16 @@ namespace ArmWrestlingVR
         public double MaxContactSolveMilliseconds { get; private set; }
         public bool reverseContactOrder;
         public float OpenContactDepth { get; private set; }
+        public float InitialRootContactDepth { get; private set; }
+        public float FinalRootContactDepth { get; private set; }
+        private float RootContactDepth()
+        {
+            float max = 0f;
+            if (Overlap(playerContactPalm,opponentContactPalm,out _,out float palm)) max = palm;
+            if (Overlap(playerHand[1],opponentContactPalm,out _,out float a)) max = Mathf.Max(max,a);
+            if (Overlap(opponentHand[1],playerContactPalm,out _,out float b)) max = Mathf.Max(max,b);
+            return max;
+        }
         public double ContactBuildMilliseconds { get; private set; }
         public int ContactBuildQueries { get; private set; }
         private Vector3 contactRelativePosition;
@@ -78,6 +88,7 @@ namespace ArmWrestlingVR
 
         private void BuildContact()
         {
+            if (UsesHumanoidAdapter) { BuildHumanoidContact(); return; }
             ContactBuilds++;
             StoppedJoints = 0; BlockedClosureExcess = 0f; ChestTurn = 0f;
             Array.Clear(blocked, 0, blocked.Length);
@@ -86,6 +97,7 @@ namespace ArmWrestlingVR
             ApplyClosure();
             UpdatePairDepths();
             float startingDepth = OpenContactDepth;
+            InitialRootContactDepth = RootContactDepth();
             // All ten digits propose the same step before any collision is queried.
             // Decisions use that shared pose and are rolled back together. No hand wins by order.
             for (int step = 1; step <= 16; step++)
@@ -122,6 +134,7 @@ namespace ArmWrestlingVR
                 UpdatePairDepths();
             }
             OpenContactDepth = startingDepth;
+            FinalRootContactDepth = RootContactDepth();
             for (int i = 0; i < 15; i++)
             {
                 contactPlayer[i] = playerHand[i + 1].joint.localRotation;

@@ -14,6 +14,7 @@ namespace ArmWrestlingVR
         private Material material, sleeveMaterial;
         private Mesh sleeveMesh, ownedCrop;
         private PairedGripPose.Hand pairedGrip;
+        private GripAvatarProfile avatarProfile;
         private Vector3 palmFromWrist;
         private readonly Transform[] fingers = new Transform[15];
         public SkinnedMeshRenderer Skin { get; private set; }
@@ -28,12 +29,12 @@ namespace ArmWrestlingVR
             return Create(rig, prefab, Resources.Load<Mesh>(MeshResource), null);
         }
 
-        internal static PlayerArmVisual TryCreatePaired(VirtualArmRig rig, GameObject prefab, PairedGripPose.Hand pose)
+        internal static PlayerArmVisual TryCreatePaired(VirtualArmRig rig, GameObject prefab, PairedGripPose.Hand pose, float scale = PairedGripPose.AvatarScale, GripAvatarProfile profile = null)
         {
-            return Create(rig, prefab, null, pose);
+            return Create(rig, prefab, null, pose, scale, profile);
         }
 
-        private static PlayerArmVisual Create(VirtualArmRig rig, GameObject prefab, Mesh mesh, PairedGripPose.Hand pose)
+        private static PlayerArmVisual Create(VirtualArmRig rig, GameObject prefab, Mesh mesh, PairedGripPose.Hand pose, float scale = PairedGripPose.AvatarScale, GripAvatarProfile profile = null)
         {
             if (rig == null || rig.playerArm == null || prefab == null || (mesh == null && pose == null))
             {
@@ -41,10 +42,11 @@ namespace ArmWrestlingVR
                 return null;
             }
             GameObject model = Instantiate(prefab, rig.transform, false);
-            model.name = pose != null ? "Player right arm (Rocketbox)" : "Player right arm (local Ch03)";
-            model.transform.localScale = (pose != null ? PairedGripPose.AvatarScale : 1.12f) * Vector3.one;
+            model.name = pose != null ? "Player right arm (Humanoid)" : "Player right arm (local Ch03)";
+            model.transform.localScale = (pose != null ? scale : 1.12f) * Vector3.one;
             var visual = model.AddComponent<PlayerArmVisual>();
             visual.pairedGrip = pose;
+            visual.avatarProfile = profile;
             if (!visual.Bind(mesh))
             {
                 model.SetActive(false);
@@ -224,7 +226,7 @@ namespace ArmWrestlingVR
 
         private void SolveArm(Transform frame, Vector3 targetWrist, Quaternion rotation)
         {
-            Vector3 shoulder = frame.TransformPoint(new Vector3(0.19f, 0.19f, -0.34f));
+            Vector3 shoulder = frame.TransformPoint(avatarProfile != null ? avatarProfile.playerShoulder : new Vector3(0.19f,0.19f,-0.34f));
             Vector3 pad = Pad(frame);
             if (UsesPairedGrip)
             {
@@ -245,7 +247,7 @@ namespace ArmWrestlingVR
         private float PlayerSupport(Transform frame, Vector3 wrist, out Vector3 elbow)
         {
             elbow = default;
-            const float boneY = 0.073f;
+            float boneY = avatarProfile != null ? avatarProfile.playerSupportHeight : 0.073f;
             Vector3 local = frame.InverseTransformPoint(wrist);
             float radius = foreLength / frame.lossyScale.x;
             float dy = local.y - boneY;

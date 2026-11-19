@@ -36,3 +36,7 @@ Thumbs.db
 /Assets/ArmWrestling/Resources/Characters/Ch03.fbx*
 /Assets/ArmWrestling/Resources/Characters/P1DLocalPlayerArm.asset*
 /Assets/ArmWrestling/Resources/HDRI/circus_arena.hdr*
+
+# P2-D local Humanoid profiles reference withheld Ch03; never publish.
+/Assets/ArmWrestling/Resources/P2DLocal/
+/Assets/ArmWrestling/Resources/P2DLocal.meta

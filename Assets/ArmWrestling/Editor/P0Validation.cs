@@ -53,11 +53,20 @@ namespace ArmWrestlingVR.EditorTools
                 if (Array.IndexOf(args, "-p0contact") >= 0)
                     Require(bootstrap.usePairedGrip && bootstrap.pairedCollisions == PairedCollisionMode.ContactGrip,
                         "Main scene is not configured for integrated contact grip.");
+                if (Array.IndexOf(args,"-p0cross") >= 0)
+                    Require(bootstrap.useHumanoidGrip && bootstrap.humanoidGrip != null && bootstrap.playerAvatar != null && bootstrap.opponentAvatar != null,
+                        "Main scene has no integrated Humanoid profiles.");
+                bootstrap.useHumanoidGrip = false;
                 bootstrap.usePairedGrip = false;
                 bootstrap.pairedCollisions = PairedCollisionMode.Off;
                 bool grip = Array.IndexOf(args, "-p0grip") >= 0;
                 bool handContact = Array.IndexOf(args, "-p0handcontact") >= 0;
-                bool contactGrip = Array.IndexOf(args, "-p0contact") >= 0;
+                bool cross = Array.IndexOf(args,"-p0cross") >= 0;
+                bool crossLocal = Array.IndexOf(args,"-p0crosslocal") >= 0;
+                bool crossMixed = Array.IndexOf(args,"-p0crossmixed") >= 0;
+                bool crossFallback = Array.IndexOf(args,"-p0crossfallback") >= 0;
+                bool requestCross = cross || crossLocal || crossMixed || crossFallback;
+                bool contactGrip = requestCross || Array.IndexOf(args, "-p0contact") >= 0;
                 bool legacyContact = Array.IndexOf(args, "-p0contactlegacy") >= 0;
                 bool missingContact = Array.IndexOf(args, "-p0contactfallback") >= 0;
                 if (missingContact) Require(Resources.Load<PairedGripPose>(PairedGripPose.ContactPoseResource) == null,
@@ -81,6 +90,17 @@ namespace ArmWrestlingVR.EditorTools
                     bootstrap.useCharacterMotion = motion;
                     bootstrap.useHandContact = handContact;
                 }
+                if (requestCross)
+                {
+                    Require(bootstrap.humanoidGrip != null,"The main scene has no common Humanoid grip.");
+                    bootstrap.useHumanoidGrip = true;
+                    bootstrap.playerAvatar = Resources.Load<GripAvatarProfile>(crossLocal ? "P2DLocal/Ch03Profile" : "P2D/RocketboxProfile");
+                    bootstrap.opponentAvatar = Resources.Load<GripAvatarProfile>((crossLocal || crossMixed) ? "P2DLocal/Ch03Profile" : "P2D/RocketboxProfile");
+                    Require(bootstrap.playerAvatar != null && bootstrap.opponentAvatar != null,"Requested profiles not found.");
+                    if (crossFallback) bootstrap.opponentAvatar = ScriptableObject.CreateInstance<GripAvatarProfile>();
+                }
+                SessionState.SetBool(ActiveKey + ".cross", requestCross && !crossFallback);
+                SessionState.SetBool(ActiveKey + ".crossLocal", crossLocal || crossMixed);
                 SessionState.SetBool(ActiveKey + ".motion", motion);
                 SessionState.SetBool(ActiveKey + ".handContact", handContact);
                 SessionState.SetBool(ActiveKey + ".paired", paired);
@@ -191,8 +211,8 @@ namespace ArmWrestlingVR.EditorTools
                     if (paired)
                     {
                         Require(app.armRig.playerVisual.HasSleeve, "Rocketbox sleeve is missing.");
-                        Require(app.armRig.playerVisual.Skin.sharedMaterial.mainTexture != null,
-                            "Rocketbox skin texture is missing.");
+                        if (!SessionState.GetBool(ActiveKey + ".crossLocal",false))
+                            Require(app.armRig.playerVisual.Skin.sharedMaterial.mainTexture != null,"Public avatar skin texture is missing.");
                         bool expectCollision = SessionState.GetBool(ActiveKey + ".collision", false);
                         var experiment = model.CollisionExperiment;
                         Require(expectCollision == (experiment != null), "The requested collision mode did not start.");
@@ -203,7 +223,11 @@ namespace ArmWrestlingVR.EditorTools
                             opponent += "\nCollision=" + experiment.Mode + ", proxies=" + experiment.ProxyCount;
                             if (experiment.Mode == PairedCollisionMode.ContactGrip || experiment.Mode == PairedCollisionMode.LegacyContactGrip)
                                 Require(experiment.StoppedJoints > 0 && experiment.BlockedClosureExcess > 0f, "Contact did not limit finger closure.");
-                            if (experiment.Mode == PairedCollisionMode.ContactGrip)
+                            bool expectedCross = SessionState.GetBool(ActiveKey + ".cross",false);
+                            Require(experiment.UsesHumanoidAdapter == expectedCross,"Requested Avatar resolver did not execute or fall back correctly.");
+                            if (expectedCross)
+                                opponent += "\nHumanoidGrip=Common definition, profile-selected player/opponent, 15 fingers each";
+                            if (experiment.Mode == PairedCollisionMode.ContactGrip && !expectedCross)
                             {
                                 var contact = Resources.Load<PairedGripPose>(PairedGripPose.ContactPoseResource);
                                 Require(contact != null && contact.HasContactEndpoints && experiment.ContactBuilds > 0
@@ -213,7 +237,12 @@ namespace ArmWrestlingVR.EditorTools
                                 opponent += "\nContact=Authored endpoints, cached simultaneous closure";
                             }
                         }
-                        opponent += "\nPairedGrip=Rocketbox opponent and player";
+                        opponent += "\nPairedGrip=Humanoid opponent and player";
+                        if (SessionState.GetBool(ActiveKey + ".cross",false))
+                        {
+                            var config = UnityEngine.Object.FindObjectOfType<RuntimeBootstrap>();
+                            opponent += "\nProfiles=" + config.playerAvatar.name + "/" + config.opponentAvatar.name;
+                        }
                     }
                     Require(sawContestClip, "The contest clip did not play during the simulated match.");
                     bool expectedContact = SessionState.GetBool(ActiveKey + ".handContact", false);

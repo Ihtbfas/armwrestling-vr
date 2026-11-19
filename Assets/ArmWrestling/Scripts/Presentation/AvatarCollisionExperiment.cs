@@ -60,9 +60,13 @@ namespace ArmWrestlingVR
         private Scene queryScene;
         private Proxy playerElbow, opponentElbow, playerPad, opponentPad;
 
-        internal void Bind(VirtualArmRig rig, Animator opponentAnimator, PlayerArmVisual playerArm)
+        public bool UsesHumanoidAdapter { get; private set; }
+
+        internal void Bind(VirtualArmRig rig, Animator opponentAnimator, PlayerArmVisual playerArm, PairedGripPose resolvedPose = null)
         {
             player = playerArm;
+            contactPose = resolvedPose;
+            UsesHumanoidAdapter = resolvedPose != null;
             bodyAnimator = opponentAnimator;
             chestJoint = Bone(opponentAnimator, HumanBodyBones.Chest);
             deviceFrame = rig.transform;
@@ -85,11 +89,12 @@ namespace ArmWrestlingVR
             opponentPad = ExistingPad(rig.transform, "Opponent Elbow Pad");
 
             // A known overlap must work before reporting zero live contacts.
+            float radii = ((SphereCollider)playerElbow.shape).radius + ((SphereCollider)opponentElbow.shape).radius;
             if (!Physics.ComputePenetration(playerElbow.shape, Vector3.zero, Quaternion.identity,
-                    opponentElbow.shape, Vector3.right * 0.05f, Quaternion.identity, out _, out float testDepth)
-                || Mathf.Abs(testDepth - 0.018f) > 0.0002f
+                    opponentElbow.shape, Vector3.right * (radii * 0.75f), Quaternion.identity, out _, out float testDepth)
+                || Mathf.Abs(testDepth - radii * 0.25f) > 0.0002f
                 || Physics.ComputePenetration(playerElbow.shape, Vector3.zero, Quaternion.identity,
-                    opponentElbow.shape, Vector3.right * 0.08f, Quaternion.identity, out _, out _))
+                    opponentElbow.shape, Vector3.right * (radii * 1.2f), Quaternion.identity, out _, out _))
                 throw new InvalidOperationException("Paired collision query self-check failed.");
         }
 
@@ -99,7 +104,7 @@ namespace ArmWrestlingVR
             var fingers = PairedGripPose.MapFingers(animator);
             float palmLength = Vector3.Distance(wrist.position, fingers[6].position);
             float palmWidth = Vector3.Distance(fingers[3].position, fingers[12].position);
-            hand.Add(Box(label + " palm", new Vector3(palmWidth * 0.94f, 0.023f, palmLength * 0.76f), () =>
+            hand.Add(Box(label + " palm", new Vector3(palmWidth * 0.94f, UsesHumanoidAdapter ? (animator == bodyAnimator ? contactPose.opponent : contactPose.player).palmThickness : 0.023f, palmLength * 0.76f), () =>
             {
                 Vector3 forward = (fingers[6].position - wrist.position).normalized;
                 Vector3 dorsal = Vector3.Cross(fingers[3].position - fingers[12].position, forward).normalized;
@@ -117,7 +122,8 @@ namespace ArmWrestlingVR
                 {
                     Transform from = fingers[offset + segment];
                     string name = label + " " + digits[digit] + " " + segments[segment];
-                    float radius = proximalRadii[digit] * (1f - segment * 0.12f);
+                    float proximal = UsesHumanoidAdapter ? Vector3.Distance(fingers[offset].position, fingers[offset + 1].position) * 0.27f : proximalRadii[digit];
+                    float radius = proximal * (1f - segment * 0.12f) * (UsesHumanoidAdapter ? (animator == bodyAnimator ? contactPose.opponent : contactPose.player).collisionRadiusScale : 1f);
                     if (segment < 2)
                     {
                         Transform to = fingers[offset + segment + 1];
@@ -139,11 +145,11 @@ namespace ArmWrestlingVR
             Transform elbow = Bone(animator, right ? HumanBodyBones.RightLowerArm : HumanBodyBones.LeftLowerArm);
             Transform wrist = Bone(animator, right ? HumanBodyBones.RightHand : HumanBodyBones.LeftHand);
             // Trim the shoulder attachment and wrist ends before testing against the chest.
-            arms.Add(Capsule(label + " upper arm", shoulder, elbow, 0.043f, 0.30f, 0.88f));
-            arms.Add(Capsule(label + " forearm", elbow, wrist, 0.031f, 0.11f, 0.82f));
+            arms.Add(Capsule(label + " upper arm", shoulder, elbow, UsesHumanoidAdapter ? Vector3.Distance(shoulder.position,elbow.position)*0.16f : 0.043f, 0.30f, 0.88f));
+            arms.Add(Capsule(label + " forearm", elbow, wrist, UsesHumanoidAdapter ? Vector3.Distance(elbow.position,wrist.position)*0.12f : 0.031f, 0.11f, 0.82f));
             if (!right) return null;
             var shape = Make<SphereCollider>(label + " elbow");
-            shape.radius = 0.034f;
+            shape.radius = UsesHumanoidAdapter ? Vector3.Distance(shoulder.position,elbow.position)*0.126f : 0.034f;
             return Register(shape, () => new Pose(elbow.position, Quaternion.identity), elbow);
         }
 
@@ -160,12 +166,13 @@ namespace ArmWrestlingVR
                 var up = (neck.position - spine.position).normalized;
                 return Quaternion.LookRotation(Vector3.Cross(rightward(), up), up);
             }
-            torso.Add(Box("Opponent chest", new Vector3(0.304f, 0.220f, 0.160f), () =>
+            float sizeScale = UsesHumanoidAdapter ? Vector3.Distance(Bone(animator,HumanBodyBones.LeftUpperArm).position, Bone(animator,HumanBodyBones.RightUpperArm).position) / 0.4f : 1f;
+            torso.Add(Box("Opponent chest", sizeScale * new Vector3(0.304f, 0.220f, 0.160f), () =>
             {
                 Quaternion q = rotation();
                 return new Pose(Vector3.Lerp(chest.position, neck.position, 0.49f) + q * new Vector3(0f, -0.015f, 0.014f), q);
             }));
-            torso.Add(Box("Opponent abdomen", new Vector3(0.242f, 0.203f, 0.146f), () =>
+            torso.Add(Box("Opponent abdomen", sizeScale * new Vector3(0.242f, 0.203f, 0.146f), () =>
             {
                 Quaternion q = rotation();
                 return new Pose(Vector3.Lerp(spine.position, chest.position, 0.30f) + q * new Vector3(0f, -0.018f, 0.018f), q);

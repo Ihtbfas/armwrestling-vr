@@ -17,6 +17,11 @@ namespace ArmWrestlingVR
         [Serializable]
         public sealed class Hand
         {
+            public float palmLength, palmWidth, palmThickness;
+            public float collisionRadiusScale = 1f;
+            public Vector3[] palmContactPoints = Array.Empty<Vector3>();
+            public Vector3 thumbRootStart, thumbRootEnd;
+            public float thumbRootRadius;
             public Vector3 wristPosition;
             public Quaternion wristRotation = Quaternion.identity;
             public Quaternion[] fingerRotations = new Quaternion[FingerCount];

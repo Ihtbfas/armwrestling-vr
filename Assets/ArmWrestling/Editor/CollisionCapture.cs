@@ -8,7 +8,7 @@ namespace ArmWrestlingVR.EditorTools
 {
     internal sealed class CollisionCapture : IDisposable
     {
-        internal const string Header = ",hand_proxy_pairs,hand_proxy_max_mm,torso_proxy_pairs,torso_proxy_max_mm,pad_proxy_pairs,pad_proxy_max_mm,digit_adjustment_deg,arm_swivel_deg,stopped_joints,chest_turn_deg,blocked_closure_excess_mm,contact_builds,closure_queries,contact_solve_ms,contact_build_ms,contact_build_queries,open_contact_depth_mm,contact_init_peak_ms,evaluation_ms";
+        internal const string Header = ",hand_proxy_pairs,hand_proxy_max_mm,torso_proxy_pairs,torso_proxy_max_mm,pad_proxy_pairs,pad_proxy_max_mm,digit_adjustment_deg,arm_swivel_deg,stopped_joints,chest_turn_deg,blocked_closure_excess_mm,contact_builds,closure_queries,contact_solve_ms,contact_build_ms,contact_build_queries,open_contact_depth_mm,contact_init_peak_ms,evaluation_ms,initial_root_contact_mm,final_root_contact_mm";
         private static readonly CultureInfo Format = CultureInfo.InvariantCulture;
         private readonly AvatarCollisionExperiment experiment;
         private readonly StreamWriter details;
@@ -41,7 +41,7 @@ namespace ArmWrestlingVR.EditorTools
             }
             return Columns(AvatarCollisionExperiment.Region.Hands) + Columns(AvatarCollisionExperiment.Region.Torso)
                 + Columns(AvatarCollisionExperiment.Region.Pads)
-                + string.Format(Format, ",{0:F4},{1:F4},{2},{3:F4},{4:F4},{5},{6},{7:F4},{8:F4},{9},{10:F4},{11:F4},{12:F4}", experiment.MaxFingerCorrection, experiment.ArmCorrection, experiment.StoppedJoints, experiment.ChestTurn, experiment.BlockedClosureExcess * 1000f, experiment.ContactBuilds, experiment.ClosureQueries, experiment.ContactSolveMilliseconds, experiment.ContactBuildMilliseconds, experiment.ContactBuildQueries, experiment.OpenContactDepth * 1000f, experiment.MaxContactSolveMilliseconds, experiment.EvaluationMilliseconds);
+                + string.Format(Format, ",{0:F4},{1:F4},{2},{3:F4},{4:F4},{5},{6},{7:F4},{8:F4},{9},{10:F4},{11:F4},{12:F4},{13:F4},{14:F4}", experiment.MaxFingerCorrection, experiment.ArmCorrection, experiment.StoppedJoints, experiment.ChestTurn, experiment.BlockedClosureExcess * 1000f, experiment.ContactBuilds, experiment.ClosureQueries, experiment.ContactSolveMilliseconds, experiment.ContactBuildMilliseconds, experiment.ContactBuildQueries, experiment.OpenContactDepth * 1000f, experiment.MaxContactSolveMilliseconds, experiment.EvaluationMilliseconds, experiment.InitialRootContactDepth*1000f, experiment.FinalRootContactDepth*1000f);
         }
 
         internal void DrawOverlay(Camera camera, Texture2D image, AvatarCollisionExperiment.Region region)

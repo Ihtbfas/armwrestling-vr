@@ -27,6 +27,15 @@ namespace ArmWrestlingVR
         [Tooltip("P2-B。仅用于 Rocketbox 配对握姿。可只诊断，或在诊断基础上修正。")]
         public PairedCollisionMode pairedCollisions;
         public bool showCollisionGizmos;
+        public bool useHumanoidGrip;
+        public HumanoidGripDefinition humanoidGrip;
+        public GripAvatarProfile playerAvatar, opponentAvatar;
+        private PairedGripPose resolvedGrip;
+
+        private void OnDestroy()
+        {
+            if (resolvedGrip != null) Destroy(resolvedGrip);
+        }
 
         private void Awake()
         {
@@ -40,6 +49,7 @@ namespace ArmWrestlingVR
             // Optional art is restored locally with its original GUIDs. Decide before
             // BuildArms so a public checkout keeps both capsule arms when art is absent.
             var effectiveCollisions = pairedCollisions;
+            ArenaFactory.PairedProfile = null;
             var pair = usePairedGrip ? Resources.Load<PairedGripPose>(PairedGripPose.PoseResource) : null;
             if (pair != null && pairedCollisions == PairedCollisionMode.ContactGrip)
             {
@@ -51,8 +61,22 @@ namespace ArmWrestlingVR
                     Debug.LogWarning("[P2-C] Authored contact pose is missing or incomplete. Using the legacy paired grip and solver.");
                 }
             }
+            if (useHumanoidGrip)
+            {
+                try
+                {
+                    resolvedGrip = HumanoidGripBuilder.Build(humanoidGrip, playerAvatar, opponentAvatar, out _, out _);
+                    pair = resolvedGrip;
+                    ArenaFactory.PairedProfile = opponentAvatar;
+                    effectiveCollisions = PairedCollisionMode.ContactGrip;
+                }
+                catch (System.Exception error)
+                {
+                    Debug.LogWarning("[P2-D] Humanoid profile could not bind; using the selected P2-C/capsule fallback. " + error.Message);
+                }
+            }
             var rocketbox = pair != null && pair.IsComplete
-                ? Resources.Load<GameObject>(PairedGripPose.AvatarResource) : null;
+                ? (ArenaFactory.PairedProfile != null ? opponentAvatar.prefab : Resources.Load<GameObject>(PairedGripPose.AvatarResource)) : null;
             var rocketAnimator = rocketbox != null ? rocketbox.GetComponent<Animator>() : null;
             ArenaFactory.PairedAvatar = rocketAnimator != null && rocketAnimator.isHuman && rocketAnimator.avatar.isValid
                 ? rocketbox : null;
@@ -67,13 +91,17 @@ namespace ArmWrestlingVR
             if (ArenaFactory.PairedAvatar != null)
             {
                 var opponent = app.deviceRoot.GetComponentInChildren<OpponentAvatar>();
-                app.armRig.playerVisual = PlayerArmVisual.TryCreatePaired(app.armRig, ArenaFactory.PairedAvatar, pair.player);
+                app.armRig.playerVisual = PlayerArmVisual.TryCreatePaired(app.armRig,
+                    ArenaFactory.PairedProfile != null ? playerAvatar.prefab : ArenaFactory.PairedAvatar, pair.player,
+                    ArenaFactory.PairedProfile != null ? playerAvatar.modelScale : PairedGripPose.AvatarScale,
+                    ArenaFactory.PairedProfile != null ? playerAvatar : null);
                 if (opponent != null && app.armRig.playerVisual != null)
                 {
                     opponent.EnableCharacterMotion(app, false);
                     opponent.SetPairedGrip(pair.opponent);
+                    if (ArenaFactory.PairedProfile != null) opponent.SetGripProfile(opponentAvatar);
                     if (effectiveCollisions != PairedCollisionMode.Off)
-                        opponent.EnableCollisionExperiment(app.armRig, effectiveCollisions, showCollisionGizmos);
+                        opponent.EnableCollisionExperiment(app.armRig, effectiveCollisions, showCollisionGizmos, resolvedGrip);
                 }
                 app.armRig.ApplyAngle(0f);
             }

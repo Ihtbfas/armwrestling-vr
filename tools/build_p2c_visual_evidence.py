@@ -24,21 +24,21 @@ def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def pair(before, after, stem, frame, font):
+def pair(before, after, stem, frame, font, labels=("BEFORE 41ef8ae", "AFTER 2370f43")):
     images = [Image.open(folder / f"{stem}-{frame:03d}.png").convert("RGB")
               for folder in (before, after)]
     assert images[0].size == images[1].size == (768, 576)
     output = Image.new("RGB", (1536, 612), BACKGROUND)
     draw = ImageDraw.Draw(output)
     angle = {0: -30, 45: 0, 90: 30}[frame]
-    for col, (picture, label) in enumerate(zip(images, ("BEFORE 41ef8ae", "AFTER 2370f43"))):
+    for col, (picture, label) in enumerate(zip(images, labels)):
         draw.text((col * 768 + 12, 5), f"{label} | {angle:+d} deg | {stem}",
                   font=font, fill="white")
         output.paste(picture, (col * 768, 36))
     return output
 
 
-def animated_pair(before, after, sequence, output, ffmpeg, font, cache):
+def animated_pair(before, after, sequence, output, ffmpeg, font, cache, labels=("BEFORE 41ef8ae", "AFTER 2370f43")):
     # Whole original frames, stacked vertically so each hand/body view stays 640 px wide.
     # At 10 fps take every third 30-Hz source frame; no generated intermediate poses.
     for fps, colors in ((10, 128), (8, 96), (8, 64)):
@@ -47,8 +47,7 @@ def animated_pair(before, after, sequence, output, ffmpeg, font, cache):
             angle = -30 * math.cos(2 * math.pi * source / 180)
             canvas = Image.new("RGB", (640, 1024), BACKGROUND)
             draw = ImageDraw.Draw(canvas)
-            for row, (folder, label) in enumerate(((before, "BEFORE 41ef8ae"),
-                                                   (after, "AFTER 2370f43"))):
+            for row, (folder, label) in enumerate(zip((before, after), labels)):
                 picture = Image.open(folder / f"{sequence}-{source:03d}.jpg").convert("RGB")
                 assert picture.size == (768, 576)
                 draw.text((12, row * 512 + 5), f"{label} | {angle:+05.1f} deg",

@@ -54,6 +54,7 @@ namespace ArmWrestlingVR
         /// <summary>用导入的人物模型替代胶囊体对手。</summary>
         public static bool UseCharacterModel = false;
         internal static GameObject PairedAvatar;
+        internal static GripAvatarProfile PairedProfile;
 
         // 配色
         private static readonly Color TableColor = new Color(0.27f, 0.145f, 0.085f);
@@ -582,13 +583,15 @@ namespace ArmWrestlingVR
 
             GameObject model = Object.Instantiate(prefab, parent);
             bool rocketbox = prefab == PairedAvatar;
-            model.name = rocketbox ? "Opponent Character (Rocketbox)" : "Opponent Character (Ch03)";
+            model.name = PairedProfile != null ? "Opponent Character ("+PairedProfile.name+")" : rocketbox ? "Opponent Character (Rocketbox)" : "Opponent Character (Ch03)";
 
-            float scale = rocketbox ? PairedGripPose.AvatarScale : 1.12f;
-            float feetY = -TableHeight + (rocketbox ? 0.08f : 0f);
+            float scale = PairedProfile != null ? PairedProfile.modelScale : rocketbox ? PairedGripPose.AvatarScale : 1.12f;
+            float feetY = -TableHeight + (PairedProfile != null ? PairedProfile.footLift : rocketbox ? 0.08f : 0f);
 
             // Offset each model's imported origin to the existing demo seat.
-            model.transform.localPosition = rocketbox
+            model.transform.localPosition = PairedProfile != null
+                ? new Vector3(0f,0f,OpponentSeatZ) + PairedProfile.originFromSeat
+                : rocketbox
                 ? new Vector3(0f, -0.09f, OpponentSeatZ - 0.10f)
                 : new Vector3(0f, -0.22f, OpponentSeatZ - 0.08f);
             model.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);

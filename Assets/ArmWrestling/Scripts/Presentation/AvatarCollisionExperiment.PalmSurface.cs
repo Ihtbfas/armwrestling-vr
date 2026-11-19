@@ -22,13 +22,19 @@ namespace ArmWrestlingVR
 
         private Proxy PalmSurface(Animator animator, SkinnedMeshRenderer skin)
         {
-            if (skin == null) throw new InvalidOperationException("No palm skin for contact hull.");
             var wrist = animator.GetBoneTransform(HumanBodyBones.RightHand);
+            if (UsesHumanoidAdapter)
+            {
+                var data = animator == bodyAnimator ? contactPose.opponent : contactPose.player;
+                return CreatePalmHull(wrist,new List<Vector3>(data.palmContactPoints));
+            }
+            if (skin == null) throw new InvalidOperationException("No palm skin for contact hull.");
             var middle = animator.GetBoneTransform(HumanBodyBones.RightMiddleProximal);
             Vector3 forward = (middle.position - wrist.position).normalized;
             int wristIndex = Array.IndexOf(skin.bones, wrist);
             var bakedPalm = new Mesh(); skin.BakeMesh(bakedPalm);
-            Vector3[] vertices = bakedPalm.vertices;
+            Vector3[] vertices = UsesHumanoidAdapter ? HandSurfaceGeometry.WorldVertices(skin) : bakedPalm.vertices;
+            var handIndices = HandSurfaceGeometry.BoneIndices(animator,skin);
             BoneWeight[] weights = skin.sharedMesh.boneWeights;
             var hullPoints = new List<Vector3>();
             Quaternion inverse = Quaternion.Inverse(wrist.rotation);
@@ -39,14 +45,20 @@ namespace ArmWrestlingVR
                     + (w.boneIndex1 == wristIndex ? w.weight1 : 0f)
                     + (w.boneIndex2 == wristIndex ? w.weight2 : 0f)
                     + (w.boneIndex3 == wristIndex ? w.weight3 : 0f);
-                if (weight < 0.55f) continue;
-                Vector3 point = skin.transform.TransformPoint(vertices[i]) - wrist.position;
+                if (UsesHumanoidAdapter ? HandSurfaceGeometry.Weight(w,handIndices) < 0.75f : weight < 0.55f) continue;
+                Vector3 point = (UsesHumanoidAdapter ? vertices[i] : skin.transform.TransformPoint(vertices[i])) - wrist.position;
                 float along = Vector3.Dot(point, forward);
-                if (along < 0.012f || along > 0.085f) continue;
+                float length = Vector3.Distance(middle.position,wrist.position);
+                if (along < (UsesHumanoidAdapter ? length*0.15f : 0.012f) || along > (UsesHumanoidAdapter ? length*0.95f : 0.085f)) continue;
                 hullPoints.Add(inverse * point);
             }
             Destroy(bakedPalm);
             if (hullPoints.Count < 8) throw new InvalidOperationException("Palm hull has too few skin points.");
+            return CreatePalmHull(wrist,hullPoints);
+        }
+
+        private Proxy CreatePalmHull(Transform wrist, List<Vector3> hullPoints)
+        {
             // PhysX cooks a convex hull from the referenced skin points. The
             // fan includes every point; it is not used as a visual triangle mesh.
             var triangles = new int[(hullPoints.Count - 2) * 3];

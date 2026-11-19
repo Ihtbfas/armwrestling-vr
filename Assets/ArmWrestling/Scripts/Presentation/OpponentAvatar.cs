@@ -35,6 +35,8 @@ namespace ArmWrestlingVR
         private bool useStableElbow;
         private bool useHandContact;
         private PairedGripPose.Hand pairedGrip;
+        private GripAvatarProfile gripProfile;
+        internal void SetGripProfile(GripAvatarProfile profile) => gripProfile = profile;
         private Transform pairedWrist;
         private Transform[] pairedFingers;
         private int correctedIkPass = -1;
@@ -92,14 +94,14 @@ namespace ArmWrestlingVR
             useGripPose = false;
         }
 
-        internal void EnableCollisionExperiment(VirtualArmRig rig, PairedCollisionMode mode, bool showGizmos)
+        internal void EnableCollisionExperiment(VirtualArmRig rig, PairedCollisionMode mode, bool showGizmos, PairedGripPose resolvedPose = null)
         {
             var probes = new GameObject("Paired collision experiment");
             probes.transform.SetParent(rig.transform, false);
             CollisionExperiment = probes.AddComponent<AvatarCollisionExperiment>();
             CollisionExperiment.Mode = mode;
             CollisionExperiment.showGizmos = showGizmos;
-            CollisionExperiment.Bind(rig, animator, rig.playerVisual);
+            CollisionExperiment.Bind(rig, animator, rig.playerVisual, resolvedPose);
         }
 
         private void Update()
@@ -278,7 +280,7 @@ namespace ArmWrestlingVR
             bool contactLayout = CollisionExperiment != null && CollisionExperiment.Mode == PairedCollisionMode.ContactGrip;
             // The revised shoulder pose lowers the sampled elbow underside by
             // about 4.5 mm. Compensate at the support target, not by moving the pad.
-            float boneY = UsesPairedGrip ? (contactLayout ? 0.135f : 0.130f) : 0.109f;
+            float boneY = gripProfile != null ? gripProfile.elbowSupportHeight : UsesPairedGrip ? (contactLayout ? 0.135f : 0.130f) : 0.109f;
             Vector3 g = frame.InverseTransformPoint(target);
             float radius = (forearmLength + extension) / frame.lossyScale.x;
             float vertical = g.y - boneY;
@@ -315,12 +317,12 @@ namespace ArmWrestlingVR
             {
                 // Shift the seated body towards its working elbow. The original
                 // centred torso made the right humerus cross the chest at negative angles.
-                float side = Mathf.Lerp(0.16f, 0.02f, Mathf.InverseLerp(-30f, 30f, angle));
+                float side = Mathf.Lerp(gripProfile != null ? gripProfile.bodySideAtLimits.x : 0.16f, gripProfile != null ? gripProfile.bodySideAtLimits.y : 0.02f, Mathf.InverseLerp(-30f,30f,angle));
                 offset += new Vector3(side, 0f, 0f);
             }
             Quaternion lean = Quaternion.Slerp(Neutral.rotation, endpoint.rotation, weight);
             if (CollisionExperiment != null && CollisionExperiment.Mode == PairedCollisionMode.ContactGrip)
-                lean = Quaternion.AngleAxis(Mathf.Lerp(13f, 7f, Mathf.InverseLerp(-30f, 30f, angle)), Vector3.right) * lean;
+                lean = Quaternion.AngleAxis(Mathf.Lerp(gripProfile != null ? gripProfile.uprightAtLimits.x : 13f, gripProfile != null ? gripProfile.uprightAtLimits.y : 7f, Mathf.InverseLerp(-30f,30f,angle)), Vector3.right) * lean;
             animator.bodyPosition = frame.TransformPoint(restBodyPosition + offset);
             animator.bodyRotation = frame.rotation * lean * restBodyRotation;
         }
