@@ -23,6 +23,8 @@ def main():
     parser.add_argument("--no-front-motion", action="store_true")
     args = parser.parse_args()
     before, after = args.before.resolve(), args.after.resolve()
+    if args.guides:
+        args.guides = args.guides.resolve()
     # Capture runner reserves these exact route names for public Rocketbox-only data.
     if before.name != args.before_route or after.name != "cross":
         parser.error("Only P2-C contact and P2-D public cross capture routes may be published")
