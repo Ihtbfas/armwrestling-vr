@@ -1,0 +1,174 @@
+{
+  "source_ref": "c64f27f674092a53abcddd802a1c8c15d0f69b4b",
+  "before_behavior_ref": "f21a3dff8388225e1773dfe8ee444829ef70d09b",
+  "before_runtime_ref": "c64f27f674092a53abcddd802a1c8c15d0f69b4b",
+  "validation": "Real Unity Editor Play / 2022.3.62f3c1 / Direct3D11",
+  "avatar": "MIT Microsoft Rocketbox Male_Adult_01; both roles",
+  "source_folders": [
+    ".p0-local/p2d-cross-avatar/20261120-101803/cross",
+    ".p0-local/p2d-cross-avatar/20261120-101619/cross"
+  ],
+  "matched_inputs": [
+    "angle",
+    "grip_x",
+    "grip_y",
+    "grip_z",
+    "normalized_state_time"
+  ],
+  "source_keyframes": {
+    ".p0-local/p2d-cross-avatar/20261120-101803/cross/eye-045.png": "a87ff4bc376612914ebce0e5e7e7ccca9faaf8e788af3771e2e70f2e555c3509",
+    ".p0-local/p2d-cross-avatar/20261120-101619/cross/eye-045.png": "8646540d22e165e01c3c93a1b19e8c0ddc00c9586afa0da73871ea1b7ae2d69a",
+    ".p0-local/p2d-cross-avatar/20261120-101803/cross/eye-000.png": "a2f830424a157325a634d0582b8cdb999fb3e5901cb4f2c050ed56727315ffd4",
+    ".p0-local/p2d-cross-avatar/20261120-101619/cross/eye-000.png": "cba170141d150461ce8b113ea079f6556bfc3f5c44be4e055003a4d6f105498b",
+    ".p0-local/p2d-cross-avatar/20261120-101803/cross/eye-090.png": "906f44a78013856c26e070f9e8a03233c340b863e8de025d945ebf44f16905e8",
+    ".p0-local/p2d-cross-avatar/20261120-101619/cross/eye-090.png": "79d6b6201eda4acf5bdbe6e2502aa4ec545fb5398a11a9922a56c91c3a80b43b",
+    ".p0-local/p2d-cross-avatar/20261120-101803/cross/hand-front-045.png": "82792cc24d3aa55a2286e3fccca0bfb102ff0761e261b6f0647f1ce6b02874a9",
+    ".p0-local/p2d-cross-avatar/20261120-101619/cross/hand-front-045.png": "da4476fbd6595068efd166989e9750b59af327e9e4e707f8d5356c427921c22b",
+    ".p0-local/p2d-cross-avatar/20261120-101803/cross/hand-side-045.png": "01ee43d2009ce5f1f780bacb2aa5ac3eecff7e93be67cd1f8510bcc5f397afa7",
+    ".p0-local/p2d-cross-avatar/20261120-101619/cross/hand-side-045.png": "b869166eabe6de399e4898259d82b8fa6e2e9f54ffdcac3cd4a5262dcb958b84",
+    ".p0-local/p2d-cross-avatar/20261120-101803/cross/front-045.png": "37af684afb7bd5cbb4521e76b1f09ba81c04e440d496fcc7f717b0093c575513",
+    ".p0-local/p2d-cross-avatar/20261120-101619/cross/front-045.png": "1c07f30f675550fa115b84bd75c441d3b85a2b4e0ca065d12127322799b4d720",
+    ".p0-local/p2d-cross-avatar/20261120-101803/cross/front-000.png": "8dbfd49b360ee547c20a45aca020c5ab33c1e56b944245c82eeb29913c61faf4",
+    ".p0-local/p2d-cross-avatar/20261120-101619/cross/front-000.png": "7f5cc8c1b3157887c934aa9ee175733646cf9bd97dfc8cf688097ec523799457",
+    ".p0-local/p2d-cross-avatar/20261120-101803/cross/front-090.png": "9c2522744463fe105fd1b1c3234f3c50d0cd94f7482035418955b3165868038e",
+    ".p0-local/p2d-cross-avatar/20261120-101619/cross/front-090.png": "0037058eea7c21f8c70baf0d29fcc4b183a25df75ef9742db216d201847a6e1b",
+    ".p0-local/p2d-cross-avatar/20261120-101803/cross/side-045.png": "0c0959a4e3e552df50423b27767b141a84d691b20e11bd3b2e9b32263323cff2",
+    ".p0-local/p2d-cross-avatar/20261120-101619/cross/side-045.png": "743b601f0a66454d46abe3c99bf7e77737bb9620f4161ee3a92cfb4626601dd2",
+    ".p0-local/p2d-cross-avatar/20261120-101803/cross/side-000.png": "0114aeea62afdd9bfd7c3792a44cdb41584f5848624d1efe6f321e32b1cba1ef",
+    ".p0-local/p2d-cross-avatar/20261120-101619/cross/side-000.png": "4eb6d1f18aaf64b558bca547592a49d0cdab257d6513b7928a6fc8c07a938850",
+    ".p0-local/p2d-cross-avatar/20261120-101803/cross/side-090.png": "3b5d91f9792e5f87bac810e427649ffeb2ebba905d601cd8d239bdeca4353422",
+    ".p0-local/p2d-cross-avatar/20261120-101619/cross/side-090.png": "5eca49f4629dec0c46d4967b3a6c4e43fd9067b67cf8c87d7c2b733125267ea6",
+    ".p0-local/p2d-cross-avatar/20261120-101803/cross/player-045.png": "4fb9b07cdd2f16b5d7d274668a3d76f0e5c49ca4fb022b9299bf27353b1aebe7",
+    ".p0-local/p2d-cross-avatar/20261120-101619/cross/player-045.png": "367de058b56284aebeed75ee8d2ab05e84dcac4d684703c274195eff2100ead3",
+    ".p0-local/p2d-cross-avatar/20261120-101803/cross/hand-back-045.png": "2018857ce0540f6456d396cd9c6aef0b3e54b3e9954be95f24dad24eb4588d8e",
+    ".p0-local/p2d-cross-avatar/20261120-101619/cross/hand-back-045.png": "8fce2e11a056659bc7aed335c282ca70c01000d992609c4cb91e968d7db0589e",
+    ".p0-local/p2d-cross-avatar/20261120-101429/cross/eye-045.png": "f695b9e9ad00900a775ea044b98d6017d85b850827b3b0ce2cb209edf15ad109",
+    ".p0-local/p2d-cross-avatar/20261120-101429/cross/hand-side-045.png": "9cf8d0ac26ae980040d8b5282d4586f3b62e5c0f19cc5e68ae82ef45bfd971e9",
+    ".p0-local/p2d-cross-avatar/20261120-101429/cross/hand-back-045.png": "86f3e2a2dbbda117bdd434120684b9180d7079517e45d9d40504956711026a68"
+  },
+  "files": {
+    "neutral-hands.png": {
+      "angle": 0,
+      "camera": "eye",
+      "layout": "before left / after right; uncropped",
+      "bytes": 433566,
+      "sha256": "c50c8e39519b8f00223f5371d8c3491bdca123fb475a3f96e9764cd0d5085fd8"
+    },
+    "keyframes-hands.png": {
+      "angles": [
+        -30,
+        0,
+        30
+      ],
+      "camera": "eye",
+      "layout": "before left / after right",
+      "bytes": 1015863,
+      "sha256": "4bb7c47d1992668dd9c808747921ec3986be0020d2d695ef5428843595ed083e"
+    },
+    "neutral-grip-front.png": {
+      "angle": 0,
+      "camera": "hand-front",
+      "layout": "before left / after right; uncropped",
+      "bytes": 422158,
+      "sha256": "e61a7e38b051d37825ef06d8dc9231a97f5c92ad157f8fa1bd8fdcffe2c4dee7"
+    },
+    "neutral-grip-side.png": {
+      "angle": 0,
+      "camera": "hand-side",
+      "layout": "before left / after right; uncropped",
+      "bytes": 272774,
+      "sha256": "503977b9dcf5ee8620f15f18da636656bca750ed3222161e7ba954b50d9e76fa"
+    },
+    "neutral-front.png": {
+      "angle": 0,
+      "camera": "front",
+      "layout": "before left / after right; uncropped",
+      "bytes": 159035,
+      "sha256": "d6272924894132fde1abfe5f0118e9e8893aa25596e726e41f1658f8ca931d73"
+    },
+    "keyframes-front.png": {
+      "angles": [
+        -30,
+        0,
+        30
+      ],
+      "camera": "front",
+      "layout": "before left / after right",
+      "bytes": 478520,
+      "sha256": "d9ca6d9ce7d05f874d5f9edec5c0151b4829fdb60124819adb03cb41f7c524d9"
+    },
+    "neutral-side.png": {
+      "angle": 0,
+      "camera": "side",
+      "layout": "before left / after right; uncropped",
+      "bytes": 174403,
+      "sha256": "fa391397b0d272b53686d8e0043d7604f959c2d9b3c76817ecfd64dfed8b7dac"
+    },
+    "keyframes-side.png": {
+      "angles": [
+        -30,
+        0,
+        30
+      ],
+      "camera": "side",
+      "layout": "before left / after right",
+      "bytes": 521826,
+      "sha256": "d98bc536960ed7e9743b6a24f0a1b2fe3bed303f1acae0dfdbb56acc5bed2e62"
+    },
+    "neutral-player.png": {
+      "angle": 0,
+      "camera": "player",
+      "layout": "before left / after right; uncropped",
+      "bytes": 181550,
+      "sha256": "4eaf489e69812191d139698c11d346dd3e7231c8218f9876ee3d73573861b3a3"
+    },
+    "neutral-grip-back.png": {
+      "angle": 0,
+      "camera": "hand-back",
+      "layout": "before left / after right; uncropped",
+      "bytes": 237244,
+      "sha256": "8cf0c0ccf3a8d4d097a2d5f532fc9b6e573dd0a51c57e04c945141c6b2408634"
+    },
+    "hands-motion.gif": {
+      "fps": 8,
+      "frames": 48,
+      "seconds": 6.01,
+      "colors": 96,
+      "camera": "e",
+      "layout": "before top / after bottom; uncropped",
+      "bytes": 7467357,
+      "sha256": "ebd44054d82b335fb7117ae90dadd196cac79d2eb8134fd324988400712030cd"
+    },
+    "body-side-motion.gif": {
+      "fps": 10,
+      "frames": 60,
+      "seconds": 6.0,
+      "colors": 128,
+      "camera": "wide-side",
+      "layout": "before top / after bottom; uncropped",
+      "bytes": 3291900,
+      "sha256": "f8e64ceb9513f126322ed58902fc008f19f335eac81ab44b53c3bda68af06ba7"
+    },
+    "candidate-hands.png": {
+      "mode": "joint-limited candidate; rejected as default",
+      "camera": "eye",
+      "angle": 0,
+      "bytes": 288960,
+      "sha256": "e230e3510ee372bdb1f20d33ef86c3ad8cff7d997b4bcc2ab37347f37ccc6baa"
+    },
+    "candidate-side.png": {
+      "mode": "joint-limited candidate; rejected as default",
+      "camera": "hand-side",
+      "angle": 0,
+      "bytes": 167168,
+      "sha256": "780298b95d2d0985c57831f7fbe5870bc64d957f38f36e6a03cf808f1e8a0f22"
+    },
+    "candidate-back.png": {
+      "mode": "joint-limited candidate; rejected as default",
+      "camera": "hand-back",
+      "angle": 0,
+      "bytes": 145959,
+      "sha256": "f8f1c2e72ab7066807311b4a8447ef16f1308dd4ce3647f70cb1a2b32d2c2fdd"
+    }
+  }
+}
