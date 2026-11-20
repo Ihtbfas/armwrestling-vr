@@ -54,6 +54,14 @@ namespace ArmWrestlingVR.EditorTools
             ApplyClosure(); SceneView.RepaintAll();
         }
 
+        public void PlaceWrist(int side, Vector3 position, Quaternion rotation)
+        {
+            var hand = hands[side];
+            var wrist = hand.GetBoneTransform(HumanBodyBones.RightHand);
+            hand.transform.rotation = rotation * Quaternion.Inverse(wrist.rotation) * hand.transform.rotation;
+            hand.transform.position += position - wrist.position;
+        }
+
         public void ApplyClosure()
         {
             if (pose == null) return;

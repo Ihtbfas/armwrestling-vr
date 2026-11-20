@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace ArmWrestlingVR
@@ -14,6 +15,22 @@ namespace ArmWrestlingVR
             new Vector4(-0.3f,0f,-0.6f,-0.4f), new Vector4(-0.65f,0f,-0.15f,0.15f),
             new Vector4(-0.65f,0f,-0.15f,0.15f), new Vector4(-0.65f,0f,-0.15f,0.15f), new Vector4(-0.65f,0f,-0.15f,0.15f) };
         public GripContactTargets contactTargets;
+        [Serializable]
+        public sealed class AuthoredHand
+        {
+            public Avatar sourceAvatar;
+            // Position correction in anchor axes, in units of palm length.
+            public Vector3 wristOffset;
+            public Quaternion wristDelta = Quaternion.identity;
+            public Quaternion[] readyBones, contestBones;
+            public Vector4[] readyMuscles, contestMuscles;
+
+            public bool IsComplete => sourceAvatar != null && readyBones?.Length == 15
+                && contestBones?.Length == 15 && readyMuscles?.Length == 5 && contestMuscles?.Length == 5;
+        }
+
+        public AuthoredHand authoredPlayer, authoredOpponent;
+        public bool HasAuthoredPair => authoredPlayer?.IsComplete == true && authoredOpponent?.IsComplete == true;
         public Vector3 playerForward = new Vector3(-0.28f,0.87f,0.40f);
         public Vector3 opponentForward = new Vector3(0.25f,0.70f,-0.67f);
         public Vector2 palmRoll;

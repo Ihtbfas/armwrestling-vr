@@ -27,6 +27,13 @@ namespace ArmWrestlingVR
                 pose.fingerStart = definition.fingerStart;
                 if (useSurfaceTargets && definition.contactTargets != null) PairedSurfaceGrip.Resolve(pose,definition.contactTargets,player,opponent,definition.palmContactCenter);
                 else PairedPalmContactFit.Fit(pose,definition.palmNormal,0.001f);
+                if (definition.HasAuthoredPair)
+                {
+                    pose.usesAuthoredEndpoints = true;
+                    pose.fingerStart = 0.9f;
+                    ApplyAuthoredWrist(pose.player, definition.authoredPlayer);
+                    ApplyAuthoredWrist(pose.opponent, definition.authoredOpponent);
+                }
                 if (!pose.HasContactEndpoints) throw new InvalidOperationException("Invalid resolved hand endpoints.");
                 return pose;
             }
@@ -108,6 +115,27 @@ namespace ArmWrestlingVR
                 hand.thumbRootStart = inverseWrist*(Vector3.Lerp(fingers[0].position,fingers[1].position,0.17f)-wrist.position);
                 hand.thumbRootEnd = inverseWrist*(Vector3.Lerp(fingers[0].position,fingers[1].position,0.83f)-wrist.position);
                 hand.thumbRootRadius = Vector3.Distance(fingers[0].position,fingers[1].position)*0.27f*profile.contactRadiusScale;
+                if (definition.HasAuthoredPair)
+                {
+                    var authored = player ? definition.authoredPlayer : definition.authoredOpponent;
+                    if (authored.sourceAvatar == animator.avatar)
+                    {
+                        hand.openFingerRotations = authored.readyBones;
+                        hand.fingerRotations = authored.contestBones;
+                    }
+                    else
+                    {
+                        using var handler = new HumanPoseHandler(animator.avatar, instance.transform);
+                        var human = new HumanPose();
+                        handler.GetHumanPose(ref human);
+                        Muscles(ref human, authored.readyMuscles, profile.muscleOffsets);
+                        handler.SetHumanPose(ref human);
+                        hand.openFingerRotations = Read(fingers, profile.thumbOpposition, 0f);
+                        Muscles(ref human, authored.contestMuscles, profile.muscleOffsets);
+                        handler.SetHumanPose(ref human);
+                        hand.fingerRotations = Read(fingers, profile.thumbOpposition, 0f);
+                    }
+                }
                 Debug.Log($"[P2-D] {profile.name} {(player ? "player" : "opponent")}: bones={size.boneCount}, fingers={size.rightFingers}/{size.leftFingers}, palm={size.palmLength:F4}/{size.palmWidth:F4}/{size.thickness:F4}, forearm={size.forearmLength:F4}, thumb={size.thumbName}, index={size.indexName}");
                 return hand;
             }
@@ -127,19 +155,33 @@ namespace ArmWrestlingVR
             return result;
         }
 
+        private static void ApplyAuthoredWrist(PairedGripPose.Hand hand, HumanoidGripDefinition.AuthoredHand authored)
+        {
+            hand.wristPosition += authored.wristOffset * hand.palmLength;
+            hand.wristRotation = authored.wristDelta * hand.wristRotation;
+        }
+
+        private static readonly string[] Digits = { "Thumb", "Index", "Middle", "Ring", "Little" };
+        private static readonly string[] Channels = { "1", "Spread", "2", "3" };
+
+        private static int FingerMuscle(int digit, int channel) =>
+            Array.FindIndex(HumanTrait.MuscleName, name => name.Contains("Right") &&
+                name.Contains(Digits[digit]) && name.Contains(Channels[channel]));
+
+        public static Vector4[] ReadFingerMuscles(HumanPose pose)
+        {
+            var values = new Vector4[5];
+            for (int d = 0; d < 5; d++)
+                for (int c = 0; c < 4; c++) values[d][c] = pose.muscles[FingerMuscle(d, c)];
+            return values;
+        }
+
         private static void Muscles(ref HumanPose pose, Vector4[] values, Vector4[] offsets)
         {
-            string[] digits = { "Thumb","Index","Middle","Ring","Little" };
-            for (int i = 0; i < HumanTrait.MuscleCount; i++)
+            for (int d = 0; d < 5; d++)
             {
-                string name = HumanTrait.MuscleName[i]; if (!name.Contains("Right")) continue;
-                for (int d = 0; d < 5; d++)
-                {
-                    if (!name.Contains(digits[d])) continue;
-                    Vector4 v = values[d] + (offsets != null && offsets.Length == 5 ? offsets[d] : Vector4.zero);
-                    float value = name.Contains("Spread") ? v.y : name.Contains("1") ? v.x : name.Contains("2") ? v.z : v.w;
-                    pose.muscles[i] = Mathf.Clamp(value,-1f,1f);
-                }
+                Vector4 v = values[d] + (offsets != null && offsets.Length == 5 ? offsets[d] : Vector4.zero);
+                for (int c = 0; c < 4; c++) pose.muscles[FingerMuscle(d, c)] = Mathf.Clamp(v[c], -1f, 1f);
             }
         }
 

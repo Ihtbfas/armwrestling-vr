@@ -50,6 +50,10 @@
 
 在 Rocketbox 模式下用 **Paired Collisions** 切换 **Off**、**Diagnose**、**Correct**。**Show Collision Gizmos** 在 Scene 视图显示代理体与分离方向。见 [P2-B 实验、对照与复现](docs/P2B-collision-experiment-result.md)。
 
+## P2-E 美术握姿
+
+主场景的 Runtime Bootstrap 里启用 **Use Authored Grip** 即可查看本轮的准备与对抗姿态。默认仍是 P2-D 稳定握姿。编辑模式下，通过 **扳手腕 → P2-E → Open Authored Grip Preview** 打开两只手的蒙皮，选择玩家或对手的骨节直接旋转并保存。见[运行与编辑方法](docs/P2E-authored-grip-result.md)和[实际 Editor 画廊](docs/validation/p2e-authored-grip/README.md)。
+
 ## P2-D 跨人物握姿
 
 主场景默认关闭 **Use Grip Surface Targets**，使用较保守的跨人物 LegacyHumanoid 握姿。一次有界关节约束实验未达到自然扣握验收，见[本轮结论与默认回退](docs/P2D-joint-constraints-result.md)和[真实对照](docs/validation/p2d-joint-constraints/README.md)。实验及上轮表面目标资源仍保留，换人物仍只选 Profile。

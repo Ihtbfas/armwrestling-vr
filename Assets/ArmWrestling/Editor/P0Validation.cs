@@ -21,6 +21,7 @@ namespace ArmWrestlingVR.EditorTools
         private static float maxAngle = float.NegativeInfinity;
         private static string states = "";
         private static bool sawContestClip;
+        private static bool sawReadyGrip, sawContestGrip;
 
         static P0Validation()
         {
@@ -63,7 +64,9 @@ namespace ArmWrestlingVR.EditorTools
                 bool grip = Array.IndexOf(args, "-p0grip") >= 0;
                 bool handContact = Array.IndexOf(args, "-p0handcontact") >= 0;
                 bool useSceneDefault = Array.IndexOf(args,"-p0crossdefault") >= 0;
-                bool crossLegacy = Array.IndexOf(args,"-p0crosslegacy") >= 0 || (useSceneDefault && !bootstrap.useGripSurfaceTargets);
+                bool authored = Array.IndexOf(args, "-p0authored") >= 0;
+                bool authoredFallback = Array.IndexOf(args, "-p0authoredfallback") >= 0;
+                bool crossLegacy = authored || authoredFallback || Array.IndexOf(args,"-p0crosslegacy") >= 0 || (useSceneDefault && !bootstrap.useGripSurfaceTargets);
                 bool markerFallback = Array.IndexOf(args,"-p0crossmarkfallback") >= 0;
                 bool cross = useSceneDefault || crossLegacy || Array.IndexOf(args,"-p0cross") >= 0;
                 bool crossLocal = Array.IndexOf(args,"-p0crosslocal") >= 0;
@@ -99,6 +102,10 @@ namespace ArmWrestlingVR.EditorTools
                     Require(bootstrap.humanoidGrip != null,"The main scene has no common Humanoid grip.");
                     bootstrap.useHumanoidGrip = true;
                     bootstrap.useGripSurfaceTargets = !crossLegacy;
+                    if (authored) Require(bootstrap.authoredGrip != null && bootstrap.authoredGrip.HasAuthoredPair,
+                        "The main scene is missing the authored grip keys.");
+                    if (!useSceneDefault) bootstrap.useAuthoredGrip = authored || authoredFallback;
+                    if (authoredFallback) bootstrap.authoredGrip = null;
                     bootstrap.playerAvatar = Resources.Load<GripAvatarProfile>(crossLocal ? "P2DLocal/Ch03Profile" : "P2D/RocketboxProfile");
                     bootstrap.opponentAvatar = Resources.Load<GripAvatarProfile>((crossLocal || crossMixed) ? "P2DLocal/Ch03Profile" : "P2D/RocketboxProfile");
                     Require(bootstrap.playerAvatar != null && bootstrap.opponentAvatar != null,"Requested profiles not found.");
@@ -112,6 +119,7 @@ namespace ArmWrestlingVR.EditorTools
                     else if (crossFallback) bootstrap.opponentAvatar = ScriptableObject.CreateInstance<GripAvatarProfile>();
                 }
                 SessionState.SetBool(ActiveKey + ".surfaceTargets",!crossLegacy);
+                SessionState.SetBool(ActiveKey + ".authored", authored || (useSceneDefault && bootstrap.useAuthoredGrip));
                 SessionState.SetBool(ActiveKey + ".cross", requestCross && !crossFallback);
                 SessionState.SetBool(ActiveKey + ".crossLocal", crossLocal || crossMixed);
                 SessionState.SetBool(ActiveKey + ".motion", motion);
@@ -145,6 +153,15 @@ namespace ArmWrestlingVR.EditorTools
                     maxAngle = Mathf.Max(maxAngle, app.Pipeline.VisualAngleDeg);
                 }
                 string current = app.state.ToString();
+                if (SessionState.GetBool(ActiveKey + ".authored", false))
+                {
+                    var contact = app.deviceRoot.GetComponentInChildren<OpponentAvatar>()?.CollisionExperiment;
+                    if (contact != null && contact.EvaluationCount > 0)
+                    {
+                        sawReadyGrip |= (app.state == AppState.Ready || app.state == AppState.Countdown) && contact.AuthoredClosure == 0f;
+                        sawContestGrip |= app.state == AppState.Fighting && contact.AuthoredClosure == 1f;
+                    }
+                }
                 if (!states.EndsWith(current + ";", StringComparison.Ordinal))
                 { states += current + ";"; Debug.Log("[P0] State: " + current); }
                 switch (step)
@@ -232,9 +249,10 @@ namespace ArmWrestlingVR.EditorTools
                         if (expectCollision)
                         {
                             Require(experiment.Mode == (SessionState.GetBool(ActiveKey + ".legacyContact", false) ? PairedCollisionMode.LegacyContactGrip : SessionState.GetBool(ActiveKey + ".contactGrip", false) ? PairedCollisionMode.ContactGrip : PairedCollisionMode.Correct) && experiment.EvaluationCount > 0
-                                && experiment.MaxFingerCorrection > 0f, "The collision correction did not execute.");
+                                && (SessionState.GetBool(ActiveKey + ".authored", false) || experiment.MaxFingerCorrection > 0f), "The collision correction did not execute.");
                             opponent += "\nCollision=" + experiment.Mode + ", proxies=" + experiment.ProxyCount;
-                            if (experiment.Mode == PairedCollisionMode.ContactGrip || experiment.Mode == PairedCollisionMode.LegacyContactGrip)
+                            if ((experiment.Mode == PairedCollisionMode.ContactGrip || experiment.Mode == PairedCollisionMode.LegacyContactGrip)
+                                && !SessionState.GetBool(ActiveKey + ".authored", false))
                                 Require(experiment.StoppedJoints > 0 && experiment.BlockedClosureExcess > 0f, "Contact did not limit finger closure.");
                             bool expectedCross = SessionState.GetBool(ActiveKey + ".cross",false);
                             Require(experiment.UsesHumanoidAdapter == expectedCross,"Requested Avatar resolver did not execute or fall back correctly.");
@@ -244,6 +262,16 @@ namespace ArmWrestlingVR.EditorTools
                                 Require(experiment.ResolvedContactPose != null && experiment.ResolvedContactPose.usesSurfaceTargets == expectedTargets,
                                     "Requested surface target pose did not execute.");
                                 opponent += "\nHumanoidGrip=Common definition, profile-selected player/opponent, 15 fingers each\nSurfaceTargets=" + expectedTargets + "\nJointConstraints=" + experiment.ResolvedContactPose.usesJointConstraints;
+                                bool expectedAuthored = SessionState.GetBool(ActiveKey + ".authored", false);
+                                Require(experiment.ResolvedContactPose.usesAuthoredEndpoints == expectedAuthored,
+                                    "Expected authored endpoint binding did not match.");
+                                opponent += "\nAuthoredEndpoints=" + expectedAuthored;
+                                if (expectedAuthored)
+                                {
+                                    Require(sawReadyGrip && sawContestGrip && experiment.ContactBuilds > 0 && experiment.ContactBuildQueries > 0,
+                                        "Ready/Contest transition or residual contact queries did not run.");
+                                    opponent += "\nAuthoredPhase=Ready and Contest observed";
+                                }
                             }
                             Require(!Resources.FindObjectsOfTypeAll<GameObject>().Any(go => go.name.EndsWith("(Clone)")
                                 && (go.hideFlags & HideFlags.DontSave) != 0 && go.GetComponent<Animator>() != null),

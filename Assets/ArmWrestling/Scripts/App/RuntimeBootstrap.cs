@@ -30,6 +30,8 @@ namespace ArmWrestlingVR
         public bool useHumanoidGrip;
         public bool useGripSurfaceTargets = true;
         public HumanoidGripDefinition humanoidGrip, legacyHumanoidGrip;
+        public bool useAuthoredGrip;
+        public HumanoidGripDefinition authoredGrip;
         public GripAvatarProfile playerAvatar, opponentAvatar;
         private PairedGripPose resolvedGrip;
 
@@ -66,7 +68,14 @@ namespace ArmWrestlingVR
             {
                 try
                 {
-                    resolvedGrip = HumanoidGripBuilder.Build(!useGripSurfaceTargets && legacyHumanoidGrip != null ? legacyHumanoidGrip : humanoidGrip, playerAvatar, opponentAvatar, out _, out _, useGripSurfaceTargets);
+                    var definition = !useGripSurfaceTargets && legacyHumanoidGrip != null ? legacyHumanoidGrip : humanoidGrip;
+                    bool surface = useGripSurfaceTargets;
+                    if (useAuthoredGrip)
+                    {
+                        surface = false;
+                        definition = authoredGrip != null && authoredGrip.HasAuthoredPair ? authoredGrip : legacyHumanoidGrip;
+                    }
+                    resolvedGrip = HumanoidGripBuilder.Build(definition, playerAvatar, opponentAvatar, out _, out _, surface);
                     pair = resolvedGrip;
                     ArenaFactory.PairedProfile = opponentAvatar;
                     effectiveCollisions = PairedCollisionMode.ContactGrip;
@@ -102,7 +111,11 @@ namespace ArmWrestlingVR
                     opponent.SetPairedGrip(pair.opponent);
                     if (ArenaFactory.PairedProfile != null) opponent.SetGripProfile(opponentAvatar);
                     if (effectiveCollisions != PairedCollisionMode.Off)
+                    {
                         opponent.EnableCollisionExperiment(app.armRig, effectiveCollisions, showCollisionGizmos, resolvedGrip);
+                        if (resolvedGrip != null && resolvedGrip.usesAuthoredEndpoints)
+                            opponent.CollisionExperiment.AuthoredMatch = app;
+                    }
                 }
                 app.armRig.ApplyAngle(0f);
             }

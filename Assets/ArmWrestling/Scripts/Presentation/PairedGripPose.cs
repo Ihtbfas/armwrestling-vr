@@ -43,7 +43,7 @@ namespace ArmWrestlingVR
         }
 
         [Range(0f, 1f)] public float fingerStart;
-        public bool usesSurfaceTargets, usesJointConstraints;
+        public bool usesSurfaceTargets, usesJointConstraints, usesAuthoredEndpoints;
         public float palmRegistrationResidual;
         public Hand player = new Hand();
         public Hand opponent = new Hand();

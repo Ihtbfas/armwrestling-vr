@@ -6,6 +6,9 @@ namespace ArmWrestlingVR
     public sealed partial class AvatarCollisionExperiment
     {
         public bool previewClosedPose;
+        public float? PreviewAuthoredClosure { get; set; }
+        internal ArmWrestlingApp AuthoredMatch { get; set; }
+        public float AuthoredClosure { get; private set; }
         private PairedGripPose contactPose;
         public PairedGripPose ResolvedContactPose => contactPose;
         private readonly Quaternion[] contactPlayer = new Quaternion[15];
@@ -74,10 +77,21 @@ namespace ArmWrestlingVR
                 contactRelativeRotation = relativeRotation;
                 contactCacheValid = true;
             }
+            if (contactPose.usesAuthoredEndpoints)
+            {
+                bool contest = AuthoredMatch != null && (AuthoredMatch.state == AppState.Fighting ||
+                    AuthoredMatch.state == AppState.Paused || AuthoredMatch.state == AppState.Finished);
+                AuthoredClosure = PreviewAuthoredClosure ??
+                    Mathf.MoveTowards(AuthoredClosure, contest ? 1f : 0f, Time.deltaTime * 5f);
+            }
             for (int i = 0; i < 15; i++)
             {
-                playerHand[i + 1].joint.localRotation = previewClosedPose ? contactPose.player.fingerRotations[i] : contactPlayer[i];
-                opponentHand[i + 1].joint.localRotation = previewClosedPose ? contactPose.opponent.fingerRotations[i] : contactOpponent[i];
+                var playerClosed = previewClosedPose ? contactPose.player.fingerRotations[i] : contactPlayer[i];
+                var opponentClosed = previewClosedPose ? contactPose.opponent.fingerRotations[i] : contactOpponent[i];
+                playerHand[i + 1].joint.localRotation = contactPose.usesAuthoredEndpoints
+                    ? Quaternion.Slerp(contactPose.player.openFingerRotations[i], playerClosed, AuthoredClosure) : playerClosed;
+                opponentHand[i + 1].joint.localRotation = contactPose.usesAuthoredEndpoints
+                    ? Quaternion.Slerp(contactPose.opponent.openFingerRotations[i], opponentClosed, AuthoredClosure) : opponentClosed;
                 MaxFingerCorrection = Mathf.Max(MaxFingerCorrection,
                     Quaternion.Angle(contactPlayer[i], contactPose.player.fingerRotations[i]),
                     Quaternion.Angle(contactOpponent[i], contactPose.opponent.fingerRotations[i]));
@@ -89,7 +103,7 @@ namespace ArmWrestlingVR
 
         private void BuildContact()
         {
-            if (UsesHumanoidAdapter) { BuildHumanoidContact(); return; }
+            if (UsesHumanoidAdapter && !contactPose.usesAuthoredEndpoints) { BuildHumanoidContact(); return; }
             ContactBuilds++;
             StoppedJoints = 0; BlockedClosureExcess = 0f; ChestTurn = 0f;
             Array.Clear(blocked, 0, blocked.Length);

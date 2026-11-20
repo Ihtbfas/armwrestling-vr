@@ -1,14 +1,13 @@
 # TASKS
 
-## 当前执行：P2-E 双人美术握姿制作与主场景集成（待实施）
+## P2-E 双人美术握姿制作与主场景集成（已保存并接入可选模式）
 
-- [ ] 参考已有 Hand Pose Editor / Blender Pose Library，直接在实际双人蒙皮/骨骼上制作并保存自然扳手腕 Closed 和 Ready/Open 姿态，不能仅增加自动调参工具。
-- [ ] 先以零位多视角确认掌根、虎口、拇指搭扣及四指包握，再由现有 Grip Anchor / Animator / IK / ContactGrip 验证 ±30° 与往返。
-- [ ] 保留通用 Humanoid + Profile 模型切换，在 Rocketbox 和第二独立骨架 Ch03（本机）完成真实编辑器运行与必要校准。
-- [ ] 稳定默认不变直至实际画面和腕/肘/接触质量支持切换；保留 P2-D 失败候选及可回退路径。
-- [ ] 单轮完成制作 → 主场景集成 → Editor Play → 可公开 PNG/GIF → PR #11 更新；如未达标如实保留最佳资产与限制，不无限搜索。
+- [x] 保存两侧可重新编辑的 Ready 与 Contest 骨骼姿态及 Grip Anchor 相对腕姿。
+- [x] 用零位多视角及 ±30° 往返比较旧默认和美术端点，在 Rocketbox、Ch03 与混合角色上实际运行。
+- [x] 交付主场景切换、Editor 验证和可公开的 PNG/GIF。保留稳定默认及以往模式。
+- [ ] 自然扣握验收。零位拇指与部分手指还有空隙和相交，Ch03 肘部穿垫仍需解决。
 
-[完整执行任务](docs/tasks/P2E-authored-paired-grip.md) · [已有成熟工具和路线](docs/research/P2E-authored-hand-pose-workflow.md)
+[本轮实际结果](docs/P2E-authored-grip-result.md) · [完整执行任务](docs/tasks/P2E-authored-paired-grip.md) · [已有成熟工具和路线](docs/research/P2E-authored-hand-pose-workflow.md)
 
 ## 当前阶段：P2-D 跨人物通用握姿与自然接触（有界实验收口；默认稳妥回退，自然扣握未通过）
 

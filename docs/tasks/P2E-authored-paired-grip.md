@@ -1,6 +1,6 @@
 # P2-E｜美术制作自然双人握姿并直接集成主场景
 
-**状态：待 Codex 执行；继续 `feat/p2d-cross-avatar-grip` / [Draft PR #11](https://github.com/Ihtbfas/armwrestling-vr/pull/11)。不创建叠加新 PR。** 当前可靠基线是提交 `1014b7d` 的通用 Humanoid 握姿回退，P2-D 已停止盲目搜索自动关节权重。本任务转向**真正制作两只手互相握住的姿态资产**，必要时自主使用成熟编辑工具；成功后同轮修改正式场景、测试并推送。
+**状态：Ready 与 Contest 已制作并接入主场景可选模式，自然扣握未通过。** [本轮结果](../P2E-authored-grip-result.md)记录 Editor 实测和公开画面。[PR #11](https://github.com/Ihtbfas/armwrestling-vr/pull/11)继续 Draft。以下保留任务与验收要求。
 
 ## 验收目标
 

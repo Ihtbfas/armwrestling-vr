@@ -79,6 +79,7 @@ namespace ArmWrestlingVR.EditorTools
                 bootstrap.useHumanoidGrip = cross;
                 if (!HasArgument("-p2ddefault")) bootstrap.useGripSurfaceTargets = !HasArgument("-p2dlegacy");
                 if (HasArgument("-p2dprior")) bootstrap.humanoidGrip = Resources.Load<HumanoidGripDefinition>("P2D/ArmWrestlingGrip");
+                bootstrap.useAuthoredGrip = HasArgument("-p2e");
                 if (cross)
                 {
                     var selected = Resources.Load<GripAvatarProfile>(HasArgument("-p2dlocal") ? "P2DLocal/Ch03Profile" : "P2D/RocketboxProfile");
@@ -194,9 +195,16 @@ namespace ArmWrestlingVR.EditorTools
             avatar = UnityEngine.Object.FindObjectOfType<OpponentAvatar>();
             if (avatar == null) throw new InvalidOperationException("The humanoid opponent was not instantiated.");
             animator = avatar.GetComponent<Animator>();
-            if (avatar.CollisionExperiment != null) {
+            if (avatar.CollisionExperiment != null)
+            {
                 avatar.CollisionExperiment.previewClosedPose = HasArgument("-p2cpose");
                 avatar.CollisionExperiment.reverseContactOrder = HasArgument("-p2creverse");
+            }
+            if (HasArgument("-p2e"))
+            {
+                if (avatar.CollisionExperiment?.ResolvedContactPose?.usesAuthoredEndpoints != true)
+                    throw new InvalidOperationException("Authored grip did not bind.");
+                avatar.CollisionExperiment.PreviewAuthoredClosure = HasArgument("-p2eready") ? 0f : 1f;
             }
             if (!animator.isHuman || !animator.avatar.isValid)
                 throw new InvalidOperationException("Ch03 needs a valid Humanoid Avatar.");

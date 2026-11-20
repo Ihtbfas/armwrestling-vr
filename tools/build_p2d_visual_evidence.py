@@ -17,6 +17,7 @@ def main():
     parser.add_argument("--after", type=Path, required=True)
     parser.add_argument("--source-ref", required=True)
     parser.add_argument("--candidate", type=Path)
+    parser.add_argument("--ready", type=Path, help="Optional public Ready endpoint capture")
     parser.add_argument("--before-label")
     parser.add_argument("--after-label")
     parser.add_argument("--before-route", choices=("contact","cross"), default="contact")
@@ -101,6 +102,17 @@ def main():
             path=output / f"candidate-{view}.png";canvas.save(path,optimize=True)
             manifest["files"][path.name]={"mode":"joint-limited candidate; rejected as default","camera":stem,"angle":0}
             manifest["source_keyframes"][str(source.relative_to(ROOT).as_posix())]=digest(source)
+    if args.ready:
+        ready = args.ready.resolve()
+        assert ready.name == "cross", "Only public Rocketbox Ready captures may be published"
+        path = output / "ready-contest.png"
+        frame = 45
+        picture = pair(ready, after, "eye", frame, font, ("READY / P2-E", "CONTEST / P2-E"))
+        picture.resize((1200, 478), Image.Resampling.LANCZOS).save(path, optimize=True)
+        manifest["files"][path.name] = {"angle": 0, "camera": "eye", "layout": "Ready left / Contest right"}
+        for folder in (ready, after):
+            source = folder / "eye-045.png"
+            manifest["source_keyframes"][str(source.relative_to(ROOT).as_posix())] = digest(source)
     for name, info in manifest["files"].items():
         path = output / name
         assert path.stat().st_size < (8 * 1024 * 1024 if path.suffix == ".gif" else 1024 * 1024), name
