@@ -8,7 +8,7 @@ namespace ArmWrestlingVR.EditorTools
 {
     internal sealed class CollisionCapture : IDisposable
     {
-        internal static readonly string Header = ",hand_proxy_pairs,hand_proxy_max_mm,torso_proxy_pairs,torso_proxy_max_mm,pad_proxy_pairs,pad_proxy_max_mm,digit_adjustment_deg,arm_swivel_deg,stopped_joints,chest_turn_deg,blocked_closure_excess_mm,contact_builds,closure_queries,contact_solve_ms,contact_build_ms,contact_build_queries,open_contact_depth_mm,contact_init_peak_ms,evaluation_ms,initial_root_contact_mm,final_root_contact_mm" + string.Concat(Enumerable.Range(0,20).Select(i => ","+(i<10 ? "pad_marker_error_" : "pad_skin_vertex_gap_")+(i%10<5 ? "player_" : "opponent_")+(i%5)+"_mm"));
+        internal static readonly string Header = ",hand_proxy_pairs,hand_proxy_max_mm,torso_proxy_pairs,torso_proxy_max_mm,pad_proxy_pairs,pad_proxy_max_mm,digit_adjustment_deg,arm_swivel_deg,stopped_joints,chest_turn_deg,blocked_closure_excess_mm,contact_builds,closure_queries,contact_solve_ms,contact_build_ms,contact_build_queries,open_contact_depth_mm,contact_init_peak_ms,evaluation_ms,initial_root_contact_mm,final_root_contact_mm" + string.Concat(Enumerable.Range(0,20).Select(i => ","+(i<10 ? "pad_marker_error_" : "pad_skin_vertex_gap_")+(i%10<5 ? "player_" : "opponent_")+(i%5)+"_mm")) + ",joint_arc_excess_deg,palm_registration_mm";
         private static readonly CultureInfo Format = CultureInfo.InvariantCulture;
         private readonly AvatarCollisionExperiment experiment;
         private readonly StreamWriter details;

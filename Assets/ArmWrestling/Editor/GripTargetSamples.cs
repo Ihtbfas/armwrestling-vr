@@ -38,7 +38,7 @@ namespace ArmWrestlingVR.EditorTools
         internal string Record()
         {
             var pose = experiment.ResolvedContactPose;
-            if (pose == null || !pose.usesSurfaceTargets) return new string(',',20);
+            if (pose == null || !pose.usesSurfaceTargets) return new string(',',22);
             var values = Enumerable.Repeat(float.NaN,20).ToArray();
             for (int s = 0; s < 2; s++)
             {
@@ -57,7 +57,18 @@ namespace ArmWrestlingVR.EditorTools
                     if (!float.IsInfinity(distance)) values[10+s*5+d] = distance*1000f;
                 }
             }
-            return ","+string.Join(",",values.Select(v => v.ToString("F4",CultureInfo.InvariantCulture)));
+            float arcExcess=0f;
+            if(pose.usesJointConstraints)
+                for(int s=0;s<2;s++) for(int j=0;j<15;j++)
+                {
+                    var h=s==0 ? pose.player : pose.opponent;
+                    float length=Quaternion.Angle(h.jointArcOpen[j],h.jointArcClosed[j]);
+                    float from=Quaternion.Angle(h.jointArcOpen[j],fingers[s][j].localRotation);
+                    float to=Quaternion.Angle(h.jointArcClosed[j],fingers[s][j].localRotation);
+                    arcExcess=Mathf.Max(arcExcess,from+to-length,from-length,to-length);
+                }
+            return ","+string.Join(",",values.Select(v => v.ToString("F4",CultureInfo.InvariantCulture)))
+                +(pose.usesJointConstraints ? string.Format(CultureInfo.InvariantCulture,",{0:F4},{1:F4}",arcExcess,pose.palmRegistrationResidual*1000f) : ",,");
         }
     }
 }

@@ -49,6 +49,39 @@ namespace ArmWrestlingVR
             finally { a.Dispose(); b.Dispose(); }
         }
 
+        // Reuse the existing root geometry while evaluating a bounded multi-point fit.
+        public sealed class RootQuery : IDisposable
+        {
+            private readonly Shapes a,b;
+            private readonly GameObject query;
+            private readonly CapsuleCollider finger;
+            public RootQuery(PairedGripPose pose)
+            {
+                a = new Shapes(pose.player); b = new Shapes(pose.opponent);
+                query = new GameObject("Bounded grip query") { hideFlags = HideFlags.HideAndDontSave };
+                query.transform.position = Vector3.one*10000f;
+                finger = query.AddComponent<CapsuleCollider>(); finger.isTrigger = true;
+            }
+            public float Depth(PairedGripPose pose)
+            {
+                var p=pose.player;var o=pose.opponent;
+                return Mathf.Max(Hit(a.palm,p.wristPosition,p.wristRotation,b.palm,o.wristPosition,o.wristRotation),
+                    a.ThumbDepth(p.wristPosition,p.wristRotation,b.palm,o.wristPosition,o.wristRotation),
+                    b.ThumbDepth(o.wristPosition,o.wristRotation,a.palm,p.wristPosition,p.wristRotation));
+            }
+            public float FingerDepth(PairedGripPose.Hand partner, bool partnerIsPlayer,Vector3 start,Vector3 end,float radius)
+            {
+                finger.radius=radius;finger.height=Vector3.Distance(start,end)+2f*radius;
+                return Hit(finger,(start+end)*0.5f,Quaternion.FromToRotation(Vector3.up,end-start),
+                    partnerIsPlayer ? a.palm : b.palm,partner.wristPosition,partner.wristRotation);
+            }
+            public void Dispose()
+            {
+                a.Dispose();b.Dispose();
+                if (Application.isPlaying) UnityEngine.Object.Destroy(query);else UnityEngine.Object.DestroyImmediate(query);
+            }
+        }
+
         private static float Hit(Collider a,Vector3 pa,Quaternion qa,Collider b,Vector3 pb,Quaternion qb) =>
             Physics.ComputePenetration(a,pa,qa,b,pb,qb,out _,out float depth) ? depth : 0f;
 

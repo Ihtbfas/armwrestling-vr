@@ -1,5 +1,7 @@
 # P2-D 跨人物握姿：已接入主场景，自然扣握尚未验收
 
+**2026-11-20 更新：**有界联合约束仍未通过自然握姿验收，主场景恢复稳妥默认。见[本轮结论](P2D-joint-constraints-result.md)和[最新画廊](validation/p2d-joint-constraints/README.md)。以下保留历史实验记录。
+
 最新接触目标修订已直接接入主场景，见[可视化定姿、真实测试及剩余问题](P2D-contact-targets-revision.md)与[最新公开画廊](validation/p2d-contact-targets/README.md)。以下保留首轮记录；其中旧蒙皮测量的缩放问题已在修订中说明，勿与新结果直接混用。
 
 2026-11-19，Unity 中国版 **2022.3.62f3c1 / Windows Direct3D11 / 实际 Editor Play**。本轮完成同一握姿定义在 Rocketbox 和本机 Ch03 两套不同 Humanoid 上的重定向、主场景接入和配置切换。**没有完成“看起来像正常扳手腕”的最终视觉验收**：拇指横穿掌背的旧形态有所缓解，但四指仍松散、部分像抓腕，局部指节交叠仍在；不能把新增接口或低代理深度当作完成自然握姿。

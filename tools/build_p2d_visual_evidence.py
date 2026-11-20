@@ -16,6 +16,9 @@ def main():
     parser.add_argument("--before", type=Path, required=True)
     parser.add_argument("--after", type=Path, required=True)
     parser.add_argument("--source-ref", required=True)
+    parser.add_argument("--candidate", type=Path)
+    parser.add_argument("--before-label")
+    parser.add_argument("--after-label")
     parser.add_argument("--before-route", choices=("contact","cross"), default="contact")
     parser.add_argument("--before-ref", default="2370f432212f04b0f94d1d5429b236a01b09fa9c")
     parser.add_argument("--output", type=Path, default=ROOT / "docs/validation/p2d-visual")
@@ -37,7 +40,7 @@ def main():
     font_path = Path(matplotlib.get_data_path()) / "fonts/ttf/DejaVuSans.ttf"
     font = ImageFont.truetype(str(font_path), 22)
     gif_font = ImageFont.truetype(str(font_path), 18)
-    labels = ("BEFORE "+args.before_ref[:7], "AFTER " + args.source_ref[:7])
+    labels = (args.before_label or "BEFORE "+args.before_ref[:7], args.after_label or "AFTER " + args.source_ref[:7])
     manifest = {
         "source_ref": args.source_ref,
         "before_behavior_ref": args.before_ref,
@@ -87,6 +90,17 @@ def main():
             path = output / f"contact-guides-{i}.png"; canvas.save(path,optimize=True)
             manifest["files"][path.name] = {"camera": i,"type": "real Editor preview + projected marker overlay; not main-scene raw frame"}
             manifest["source_keyframes"][str(source.relative_to(ROOT).as_posix())] = digest(source)
+    if args.candidate:
+        candidate = args.candidate.resolve()
+        assert candidate.name == "cross", "Only public Rocketbox candidate captures may be published"
+        for view, stem in {"hands":"eye","side":"hand-side","back":"hand-back"}.items():
+            source=candidate / f"{stem}-045.png"
+            picture=Image.open(source).convert("RGB")
+            canvas=Image.new("RGB",(768,612),"#151923");canvas.paste(picture,(0,36))
+            ImageDraw.Draw(canvas).text((10,5),"BOUNDED CANDIDATE | NOT SELECTED AS DEFAULT",font=gif_font,fill="white")
+            path=output / f"candidate-{view}.png";canvas.save(path,optimize=True)
+            manifest["files"][path.name]={"mode":"joint-limited candidate; rejected as default","camera":stem,"angle":0}
+            manifest["source_keyframes"][str(source.relative_to(ROOT).as_posix())]=digest(source)
     for name, info in manifest["files"].items():
         path = output / name
         assert path.stat().st_size < (8 * 1024 * 1024 if path.suffix == ".gif" else 1024 * 1024), name

@@ -17,6 +17,8 @@ namespace ArmWrestlingVR
         [Serializable]
         public sealed class Hand
         {
+            public Quaternion[] jointArcOpen = Array.Empty<Quaternion>(), jointArcClosed = Array.Empty<Quaternion>();
+            public Vector3[] proxyDistalOffsets = Array.Empty<Vector3>();
             public Vector3 palmDorsal;
             public Vector3[] contactPoints = Array.Empty<Vector3>(), padPoints = Array.Empty<Vector3>(), padLocalPoints = Array.Empty<Vector3>(), contactNormals = Array.Empty<Vector3>();
             public float palmLength, palmWidth, palmThickness;
@@ -41,7 +43,8 @@ namespace ArmWrestlingVR
         }
 
         [Range(0f, 1f)] public float fingerStart;
-        public bool usesSurfaceTargets;
+        public bool usesSurfaceTargets, usesJointConstraints;
+        public float palmRegistrationResidual;
         public Hand player = new Hand();
         public Hand opponent = new Hand();
 

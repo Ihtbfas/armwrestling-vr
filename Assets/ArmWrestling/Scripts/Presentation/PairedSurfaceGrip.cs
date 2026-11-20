@@ -6,27 +6,33 @@ namespace ArmWrestlingVR
 {
     // Author once against actual skin regions, resolve for the selected two rigs.
     // Only rotations are changed; no bone translations/scales and no live finger IK.
-    public static class PairedSurfaceGrip
+    public static partial class PairedSurfaceGrip
     {
         public static void Resolve(PairedGripPose pose, GripContactTargets targets, GripAvatarProfile player, GripAvatarProfile opponent, Vector3 centre)
         {
+            if (targets.jointLimited) PairedPalmContactFit.Fit(pose,pose.player.wristRotation*pose.player.palmDorsal,0.001f);
             using (var a = new Hand(player,pose.player))
             using (var b = new Hand(opponent,pose.opponent))
             {
                 // A positive constraint between two authored surface points, not a convex-hull MTD.
                 Vector3 ap = a.Surface(targets.player.heel+a.Offset(0),-1f), bp = b.Surface(targets.opponent.heel+b.Offset(0),-1f);
-                a.Move(centre-ap+a.dorsal*targets.palmClearance*0.5f);
-                b.Move(centre-bp+b.dorsal*targets.palmClearance*0.5f);
+                if (targets.jointLimited) FitPalmRegions(pose,a,b,targets);
+                else
+                {
+                    a.Move(centre-ap+a.dorsal*targets.palmClearance*0.5f);
+                    b.Move(centre-bp+b.dorsal*targets.palmClearance*0.5f);
+                }
                 // Both read the same frozen partner skin before either hand is posed.
                 a.Author(b,targets.player,targets.opponent,targets);
                 b.Author(a,targets.opponent,targets.player,targets);
                 pose.fingerStart = 0f;
                 pose.usesSurfaceTargets = true;
+                pose.usesJointConstraints = targets.jointLimited;
                 Debug.Log($"[P2-D] Surface grip: palm centre separation={Vector3.Distance(a.Centre,b.Centre)*1000f:F2}mm");
             }
         }
 
-        private sealed class Hand : IDisposable
+        private sealed partial class Hand : IDisposable
         {
             private readonly GameObject model;
             private readonly GripAvatarProfile profile;
@@ -52,6 +58,8 @@ namespace ArmWrestlingVR
                     foreach (var r in model.GetComponentsInChildren<Renderer>()) r.enabled = false;
                     wrist = animator.GetBoneTransform(HumanBodyBones.RightHand);
                     bones = PairedGripPose.MapFingers(animator);
+                    result.proxyDistalOffsets = new Vector3[5];
+                    for(int d=0;d<5;d++) result.proxyDistalOffsets[d] = bones[d*3+2].InverseTransformVector(bones[d*3+2].position-bones[d*3+1].position)*0.58f;
                     model.transform.rotation = hand.wristRotation*Quaternion.Inverse(wrist.rotation)*model.transform.rotation;
                     model.transform.position += hand.wristPosition-wrist.position;
                     for (int i = 0; i < 15; i++) bones[i].localRotation = hand.openFingerRotations[i];
@@ -144,6 +152,7 @@ namespace ArmWrestlingVR
                     Vector3 target = partner.Surface(region,surfaceSide);
                     result.contactPoints[2+digit] = target; result.contactNormals[digit] = outward;
                     var a = bones[digit*3]; var b = bones[digit*3+1]; var c = bones[digit*3+2];
+                    if (layout.jointLimited) { AuthorLimited(partner,digit,target,outward); continue; }
                     Vector3 last = (c.position-b.position).normalized;
                     Quaternion oldFrame = Quaternion.LookRotation(last,Vector3.ProjectOnPlane(dorsal,last));
                     Quaternion restRotation = c.rotation;

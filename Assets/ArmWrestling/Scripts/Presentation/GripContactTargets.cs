@@ -17,6 +17,8 @@ namespace ArmWrestlingVR
                 new Vector3(0f,-0.05f,0.015f),new Vector3(0f,-0.05f,0.015f),
                 new Vector3(0f,-0.05f,0.015f),new Vector3(0f,-0.05f,0.015f) };
         }
+        [Tooltip("Controlled experiment: keep wrist axes and fit fingers only inside authored Humanoid flexion arcs.")]
+        public bool jointLimited;
         public Hand player = new Hand(), opponent = new Hand();
         [Tooltip("Thumb distal direction in the common Grip Anchor; fingers instead turn down the partner back.")]
         public Vector3 thumbDirection = Vector3.up;

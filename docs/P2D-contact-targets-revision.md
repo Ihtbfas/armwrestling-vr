@@ -1,5 +1,7 @@
 # P2-D 修订：成对表面目标与可视化定姿
 
+**2026-11-20 更新：**有界联合约束仍未通过自然握姿验收，主场景恢复稳妥默认。见[本轮结论](P2D-joint-constraints-result.md)和[最新画廊](validation/p2d-joint-constraints/README.md)。以下保留历史实验记录。
+
 针对 [PR #11 审阅](https://github.com/Ihtbfas/armwrestling-vr/pull/11#issuecomment-7009866475)，本轮保留跨 Humanoid 适配，直接修改了 `ArmWrestlingMain` 使用的握姿生成路径。**四指明显张开的情况已有可观察改善；仍有指节交错、拇指贴合不足和掌根交叠，不能宣布自然扣握全部通过。** PR 继续 Draft。
 
 [最新真实画廊](validation/p2d-contact-targets/README.md)保留零位第一人称、斜正侧/反侧近景、±30°、完整坐姿及连续 GIF。旧 [P2-D 首轮画廊](validation/p2d-visual/README.md)和 [P2-C](validation/p2c-visual/README.md)不覆盖。

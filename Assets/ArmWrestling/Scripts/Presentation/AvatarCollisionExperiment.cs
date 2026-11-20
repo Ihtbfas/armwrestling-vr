@@ -131,7 +131,9 @@ namespace ArmWrestlingVR
                     }
                     else
                     {
-                        Vector3 tip = from.InverseTransformVector(from.position - fingers[offset + 1].position) * 0.58f;
+                        Vector3 tip = UsesHumanoidAdapter && contactPose.usesJointConstraints
+                            ? (animator == bodyAnimator ? contactPose.opponent : contactPose.player).proxyDistalOffsets[digit]
+                            : from.InverseTransformVector(from.position - fingers[offset + 1].position) * 0.58f;
                         hand.Add(NewCapsule(name, radius, from.TransformVector(tip).magnitude,
                             () => Segment(from.position, from.TransformPoint(tip)), from));
                     }

@@ -1,5 +1,7 @@
 # P2-D｜跨人物通用握姿与自然接触，验证后直接集成
 
+> 2026-11-20：一次有界联合约束未通过自然握姿验收，已恢复稳妥通用默认并停止继续调参；见[本轮结论与真实证据](../P2D-joint-constraints-result.md)。原工作流与历史资源保留。
+
 > **状态：已直接接入主场景并完成两骨架 Editor 实测；自然扣握视觉验收未完成。** 详见[结果与限制](../P2D-cross-avatar-grip-result.md)及[真实公开画廊](../validation/p2d-visual/README.md)。 以 P2-C `3c125f1`（[PR #10](https://github.com/Ihtbfas/armwrestling-vr/pull/10)，尚未合并）为可回退基线，在本分支 `feat/p2d-cross-avatar-grip` 实施。本轮不是只做设计或技术验证：**找到可行方式后，在同一轮直接接入 `ArmWrestlingMain`、完成实际 Editor Play 和画面验收。**
 
 ## 最重要的目标

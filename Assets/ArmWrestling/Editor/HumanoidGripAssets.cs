@@ -47,10 +47,10 @@ namespace ArmWrestlingVR.EditorTools
             AssetDatabase.SaveAssets();
             EditorSceneManager.OpenScene(SceneGenerator.MainScenePath,OpenSceneMode.Single);
             var bootstrap = Object.FindObjectOfType<RuntimeBootstrap>();
-            bootstrap.useGripSurfaceTargets = true;
+            bootstrap.useGripSurfaceTargets = false;
             bootstrap.useHumanoidGrip = true; bootstrap.usePairedGrip = true;
             bootstrap.legacyHumanoidGrip = Resources.Load<HumanoidGripDefinition>("P2D/LegacyHumanoidGrip");
-            bootstrap.humanoidGrip = definition; bootstrap.playerAvatar = profile; bootstrap.opponentAvatar = profile;
+            bootstrap.humanoidGrip = Resources.Load<HumanoidGripDefinition>("P2D/ConstrainedHumanoidGrip") ?? definition; bootstrap.playerAvatar = profile; bootstrap.opponentAvatar = profile;
             EditorSceneManager.MarkSceneDirty(bootstrap.gameObject.scene);
             EditorSceneManager.SaveScene(bootstrap.gameObject.scene);
             Debug.Log("[P2-D] Main scene configured. Select profiles in Runtime Bootstrap to switch models.");

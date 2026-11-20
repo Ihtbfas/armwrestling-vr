@@ -1,12 +1,16 @@
 # TASKS
 
-## 当前阶段：P2-D 跨人物通用握姿与自然接触（已集成并跨骨架实测；自然扣握未完成）
+## 当前阶段：P2-D 跨人物通用握姿与自然接触（有界实验收口；默认稳妥回退，自然扣握未通过）
 
 - [x] 从 P2-C Rocketbox 专属 wrist/finger localRotation 中拆出可在不同 Humanoid 上表达的握姿与接触语义。
 - [x] 建立简洁可编辑的 Avatar 适配配置；更换模型不需要改核心 C#，允许手型差异引起的小量配置/姿态覆盖。
 - [x] 用**第二套不同骨架**真实测试（本地 Ch03 或许可明确且不同骨骼的模型），不能仅用 Rocketbox 缩放代替。
 - [ ] 自然扣握视觉验收：零位根部先接触及分关节限位已实现，但仍松握、指节交错；不能以约 1 mm 凸包指标代替画面。
 - [x] 同一轮从小验证直接集成，完成两个骨架在零位、±30° 和实际比赛的 Editor Play，以及合规 PNG/GIF 可查看证据。
+
+- [x] 完成一次整掌/关节弧/腕姿/碰撞预算的有界候选验证；未达自然验收，按停止条件恢复稳妥通用默认，保留实验和跨模型适配。
+
+[本轮收口结果](docs/P2D-joint-constraints-result.md) · [真实 PNG/GIF](docs/validation/p2d-joint-constraints/README.md)
 
 [执行任务书](docs/tasks/P2D-cross-avatar-paired-grip.md) · [调研技术参考](docs/research/P2D-cross-avatar-grip-references.md) · [P2-C 画廊基线](docs/validation/p2c-visual/README.md)
 

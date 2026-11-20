@@ -77,7 +77,8 @@ namespace ArmWrestlingVR.EditorTools
                 EditorSceneManager.OpenScene(SceneGenerator.MainScenePath, OpenSceneMode.Single);
                 var bootstrap = UnityEngine.Object.FindObjectOfType<RuntimeBootstrap>();
                 bootstrap.useHumanoidGrip = cross;
-                bootstrap.useGripSurfaceTargets = !HasArgument("-p2dlegacy");
+                if (!HasArgument("-p2ddefault")) bootstrap.useGripSurfaceTargets = !HasArgument("-p2dlegacy");
+                if (HasArgument("-p2dprior")) bootstrap.humanoidGrip = Resources.Load<HumanoidGripDefinition>("P2D/ArmWrestlingGrip");
                 if (cross)
                 {
                     var selected = Resources.Load<GripAvatarProfile>(HasArgument("-p2dlocal") ? "P2DLocal/Ch03Profile" : "P2D/RocketboxProfile");

@@ -62,9 +62,10 @@ namespace ArmWrestlingVR.EditorTools
                 bootstrap.pairedCollisions = PairedCollisionMode.Off;
                 bool grip = Array.IndexOf(args, "-p0grip") >= 0;
                 bool handContact = Array.IndexOf(args, "-p0handcontact") >= 0;
-                bool crossLegacy = Array.IndexOf(args,"-p0crosslegacy") >= 0;
+                bool useSceneDefault = Array.IndexOf(args,"-p0crossdefault") >= 0;
+                bool crossLegacy = Array.IndexOf(args,"-p0crosslegacy") >= 0 || (useSceneDefault && !bootstrap.useGripSurfaceTargets);
                 bool markerFallback = Array.IndexOf(args,"-p0crossmarkfallback") >= 0;
-                bool cross = crossLegacy || Array.IndexOf(args,"-p0cross") >= 0;
+                bool cross = useSceneDefault || crossLegacy || Array.IndexOf(args,"-p0cross") >= 0;
                 bool crossLocal = Array.IndexOf(args,"-p0crosslocal") >= 0;
                 bool crossMixed = Array.IndexOf(args,"-p0crossmixed") >= 0;
                 bool crossFallback = markerFallback || Array.IndexOf(args,"-p0crossfallback") >= 0;
@@ -242,7 +243,7 @@ namespace ArmWrestlingVR.EditorTools
                                 bool expectedTargets = SessionState.GetBool(ActiveKey + ".surfaceTargets",false);
                                 Require(experiment.ResolvedContactPose != null && experiment.ResolvedContactPose.usesSurfaceTargets == expectedTargets,
                                     "Requested surface target pose did not execute.");
-                                opponent += "\nHumanoidGrip=Common definition, profile-selected player/opponent, 15 fingers each\nSurfaceTargets=" + expectedTargets;
+                                opponent += "\nHumanoidGrip=Common definition, profile-selected player/opponent, 15 fingers each\nSurfaceTargets=" + expectedTargets + "\nJointConstraints=" + experiment.ResolvedContactPose.usesJointConstraints;
                             }
                             Require(!Resources.FindObjectsOfTypeAll<GameObject>().Any(go => go.name.EndsWith("(Clone)")
                                 && (go.hideFlags & HideFlags.DontSave) != 0 && go.GetComponent<Animator>() != null),

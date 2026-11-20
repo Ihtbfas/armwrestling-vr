@@ -22,7 +22,7 @@ namespace ArmWrestlingVR.EditorTools
             var root = new GameObject("P2D Surface Contact Authoring") { hideFlags = HideFlags.DontSaveInEditor };
             Undo.RegisterCreatedObjectUndo(root,"Open surface grip preview");
             var preview = root.AddComponent<PairedContactPreview>();
-            preview.definition = Resources.Load<HumanoidGripDefinition>("P2D/ArmWrestlingGrip");
+            preview.definition = Resources.Load<HumanoidGripDefinition>("P2D/ConstrainedHumanoidGrip") ?? Resources.Load<HumanoidGripDefinition>("P2D/ArmWrestlingGrip");
             preview.player = preview.opponent = Resources.Load<GripAvatarProfile>("P2D/RocketboxProfile");
             preview.Rebuild(); Selection.activeGameObject = root;
             SceneView.lastActiveSceneView?.Frame(new Bounds(Vector3.zero,Vector3.one*0.28f),false);
