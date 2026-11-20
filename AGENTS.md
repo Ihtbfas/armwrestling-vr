@@ -36,4 +36,4 @@
 
 ## 本阶段
 
-当前分支 `feat/p2d-cross-avatar-grip`：执行 [P2-D 跨人物握姿重定向及主场景直接集成](docs/tasks/P2D-cross-avatar-paired-grip.md)，参考 [已有成熟方案调研](docs/research/P2D-cross-avatar-grip-references.md)。以 P2-C 的 Rocketbox+ContactGrip 为基线并保留回退；**同一轮完成：调研 → 小试 → 换第二套不同骨架实测 → 直接接入主场景 → Editor 回归/PNG/GIF**。通用握姿与模型特定几何分离；允许可编辑的 Avatar 配置校准，但不允许在核心代码写死具体 FBX / 指骨四元数，也不允许未实测就宣称跨人物可复用。旧的 P2-C 画廊和可运行模式必须保留。
+当前分支 `feat/p2d-cross-avatar-grip` 上继续 **P2-E 美术定姿实施**：[详细任务](docs/tasks/P2E-authored-paired-grip.md) 与 [工具参考](docs/research/P2E-authored-hand-pose-workflow.md)。保留 P2-D 已成功的跨 Humanoid/Profile、稳定 `LegacyHumanoidGrip` 默认、既有 Animator/IK/ContactGrip/Grip Anchor 和回退。**这轮从“自动算自然握姿”改为“实际用 Unity/Blender 骨骼编辑保存可复用双手握姿”**。先零位真实多视角美术确认，再同轮直接接入主场景和两骨架 Editor 验证，公开合规 PNG/GIF；不得只开发编辑器后停下，不再随机搜索 muscle/碰撞参数。保持 PR #11 Draft，确认确有更好效果才更新默认，不自行合并。
