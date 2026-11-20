@@ -1,14 +1,14 @@
 # TASKS
 
-## 当前执行：P2-E 续作｜真实握法参照与骨骼定姿（待 Codex 实施）
+## P2-E 续作｜真实握法参照与骨骼定姿（已接入可选模式）
 
-- [ ] 先用 CAWF/AWE 真实握法规则、裁判视频和多人多视角近景，明确双掌/虎口/拇指/指腹接触对应。
-- [ ] 直接在两只真实 Humanoid 手的 Unity Pose Preview 中逐骨摆出可视认可的 Ready（轻握）和 Contest（扣握），保存并 Reload；**不得仅重跑 PoseDigits 固定角度表**。
-- [ ] 保留跨 Rocketbox、Ch03 Avatar/Profile 通用逻辑和 P2-D 稳定回退；零位过关即同一轮集成主场景、跑 ±30°、连续往返和实际比赛。
-- [ ] GitHub 上传许可合规的真实零位、多视角/关键帧 PNG 和 GIF；记下手指接触、腕姿/掌根/肘垫的改善和代价。
-- [ ] 新握姿确实自然、没有重要退步才切换默认；否则保留稳定默认，公开真实受限原因并停止同类自动搜索。
+- [x] 查阅 CAWF/AWE 规则、比赛照片与教学视频预览帧，明确掌面、拇指和四指的接触对应。
+- [x] 在 Unity 的双手预览中直接摆腕和指骨，保存、重载 Ready 轻握与 Contest 扣握。
+- [x] 同轮接入主场景。Rocketbox、Ch03 和混合角色扫角，并回归比赛与回退。
+- [x] 保存公开的同机位 PNG / GIF 与技术结果。Ch03 画面只留本机。
+- [ ] 自然握持及默认切换。Rocketbox 优于上一稿；Ch03 拇指和指节仍有交叠，保留稳定默认。
 
-[执行任务书](docs/tasks/P2E-reference-guided-paired-pose.md) · [真实握法/姿态工具参考](docs/research/P2E-real-armwrestling-grip-reference.md)
+[本轮实测结果](docs/P2E-real-grip-result.md) · [执行任务书](docs/tasks/P2E-reference-guided-paired-pose.md) · [真实握法/姿态工具参考](docs/research/P2E-real-armwrestling-grip-reference.md)
 
 ## P2-E 双人美术握姿制作与主场景集成（已保存并接入可选模式）
 

@@ -1,5 +1,7 @@
 # P2-E 续作｜真人握姿参照驱动的成对定姿与直接集成
 
+**实测结果。** 已保存、重载并接入可选握姿，Rocketbox 有可见改善，Ch03 局部交叠增大。稳定默认继续保留。见[编辑方法、结果和公开画廊](../P2E-real-grip-result.md)。
+
 **执行分支：** `feat/p2d-cross-avatar-grip`，更新同一 [Draft PR #11](https://github.com/Ihtbfas/armwrestling-vr/pull/11)，不要另建堆叠分支。上游仍未合并。本任务授权一次完成**“查真实参考 → 实际摆骨 → 保存 → 主场景接入 → 复测与 GitHub 图片/GIF”**，不在验证后停下等新批准。
 
 ## 既有状态与这次真正要改变的事

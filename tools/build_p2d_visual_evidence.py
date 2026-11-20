@@ -18,6 +18,8 @@ def main():
     parser.add_argument("--source-ref", required=True)
     parser.add_argument("--candidate", type=Path)
     parser.add_argument("--ready", type=Path, help="Optional public Ready endpoint capture")
+    parser.add_argument("--hand-top", action="store_true", help="Include the neutral overhead camera comparison")
+    parser.add_argument("--prior", type=Path, help="Optional public prior authored mode for extra neutral comparisons")
     parser.add_argument("--before-label")
     parser.add_argument("--after-label")
     parser.add_argument("--before-route", choices=("contact","cross"), default="contact")
@@ -53,7 +55,9 @@ def main():
         "source_keyframes": {}, "files": {},
     }
     for view, stem in {"hands": "eye", "grip-front": "hand-front", "grip-side": "hand-side",
-                       "front": "front", "side": "side", "player": "player", **({"grip-back": "hand-back"} if args.before_route == "cross" else {})}.items():
+                       "front": "front", "side": "side", "player": "player",
+                       **({"grip-back": "hand-back"} if args.before_route == "cross" else {}),
+                       **({"grip-top": "hand-top"} if args.hand_top else {})}.items():
         path = output / f"neutral-{view}.png"
         picture = pair(before, after, stem, 45, font, labels)
         picture.resize((1200, 478), Image.Resampling.LANCZOS).save(path, optimize=True)
@@ -113,6 +117,20 @@ def main():
         for folder in (ready, after):
             source = folder / "eye-045.png"
             manifest["source_keyframes"][str(source.relative_to(ROOT).as_posix())] = digest(source)
+    if args.prior:
+        prior = args.prior.resolve()
+        assert prior.name == "cross", "Only public Rocketbox prior captures may be published"
+        prior_rows = list(csv.DictReader((prior.parent / "measurements.csv").open()))
+        assert len(prior_rows) == 181
+        for field in manifest["matched_inputs"]:
+            assert all(a[field] == b[field] for a, b in zip(prior_rows, rows[1])), field
+        for name, stem in (("prior-hands.png", "eye"), ("prior-top.png", "hand-top")):
+            picture = pair(prior, after, stem, 45, font, ("P2-E PRIOR", labels[1]))
+            picture.resize((1200, 478), Image.Resampling.LANCZOS).save(output / name, optimize=True)
+            manifest["files"][name] = {"angle": 0, "camera": stem, "layout": "prior left / current right"}
+            for folder in (prior, after):
+                source = folder / f"{stem}-045.png"
+                manifest["source_keyframes"][str(source.relative_to(ROOT).as_posix())] = digest(source)
     for name, info in manifest["files"].items():
         path = output / name
         assert path.stat().st_size < (8 * 1024 * 1024 if path.suffix == ".gif" else 1024 * 1024), name

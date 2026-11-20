@@ -164,7 +164,7 @@ MonoBehaviour:
   humanoidGrip: {fileID: 11400000, guid: 578eea93fa4b3774d8dc7b8f0cf04ed0, type: 2}
   legacyHumanoidGrip: {fileID: 11400000, guid: b6b5c54c68b4928439d71c09202090dd, type: 2}
   useAuthoredGrip: 0
-  authoredGrip: {fileID: 11400000, guid: e60d89d14e1688443867a878fd015b8b, type: 2}
+  authoredGrip: {fileID: 11400000, guid: afb08a856e6e9ad44860bca8637cf9cc, type: 2}
   playerAvatar: {fileID: 11400000, guid: c5531900ffbf9844f81bc7720fc6fc0d, type: 2}
   opponentAvatar: {fileID: 11400000, guid: c5531900ffbf9844f81bc7720fc6fc0d, type: 2}
 --- !u!4 &1452332916

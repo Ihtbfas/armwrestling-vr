@@ -49,6 +49,7 @@ namespace ArmWrestlingVR.EditorTools
         private static Camera handFront;
         private static Camera handSide;
         private static Camera handBack;
+        private static Camera handTop;
         private static SphereCollider playerSphere;
         private static int mappedFingerBones;
         private static int route;
@@ -80,6 +81,8 @@ namespace ArmWrestlingVR.EditorTools
                 if (!HasArgument("-p2ddefault")) bootstrap.useGripSurfaceTargets = !HasArgument("-p2dlegacy");
                 if (HasArgument("-p2dprior")) bootstrap.humanoidGrip = Resources.Load<HumanoidGripDefinition>("P2D/ArmWrestlingGrip");
                 bootstrap.useAuthoredGrip = HasArgument("-p2e");
+                if (HasArgument("-p2eprior"))
+                    bootstrap.authoredGrip = Resources.Load<HumanoidGripDefinition>(AuthoredGripAuthoring.Resource);
                 if (cross)
                 {
                     var selected = Resources.Load<GripAvatarProfile>(HasArgument("-p2dlocal") ? "P2DLocal/Ch03Profile" : "P2D/RocketboxProfile");
@@ -148,6 +151,7 @@ namespace ArmWrestlingVR.EditorTools
                         Capture(handFront, Path.Combine(output, label, "hand-front-" + frame.ToString("D3") + ".png"));
                         Capture(handSide, Path.Combine(output, label, "hand-side-" + frame.ToString("D3") + ".png"));
                         Capture(handBack, Path.Combine(output, label, "hand-back-" + frame.ToString("D3") + ".png"));
+                        Capture(handTop, Path.Combine(output, label, "hand-top-" + frame.ToString("D3") + ".png"));
                     }
                     if (motionSweep)
                         Capture(playerCamera, Path.Combine(output, label, "player-" + frame.ToString("D3") + ".png"));
@@ -255,6 +259,8 @@ namespace ArmWrestlingVR.EditorTools
                 handFront = View(app.deviceRoot, Vector3.back, Vector3.zero);
                 handSide = View(app.deviceRoot, Vector3.left, Vector3.zero);
                 handBack = View(app.deviceRoot, Vector3.right, Vector3.zero);
+                handTop = View(app.deviceRoot, Vector3.up, Vector3.zero);
+                handTop.nearClipPlane = 0.02f;
                 handBack.nearClipPlane = 0.02f;
                 handFront.nearClipPlane = handSide.nearClipPlane = 0.02f;
                 if (gripSweep) PrepareGripProbe();
@@ -479,6 +485,8 @@ namespace ArmWrestlingVR.EditorTools
             handSide.transform.LookAt(grip, frame.up);
             handBack.transform.position = grip + frame.TransformVector(new Vector3(0.30f,0.10f,-0.07f));
             handBack.transform.LookAt(grip,frame.up);
+            handTop.transform.position = grip + frame.TransformVector(new Vector3(0.015f, 0.29f, -0.06f));
+            handTop.transform.LookAt(grip, frame.forward);
             if (handContactSweep)
             {
                 playerDetail.transform.position = playerCamera.transform.position;

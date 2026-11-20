@@ -9,13 +9,18 @@ namespace ArmWrestlingVR.EditorTools
     public static class AuthoredGripAuthoring
     {
         public const string Resource = "P2D/AuthoredPairedGrip";
+        private const string ReferenceResource = "P2D/ReferencePairedGrip";
         private const string AssetPath = "Assets/ArmWrestling/Resources/" + Resource + ".asset";
         internal static readonly string[] BoneLabels = Enumerable.Range(0, 15)
             .Select(i => PairedGripPose.Finger(i).ToString().Substring("Right".Length))
             .Append("Wrist").ToArray();
 
         [MenuItem("扳手腕/P2-E/Open Authored Grip Preview")]
-        public static void Open() => OpenPreview(Resources.Load<HumanoidGripDefinition>(Resource));
+        public static void Open() => OpenPreview(Resources.Load<HumanoidGripDefinition>(ReferenceResource)
+            ?? Resources.Load<HumanoidGripDefinition>(Resource));
+
+        [MenuItem("扳手腕/P2-E/Open Previous Authored Grip Preview")]
+        public static void OpenPrevious() => OpenPreview(Resources.Load<HumanoidGripDefinition>(Resource));
 
         private static PairedContactPreview OpenPreview(HumanoidGripDefinition definition)
         {
