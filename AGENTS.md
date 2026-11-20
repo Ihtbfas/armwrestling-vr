@@ -36,4 +36,4 @@
 
 ## 本阶段
 
-当前分支 `feat/p2d-cross-avatar-grip` 上继续 **P2-E 美术定姿实施**：[详细任务](docs/tasks/P2E-authored-paired-grip.md) 与 [工具参考](docs/research/P2E-authored-hand-pose-workflow.md)。保留 P2-D 已成功的跨 Humanoid/Profile、稳定 `LegacyHumanoidGrip` 默认、既有 Animator/IK/ContactGrip/Grip Anchor 和回退。**这轮从“自动算自然握姿”改为“实际用 Unity/Blender 骨骼编辑保存可复用双手握姿”**。先零位真实多视角美术确认，再同轮直接接入主场景和两骨架 Editor 验证，公开合规 PNG/GIF；不得只开发编辑器后停下，不再随机搜索 muscle/碰撞参数。保持 PR #11 Draft，确认确有更好效果才更新默认，不自行合并。
+当前 `feat/p2d-cross-avatar-grip` 的 P2-E 续作：执行 [真实握法参照驱动的双手定姿与主场景集成](docs/tasks/P2E-reference-guided-paired-pose.md)，先读 [实际规则/多角度素材与工具参考](docs/research/P2E-real-armwrestling-grip-reference.md)。**零位先按真人掌心、拇指和四指接触关系真正编辑两只手的骨骼；不再把脚本固定角度表称为美术定姿。** 可自行使用现有 Unity Pose Preview 或本机 Blender，验证好后同一轮直接更新 `ArmWrestlingMain`、两模型运行测试、公开 PNG/GIF。跨 Humanoid Profile 和稳定默认/旧实验回退都要保留；未经肉眼与关键接触检查确认的新握姿不能成为默认。PR #11 继续 Draft，不自行合并。
