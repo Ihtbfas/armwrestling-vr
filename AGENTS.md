@@ -36,4 +36,4 @@
 
 ## 本阶段
 
-P2 离线 Editor 基线已收口。默认使用 P2-D 的 `LegacyHumanoidGrip`，P2-E 的 `ImagePairedGrip` 作为可选美术稿。继续保留跨人物 Profile、共同握点、IK、ContactGrip、碰撞诊断与历史回退。现有局部穿插与 Ch03 肘垫偏差分别记录。下一步在 PICO 头显上验证视点、输入和离线流程。[阶段结果与真机准备](docs/P2-closeout.md)
+P2 已在 `main` 收口；P3 工作分支 `feat/p3-pico-offline-first-test` 执行 [PICO Android APK 与真实头显离线验证](docs/tasks/P3-pico-offline-first-test.md)，先读 [官方 OpenXR 与项目风险核对](docs/research/P3-pico-openxr-device-preflight.md)。**同一轮做到：确定设备型号 → 检查配置 → 构建 APK → 有头显则安装/真测/修复 → 记录可审核证据和未完成项。** 严禁把 Editor 15/15 或 Android Build 成功说成已通过 PICO 真机。先用 P2-D 默认、再看 P2-E 可选；不得为了测试改机械角语义、PC UDP/STM32 或大规模重做握姿。实机未连接时交付 Build 与清楚阻断说明，不假装完成手柄与视觉体验。

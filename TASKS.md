@@ -1,5 +1,15 @@
 # TASKS
 
+## 当前阶段：P3 PICO 离线真机首测（待 Codex 执行）
+
+- [ ] 读取真实 PICO 型号/OS/手柄配置，核查 OpenXR Android、PICO Features、双 HandTracking 资源和 XR 初始化时序。
+- [ ] 从 P2 main 构建 Android ARM64/IL2CPP Development APK，验证中文 UI 字形和应用启动；有实机则直接 ADB 安装并现场排障。
+- [ ] **必须使用真实头显与手柄**完成默认 P2-D 离线比赛：坐姿眼高、射线点击、倒计时、暂停/恢复和结算，再简单对照 P2-E 可选握姿。
+- [ ] 保留实机型号、固件、APK Hash、logcat、真实录屏和帧时间；分清 Editor / 构建 / 实机 / 控制联调验证级别。
+- [ ] 无设备时也尽力交付 APK 与最短安装步骤，不得宣称真机已通过。保留 P2、PC/STM32/UDP 的边界。
+
+[执行任务书](docs/tasks/P3-pico-offline-first-test.md) · [PICO 官方配置与当前工程核对](docs/research/P3-pico-openxr-device-preflight.md) · [P2 冻结基线](docs/P2-closeout.md)
+
 ## P2 阶段收口
 
 - [x] 将 PR #8～#11 的原始提交整合到 `main`，冻结 P2-D 默认与 P2-E 可选美术稿。
