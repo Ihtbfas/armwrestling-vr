@@ -18,10 +18,35 @@ namespace ArmWrestlingVR
         [Tooltip("Optional normalized surface marker offsets: heel, web, thumb, index, middle, ring, little.")]
         public Vector3[] contactOffsets = new Vector3[7];
         public Vector4[] muscleOffsets = new Vector4[5];
+        [System.Serializable]
+        public struct FingerAdjustment
+        {
+            public GripAvatarProfile player;
+            public HumanBodyBones joint;
+            [Tooltip("Degrees relative to this Avatar's retargeted joint rotation.")]
+            public Vector3 localEuler;
+        }
+        [Tooltip("Optional authored pose for which the retargeted opponent needs local finger adjustments.")]
+        public HumanoidGripDefinition opponentCalibrationGrip;
+        public FingerAdjustment[] opponentFingerAdjustments;
         [Min(0.5f)] public float contactRadiusScale = 1f;
         public float elbowSupportHeight = 0.135f;
         public Vector2 bodySideAtLimits = new Vector2(0.16f,0.02f);
         public Vector2 uprightAtLimits = new Vector2(13f,7f);
+
+        internal void ApplyOpponentAdjustments(HumanoidGripDefinition definition, GripAvatarProfile player, PairedGripPose.Hand hand)
+        {
+            if (definition != opponentCalibrationGrip || opponentFingerAdjustments == null) return;
+            foreach (var edit in opponentFingerAdjustments)
+            {
+                if (edit.player != player) continue;
+                int i = (int)edit.joint - (int)HumanBodyBones.RightThumbProximal;
+                if (i < 0 || i >= hand.fingerRotations.Length) continue;
+                Quaternion delta = Quaternion.Euler(edit.localEuler);
+                hand.openFingerRotations[i] *= delta;
+                hand.fingerRotations[i] *= delta;
+            }
+        }
 
         public bool IsUsable
         {

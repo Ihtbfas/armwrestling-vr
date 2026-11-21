@@ -36,6 +36,8 @@ namespace ArmWrestlingVR.EditorTools
                 local.originFromSeat = new Vector3(0f,-0.22f,-0.08f); local.footLift = 0f;
                 local.elbowSupportHeight = 0.121f; local.bodySideAtLimits = Vector2.zero; local.uprightAtLimits = Vector2.zero;
                 AssetDatabase.CreateAsset(local,localFolder + "/Ch03Profile.asset");
+                SetCh03OpponentCalibration(local);
+                EditorUtility.SetDirty(local);
             }
             var targets = AssetDatabase.LoadAssetAtPath<GripContactTargets>(folder + "/SurfaceTargets.asset");
             if (targets == null)
@@ -55,6 +57,41 @@ namespace ArmWrestlingVR.EditorTools
             EditorSceneManager.SaveScene(bootstrap.gameObject.scene);
             Debug.Log("[P2-D] Main scene configured. Select profiles in Runtime Bootstrap to switch models.");
             if (Application.isBatchMode) EditorApplication.Exit(0);
+        }
+
+        [MenuItem("扳手腕/P2-E/Apply Ch03 Middle Finger Calibration", true)]
+        private static bool CanCalibrateCh03() => !EditorApplication.isPlayingOrWillChangePlaymode
+            && Resources.Load<GripAvatarProfile>("P2DLocal/Ch03Profile") != null;
+
+        [MenuItem("扳手腕/P2-E/Apply Ch03 Middle Finger Calibration")]
+        private static void CalibrateCh03()
+        {
+            var profile = Resources.Load<GripAvatarProfile>("P2DLocal/Ch03Profile");
+            Undo.RecordObject(profile, "Calibrate Ch03 opponent middle finger");
+            SetCh03OpponentCalibration(profile);
+            EditorUtility.SetDirty(profile);
+            AssetDatabase.SaveAssetIfDirty(profile);
+        }
+
+        // Numeric adjustments authored on the local Avatar; its mesh and profile stay local.
+        private static void SetCh03OpponentCalibration(GripAvatarProfile profile)
+        {
+            profile.opponentCalibrationGrip = Resources.Load<HumanoidGripDefinition>("P2D/ImagePairedGrip");
+            var rocketbox = Resources.Load<GripAvatarProfile>("P2D/RocketboxProfile");
+            GripAvatarProfile.FingerAdjustment Joint(GripAvatarProfile player, HumanBodyBones bone, Vector3 angles) =>
+                new GripAvatarProfile.FingerAdjustment { player = player, joint = bone, localEuler = angles };
+            var proximal = new Vector3(-2.568f, 0.087f, -4.214f);
+            var intermediate = new Vector3(-7.451f, 0.293f, -4.491f);
+            var distal = new Vector3(-2.464f, -0.691f, -2.858f);
+            // Fractions of the sculpted correction selected against the two posed palm surfaces.
+            profile.opponentFingerAdjustments = new[] {
+                Joint(profile, HumanBodyBones.RightMiddleProximal, proximal * 0.14f),
+                Joint(profile, HumanBodyBones.RightMiddleIntermediate, intermediate * 0.14f),
+                Joint(profile, HumanBodyBones.RightMiddleDistal, distal * 0.14f),
+                Joint(rocketbox, HumanBodyBones.RightMiddleProximal, proximal * 0.71f),
+                Joint(rocketbox, HumanBodyBones.RightMiddleIntermediate, intermediate * 0.71f),
+                Joint(rocketbox, HumanBodyBones.RightMiddleDistal, distal * 0.71f)
+            };
         }
     }
 }

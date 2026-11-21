@@ -22,8 +22,8 @@ namespace ArmWrestlingVR
             pose.name = "Resolved Humanoid paired grip";
             try
             {
-                pose.player = Resolve(definition, player, true, out playerSize);
-                pose.opponent = Resolve(definition, opponent, false, out opponentSize);
+                pose.player = Resolve(definition, player, opponent, true, out playerSize);
+                pose.opponent = Resolve(definition, opponent, player, false, out opponentSize);
                 pose.fingerStart = definition.fingerStart;
                 if (useSurfaceTargets && definition.contactTargets != null) PairedSurfaceGrip.Resolve(pose,definition.contactTargets,player,opponent,definition.palmContactCenter);
                 else PairedPalmContactFit.Fit(pose,definition.palmNormal,0.001f);
@@ -40,7 +40,8 @@ namespace ArmWrestlingVR
             catch { if (Application.isPlaying) UnityEngine.Object.Destroy(pose); else UnityEngine.Object.DestroyImmediate(pose); throw; }
         }
 
-        private static PairedGripPose.Hand Resolve(HumanoidGripDefinition definition, GripAvatarProfile profile, bool player, out Measurement size)
+        private static PairedGripPose.Hand Resolve(HumanoidGripDefinition definition, GripAvatarProfile profile,
+            GripAvatarProfile partner, bool player, out Measurement size)
         {
             var instance = UnityEngine.Object.Instantiate(profile.prefab);
             instance.hideFlags = HideFlags.HideAndDontSave;
@@ -136,6 +137,7 @@ namespace ArmWrestlingVR
                         handler.SetHumanPose(ref human);
                         authored.contestThumb.Apply(wrist, fingers);
                         hand.fingerRotations = Read(fingers, profile.thumbOpposition, 0f);
+                        if (!player) profile.ApplyOpponentAdjustments(definition, partner, hand);
                     }
                 }
                 Debug.Log($"[P2-D] {profile.name} {(player ? "player" : "opponent")}: bones={size.boneCount}, fingers={size.rightFingers}/{size.leftFingers}, palm={size.palmLength:F4}/{size.palmWidth:F4}/{size.thickness:F4}, forearm={size.forearmLength:F4}, thumb={size.thumbName}, index={size.indexName}");
