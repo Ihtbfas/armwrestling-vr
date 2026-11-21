@@ -1,0 +1,56 @@
+{
+  "runtime_before": "9a4e4cffc68e1d384c45dfd73c8ce8a4f78a4e87",
+  "runtime_after": "22a3deb2638429c353e0ca3890955b6d6c9985d7",
+  "captures": [
+    ".p0-local/p2d-cross-avatar/20261121-112149/cross",
+    ".p0-local/p2d-cross-avatar/20261121-145327/cross",
+    ".p0-local/p2d-cross-avatar/20261121-145356/cross"
+  ],
+  "files": {
+    "angles-eye.png": {
+      "bytes": 449211,
+      "sha256": "6620dac9384d999c8b4f4029a2587b19643e99ac0745bdb8a5b27053773283cc"
+    },
+    "angles-side.png": {
+      "bytes": 233610,
+      "sha256": "064fd7fd05aa5f679a321afa576c5c93eebc8bc30abece9ca998142f523a7625"
+    },
+    "contact-motion.gif": {
+      "bytes": 2406160,
+      "sha256": "9a5ad32da940e00601e21c1f2ce63b084c7bf728d001303c46b29492a2013362"
+    },
+    "ready-contest.png": {
+      "bytes": 160253,
+      "sha256": "20c900183bd2a640bd40cc91146644e378cefb9efd6554a26a1782e320d23d0b"
+    },
+    "zero-eye.png": {
+      "bytes": 221513,
+      "sha256": "9a0c12ea74819b79ee6462028f9d3d19f676614f02bffbc68d67cb2203986f41"
+    },
+    "zero-hand-back.png": {
+      "bytes": 137372,
+      "sha256": "854e06121c4735b8423aa0bc67f87439000d08768bf7cd089c082587b4593bd5"
+    },
+    "zero-hand-front.png": {
+      "bytes": 225402,
+      "sha256": "3b0dd0812dc305856f1cad094ba7958ad58f6a1fe7576c99185e4f9f4fb3b4eb"
+    },
+    "zero-hand-side.png": {
+      "bytes": 158090,
+      "sha256": "9da71eda943598101df75836e833411a4ecad889dbcb5dbff067057d74a9ba9a"
+    },
+    "zero-hand-top.png": {
+      "bytes": 127721,
+      "sha256": "8810ada4782aa86315ddcc07d8e8f00c94b717d9c6fb1d3640463f7f025f0f56"
+    },
+    "zero-side.png": {
+      "bytes": 100039,
+      "sha256": "5fd1aecfc2c6a90920affd6fd12b8a0ef77335a42dfd160f5ff0a7dbdc285f65"
+    },
+    "preview-thumb-detail.png": {
+      "bytes": 118864,
+      "sha256": "ca1d536aa92d94e9397f908d519fc0db74079f496e0c919b6de1be46a71c33ff",
+      "source": "Rocketbox-only Edit mode Pose Preview, same crop in both panels"
+    }
+  }
+}

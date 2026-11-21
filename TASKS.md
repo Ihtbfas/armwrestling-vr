@@ -5,6 +5,7 @@
 - [x] 打开两张四视角附件，在 Unity 双手骨骼预览里编辑双腕、拇指与四指，分别保存并重载 Ready / Contest。
 - [x] 接入主场景可选握姿，在 Rocketbox、Ch03 和混合人物上测试拇指重定向及 ±30° 往返。
 - [x] 以实际 Editor Play 录制同镜头对比和比赛回归，公开 Rocketbox 画面。
+- [x] 局部收尾：修正 Rocketbox 对手拇指末端与玩家食指根接触；Ch03 按对方掌型分别校准中指。[运行实测与剩余交叠](docs/P2E-contact-finish-result.md)
 - [ ] 自然扣握验收。第一人称四指包握改善；拇指与指根仍有相交，保留稳定默认。
 
 [本轮画廊](docs/validation/p2e-user-reference/README.md) · [运行结果](docs/P2E-user-reference-result.md) · [任务书](docs/tasks/P2E-user-images-final-pose.md) · [上轮结果](docs/P2E-real-grip-result.md)

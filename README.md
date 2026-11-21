@@ -52,7 +52,7 @@
 
 ## P2-E 美术握姿
 
-主场景的 Runtime Bootstrap 里启用 **Use Authored Grip** 即可查看本轮按四视角参考制作的 Ready / Contest。默认使用 P2-D 稳定握姿。编辑模式下，通过 **扳手腕 → P2-E → Open Authored Grip Preview** 选择玩家或对手的骨节直接旋转并保存。[运行与编辑方法](docs/P2E-user-reference-result.md) · [同镜头前后对比](docs/validation/p2e-user-reference/README.md)
+主场景的 Runtime Bootstrap 里启用 **Use Authored Grip** 可查看按四视角参考制作的 Ready / Contest。默认使用 P2-D 稳定握姿。通过 **扳手腕 → P2-E → Open Authored Grip Preview** 可编辑骨节；已有本机 Ch03 Profile 可用同菜单的 **Apply Ch03 Middle Finger Calibration** 应用中指校准。[本轮结果与复现](docs/P2E-contact-finish-result.md) · [同镜头前后对比](docs/validation/p2e-contact-finish/README.md)
 
 ## P2-D 跨人物握姿
 
