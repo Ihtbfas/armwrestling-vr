@@ -1,5 +1,13 @@
 # TASKS
 
+## P2 阶段收口
+
+- [x] 将 PR #8～#11 的原始提交整合到 `main`，冻结 P2-D 默认与 P2-E 可选美术稿。
+- [x] 核对人物许可、场景 GUID 与本机私有文件，回归公开人物、私有人物及回退。
+- [ ] PICO 实机首轮验收。先走离线比赛，记录第一人称尺度、遮挡、输入与时序。Ch03 肘垫偏差另做实物与人物几何标定。
+
+[运行方式、验证范围与遗留问题](docs/P2-closeout.md)
+
 ## P2-E 用户四视角握姿（已接入可选模式）
 
 - [x] 打开两张四视角附件，在 Unity 双手骨骼预览里编辑双腕、拇指与四指，分别保存并重载 Ready / Contest。
@@ -29,7 +37,7 @@
 
 [本轮实际结果](docs/P2E-authored-grip-result.md) · [完整执行任务](docs/tasks/P2E-authored-paired-grip.md) · [已有成熟工具和路线](docs/research/P2E-authored-hand-pose-workflow.md)
 
-## 当前阶段：P2-D 跨人物通用握姿与自然接触（有界实验收口；默认稳妥回退，自然扣握未通过）
+## P2-D 跨人物通用握姿与自然接触（有界实验收口；默认稳妥回退，自然扣握未通过）
 
 - [x] 从 P2-C Rocketbox 专属 wrist/finger localRotation 中拆出可在不同 Humanoid 上表达的握姿与接触语义。
 - [x] 建立简洁可编辑的 Avatar 适配配置；更换模型不需要改核心 C#，允许手型差异引起的小量配置/姿态覆盖。
