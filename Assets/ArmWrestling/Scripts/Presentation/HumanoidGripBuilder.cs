@@ -130,9 +130,11 @@ namespace ArmWrestlingVR
                         handler.GetHumanPose(ref human);
                         Muscles(ref human, authored.readyMuscles, profile.muscleOffsets);
                         handler.SetHumanPose(ref human);
+                        authored.readyThumb.Apply(wrist, fingers);
                         hand.openFingerRotations = Read(fingers, profile.thumbOpposition, 0f);
                         Muscles(ref human, authored.contestMuscles, profile.muscleOffsets);
                         handler.SetHumanPose(ref human);
+                        authored.contestThumb.Apply(wrist, fingers);
                         hand.fingerRotations = Read(fingers, profile.thumbOpposition, 0f);
                     }
                 }

@@ -83,6 +83,8 @@ namespace ArmWrestlingVR.EditorTools
                 bootstrap.useAuthoredGrip = HasArgument("-p2e");
                 if (HasArgument("-p2eprior"))
                     bootstrap.authoredGrip = Resources.Load<HumanoidGripDefinition>(AuthoredGripAuthoring.Resource);
+                else if (HasArgument("-p2ereference"))
+                    bootstrap.authoredGrip = Resources.Load<HumanoidGripDefinition>("P2D/ReferencePairedGrip");
                 if (cross)
                 {
                     var selected = Resources.Load<GripAvatarProfile>(HasArgument("-p2dlocal") ? "P2DLocal/Ch03Profile" : "P2D/RocketboxProfile");

@@ -16,8 +16,16 @@ namespace ArmWrestlingVR.EditorTools
             .Append("Wrist").ToArray();
 
         [MenuItem("扳手腕/P2-E/Open Authored Grip Preview")]
-        public static void Open() => OpenPreview(Resources.Load<HumanoidGripDefinition>(ReferenceResource)
+        public static void Open() => OpenPreview(Resources.Load<HumanoidGripDefinition>("P2D/ImagePairedGrip")
+            ?? Resources.Load<HumanoidGripDefinition>(ReferenceResource)
             ?? Resources.Load<HumanoidGripDefinition>(Resource));
+
+        [MenuItem("扳手腕/P2-E/Open Selected Paired Grip", true)]
+        private static bool CanOpenSelected() => !Application.isPlaying
+            && Selection.activeObject is HumanoidGripDefinition grip && grip.HasAuthoredPair;
+
+        [MenuItem("扳手腕/P2-E/Open Selected Paired Grip")]
+        private static void OpenSelected() => OpenPreview((HumanoidGripDefinition)Selection.activeObject);
 
         [MenuItem("扳手腕/P2-E/Open Previous Authored Grip Preview")]
         public static void OpenPrevious() => OpenPreview(Resources.Load<HumanoidGripDefinition>(Resource));
@@ -77,13 +85,15 @@ namespace ArmWrestlingVR.EditorTools
             key.sourceAvatar = hand.avatar;
             key.wristOffset = (view.transform.InverseTransformPoint(wrist.position) - baseline.wristPosition) / baseline.palmLength;
             key.wristDelta = Quaternion.Inverse(view.transform.rotation) * wrist.rotation * Quaternion.Inverse(baseline.wristRotation);
-            var rotations = PairedGripPose.MapFingers(hand).Select(bone => bone.localRotation).ToArray();
+            var fingers = PairedGripPose.MapFingers(hand);
+            var rotations = fingers.Select(bone => bone.localRotation).ToArray();
+            var thumb = HumanoidGripDefinition.ThumbDirections.Capture(wrist, fingers);
             using var handler = new HumanPoseHandler(hand.avatar, hand.transform);
             var human = new HumanPose();
             handler.GetHumanPose(ref human);
             var muscles = HumanoidGripBuilder.ReadFingerMuscles(human);
-            if (contest) { key.contestBones = rotations; key.contestMuscles = muscles; }
-            else { key.readyBones = rotations; key.readyMuscles = muscles; }
+            if (contest) { key.contestBones = rotations; key.contestMuscles = muscles; key.contestThumb = thumb; }
+            else { key.readyBones = rotations; key.readyMuscles = muscles; key.readyThumb = thumb; }
         }
 
         // A reproducible first blocking pass, applied to the two visible rigs.
