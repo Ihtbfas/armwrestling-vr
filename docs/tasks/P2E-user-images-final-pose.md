@@ -1,6 +1,6 @@
 # P2-E 定姿续作：使用用户提供的两张四视角参考图
 
-> **待 Codex 直接实施。** 在现有 `feat/p2d-cross-avatar-grip` 上继续更新 [Draft PR #11](https://github.com/Ihtbfas/armwrestling-vr/pull/11)，上游 PR 未合并；不要新建串联 PR。本轮任务是**真正把用户新提供的参考图片转为可运行的自然双手握姿**，不是再次写参考资料或角度搜索器。
+> **已接入主场景的可选美术握姿。** 四指包握与跨模型拇指方向已有改善，局部指掌相交仍在，P2-D 继续作为默认。[结果与复现](../P2E-user-reference-result.md) · [同镜头实拍](../validation/p2e-user-reference/README.md) · [Draft PR #11](https://github.com/Ihtbfas/armwrestling-vr/pull/11)
 
 ## 首先读取本地两张原图（不在 Git 中）
 

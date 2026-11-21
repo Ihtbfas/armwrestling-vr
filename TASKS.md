@@ -1,13 +1,13 @@
 # TASKS
 
-## 当前实施：P2-E 用户四视角参考图驱动的真实握姿（待执行）
+## P2-E 用户四视角握姿（已接入可选模式）
 
-- [ ] **先读取本地** `.p0-local/grip-reference/01_hand_grip_four_views.png` 和 `02_body_posture_four_views.png`，不要将参考图上传 Public GitHub。
-- [ ] 按上方/侧面/双方第一人称对照，直接在 Unity 骨骼预览中真正摆自然的双腕、拇指、虎口、四指指腹；保存 Ready/Contest 并重载。
-- [ ] 保持跨 Rocketbox/Ch03 Profile，0° 视觉过关后同一轮接入主场景、完成 ±30°、往返和 Editor 真实比赛回归。
-- [ ] 上传**原创 Unity 运行画面** PNG/GIF，比较自然扣握、腕折/手部穿模与肘垫；新姿态表现不优则保留 P2-D 稳定默认。
+- [x] 打开两张四视角附件，在 Unity 双手骨骼预览里编辑双腕、拇指与四指，分别保存并重载 Ready / Contest。
+- [x] 接入主场景可选握姿，在 Rocketbox、Ch03 和混合人物上测试拇指重定向及 ±30° 往返。
+- [x] 以实际 Editor Play 录制同镜头对比和比赛回归，公开 Rocketbox 画面。
+- [ ] 自然扣握验收。第一人称四指包握改善；拇指与指根仍有相交，保留稳定默认。
 
-[按用户图片直接实施](docs/tasks/P2E-user-images-final-pose.md) · [上轮参考和结果](docs/P2E-real-grip-result.md)
+[本轮画廊](docs/validation/p2e-user-reference/README.md) · [运行结果](docs/P2E-user-reference-result.md) · [任务书](docs/tasks/P2E-user-images-final-pose.md) · [上轮结果](docs/P2E-real-grip-result.md)
 
 ## P2-E 续作｜真实握法参照与骨骼定姿（已接入可选模式）
 
