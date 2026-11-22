@@ -1,12 +1,14 @@
 # TASKS
 
-## 当前执行：P2-F 多角色与多场景（待 Codex 实施）
+## P2-F 多人物与多场景（已接入主场景）
 
-- [ ] 保留当前 Rocketbox Male_Adult_01，新增至少一名真实成年女性（优先 Female_Adult_01）和运动风格女性 Sports_Female_02；独立尝试一名许可明确、完整 Humanoid 的年长人物（MakeHuman/MPFB）。
-- [ ] 新增至少一套真实亮色训练馆，争取加入正式比赛场馆；原暗色竞技场与比赛台几何保留。
-- [ ] **游戏内**将“对手外观”和“场景”选择独立于原三种对抗策略，不改原控制协议。
-- [ ] 对每套人物验证 15 个右指骨、Animator/IK、握姿与坐姿；真实 Editor 离线比赛回归并发布 GitHub PNG/GIF。
-- [ ] 许可/GUID/资源体积与公开 clone 检查；不修改并行 PICO 分支，后续 PICO 首测需安全同步本次新增内容。
+- [x] 保留条纹衫男士，导入日常装女士、运动装女士和成熟外貌的灰发绅士。四位均为 Microsoft Rocketbox；灰发绅士使用 Male_Adult_03。
+- [x] 原科技竞技场、日光训练馆和锦标赛场馆可在大厅切换，沿用同一套比赛几何。
+- [x] 大厅可独立选择外观、场馆、策略和力量。两种握姿分别检查 36 种组合。
+- [x] 验证右手 15 个带权重指骨、Humanoid IK、准备/对抗和每人 181 帧往返；记录多人比赛、Windows 鼠标输入及公开 PNG/GIF。
+- [x] 核对导入资源、许可与公开版本。头显实测仍由独立阶段跟进。
+
+[运行结果与限制](docs/P2F-opponent-scenes-result.md) · [图片与 GIF](docs/validation/p2f-visual/README.md)
 
 [完整实施任务](docs/tasks/P2F-opponents-and-scene-presets.md) · [人物来源与场景资料](docs/research/P2F-character-scene-options.md)
 
