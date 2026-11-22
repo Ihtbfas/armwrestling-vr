@@ -36,4 +36,4 @@
 
 ## 本阶段
 
-P2 离线 Editor 基线已收口。默认使用 P2-D 的 `LegacyHumanoidGrip`，P2-E 的 `ImagePairedGrip` 作为可选美术稿。继续保留跨人物 Profile、共同握点、IK、ContactGrip、碰撞诊断与历史回退。现有局部穿插与 Ch03 肘垫偏差分别记录。下一步在 PICO 头显上验证视点、输入和离线流程。[阶段结果与真机准备](docs/P2-closeout.md)
+P2 已在 `main` 收口。当前 `feat/p2f-opponents-and-scenes` 负责不依赖 PICO 设备的**真实多人物外观与多场景选择**：[实施任务](docs/tasks/P2F-opponents-and-scene-presets.md)，先读 [来源、现有角色机制和场景调研](docs/research/P2F-character-scene-options.md)。**外观、场景和原均衡/防守/节奏对抗策略必须独立**，不得为换女性/年长人物修改 PC UDP、机械角语义或按年龄/性别默认为不同力量。复用 Humanoid Profile、Animator/IK 和 Grip Anchor；原 Rocketbox 男、稳定握姿及暗色竞技场要可回退。用实际 Windows Editor Play/鼠标 UI 验证多模型、场景和完整比赛，提交合规真实 PNG/GIF。PICO 头显位于同学处，真机未测；独立 `feat/p3-pico-offline-first-test` 分支不可覆盖。
