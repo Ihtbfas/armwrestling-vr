@@ -19,6 +19,16 @@ namespace ArmWrestlingVR
         public HudPresenter hud;
         public VirtualArmRig armRig;
         public Transform deviceRoot;
+        internal RuntimeBootstrap presentation;
+        public int SelectedAppearance { get; private set; }
+        public int SelectedArena { get; private set; }
+        private int appearanceCursor;
+        private static readonly string[] AppearanceNames = { "成年男士", "日常装女士", "运动装女士", "灰发绅士" };
+        private static readonly string[] ProfilePaths =
+        {
+            "P2D/RocketboxProfile", "P2F/Female_Adult_01/Profile", "P2F/Sports_Female_02/Profile", "P2F/Male_Adult_03/Profile"
+        };
+        private static readonly string[] VenueNames = { "科技竞技场", "日光训练馆", "锦标赛场馆" };
 
         [Header("运行状态（只读）")]
         public DataSourceMode dataSource = DataSourceMode.Simulated;
@@ -118,6 +128,12 @@ namespace ArmWrestlingVR
             if (hud != null)
             {
                 hud.RoleSelected += OnRoleSelected;
+                if (hud.appearanceNext != null)
+                {
+                    hud.appearanceNext.Clicked += CycleAppearance;
+                    hud.arenaNext.Clicked += CycleArena;
+                    RefreshPresentationLabels();
+                }
                 hud.StrengthStepped += OnStrengthStepped;
                 hud.NudgeRequested += OnNudgeRequested;
                 hud.RecenterRequested += OnRecenterRequested;
@@ -295,6 +311,7 @@ namespace ArmWrestlingVR
 
             AppState previous = state;
             state = next;
+            if (hud != null) hud.ShowPresentationChoices(next == AppState.Lobby && presentation != null);
             stateTimer = 0f;
 
             switch (next)
@@ -549,8 +566,49 @@ namespace ArmWrestlingVR
             hud.SetRoleInteractable(true);
             hud.SetRoleHighlight(role);
             hud.SetStrength(opponentScale);
-            hud.SetHint("选择角色后点“准备对战”，角色与力量会发给控制端");
+            hud.SetHint(transientTimer > 0f ? transientMessage : "点击名称切换外观或场景，选好策略后准备对战");
             hud.SetState("角色选择", false);
+        }
+
+        public void CycleAppearance()
+        {
+            if (state != AppState.Lobby || presentation == null || !presentation.CanSelectAppearance) return;
+            int next = appearanceCursor = (appearanceCursor + 1) % ProfilePaths.Length;
+            var profile = next == 0 ? presentation.opponentAvatar : Resources.Load<GripAvatarProfile>(ProfilePaths[next]);
+            if (presentation.TryChangeOpponent(this, profile))
+            {
+                SelectedAppearance = next;
+            }
+            else
+            {
+                var standard = Resources.Load<GripAvatarProfile>(ProfilePaths[0]);
+                if (presentation.TryChangeOpponent(this, standard))
+                {
+                    SelectedAppearance = 0;
+                    ShowMessage("该外观不可用，已回到成年男士");
+                }
+                else ShowMessage("该外观不可用，已保留当前对手");
+            }
+            RefreshPresentationLabels();
+        }
+
+        public void CycleArena()
+        {
+            if (state != AppState.Lobby || presentation == null) return;
+            SelectedArena = (SelectedArena + 1) % VenueNames.Length;
+            ArenaFactory.SetTheme(deviceRoot, (ArenaTheme)SelectedArena);
+            RefreshPresentationLabels();
+        }
+
+        private void RefreshPresentationLabels()
+        {
+            bool canChange = presentation != null && presentation.CanSelectAppearance;
+            hud.appearanceNext.Interactable = canChange;
+            string name = AppearanceNames[SelectedAppearance];
+            if (canChange && SelectedAppearance == 0 && ArenaFactory.PairedProfile.prefab.name != "Male_Adult_01")
+                name = ArenaFactory.PairedProfile.prefab.name;
+            hud.appearanceNext.Caption = canChange ? name + "  ›" : "当前回退外观";
+            hud.arenaNext.Caption = VenueNames[SelectedArena] + "  ›";
         }
 
         private void UpdateReady(float deltaTime)

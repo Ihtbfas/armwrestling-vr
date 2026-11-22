@@ -186,15 +186,7 @@ namespace ArmWrestlingVR
 
         private static VirtualArmRig BuildArena(Transform deviceRoot)
         {
-            CreateLighting(deviceRoot);
-
-            // 必须放在 CreateLighting 之后：那边会把 ambientMode 设成 Flat，
-            // 先设天空盒环境光会被它覆盖，结果整个舞台是黑的。
-            if (UseHdriSky)
-            {
-                ConfigureSkybox();
-            }
-            BuildEnvironment(deviceRoot);
+            SetTheme(deviceRoot, ArenaTheme.NeonArena);
             BuildTable(deviceRoot);
 
             VirtualArmRig armRig = BuildArms(deviceRoot);
@@ -204,17 +196,34 @@ namespace ArmWrestlingVR
             return armRig;
         }
 
+        public static void SetTheme(Transform deviceRoot, ArenaTheme theme)
+        {
+            var environment = deviceRoot.GetComponent<ArenaEnvironment>();
+            if (environment == null) environment = deviceRoot.gameObject.AddComponent<ArenaEnvironment>();
+            environment.Select(theme);
+        }
+
+        internal static bool BuildNeonVenue(Transform parent, out Material temporarySkybox)
+        {
+            temporarySkybox = null;
+            bool hasSky = UseHdriSky && ConfigureSkybox(out temporarySkybox);
+            CreateLighting(parent, hasSky);
+            BuildEnvironment(parent, hasSky);
+            return hasSky;
+        }
+
         /// <summary>
         /// 用 Poly Haven 的 HDRI 当天空盒，并让环境光从它来。
         /// 一张 HDRI 就能给整个场景提供真实的方向光、色温和反射。
         /// </summary>
-        private static void ConfigureSkybox()
+        private static bool ConfigureSkybox(out Material temporarySkybox)
         {
+            temporarySkybox = null;
             Texture2D hdri = Resources.Load<Texture2D>("HDRI/circus_arena");
             if (hdri == null)
             {
                 Debug.LogWarning("[ArmWrestling] 找不到 HDRI，回退到纯色环境");
-                return;
+                return false;
             }
 
             // 用材质资产而不是 Shader.Find：Shader.Find 在打包后找不到内置天空盒着色器。
@@ -225,10 +234,10 @@ namespace ArmWrestlingVR
                 if (shader == null)
                 {
                     Debug.LogWarning("[ArmWrestling] 缺少 Skybox/Panoramic 着色器");
-                    return;
+                    return false;
                 }
 
-                skybox = new Material(shader);
+                temporarySkybox = skybox = new Material(shader);
                 skybox.SetTexture("_MainTex", hdri);
                 skybox.SetFloat("_Exposure", 1.15f);
                 skybox.SetFloat("_Rotation", SkyRotation);
@@ -238,9 +247,10 @@ namespace ArmWrestlingVR
             RenderSettings.ambientMode = AmbientMode.Skybox;
             RenderSettings.ambientIntensity = 1.1f;
             DynamicGI.UpdateEnvironment();
+            return true;
         }
 
-        private static void CreateLighting(Transform parent)
+        private static void CreateLighting(Transform parent, bool hasSky)
         {
             // 冷色方向光：只提供一点方向感和桌面接触阴影，主戏交给射灯与色光
             GameObject keyObject = new GameObject("Key Light");
@@ -270,7 +280,7 @@ namespace ArmWrestlingVR
             AddPointLight(parent, new Vector3(-4.2f, 2.6f, 3.4f), new Color(0.22f, 0.62f, 1f), 1.15f, 10f);
             AddPointLight(parent, new Vector3(4.2f, 2.6f, 3.4f), new Color(1f, 0.28f, 0.46f), 0.95f, 10f);
 
-            if (!UseHdriSky)
+            if (!hasSky)
             {
                 RenderSettings.ambientMode = AmbientMode.Flat;
                 RenderSettings.ambientLight = new Color(0.155f, 0.165f, 0.215f);
@@ -303,9 +313,9 @@ namespace ArmWrestlingVR
         /// 后墙发光徽标、顶部灯槽，整体靠自发光面片 + 三盏实时光营造冷暖对比。
         /// 全部是基本几何体，手机端开销可以忽略。
         /// </summary>
-        private static void BuildEnvironment(Transform parent)
+        private static void BuildEnvironment(Transform parent, bool hasSky)
         {
-            if (UseHdriSky)
+            if (hasSky)
             {
                 BuildOpenFloor(parent);
                 BuildTableSpot(parent);
@@ -560,9 +570,10 @@ namespace ArmWrestlingVR
 
         private static void BuildOpponentBody(Transform parent, VirtualArmRig armRig)
         {
-            if (UseCharacterModel && SpawnCharacter(parent, armRig))
+            if (UseCharacterModel)
             {
-                return;
+                var prefab = PairedAvatar != null ? PairedAvatar : Resources.Load<GameObject>("Characters/Ch03");
+                if (prefab != null && SpawnCharacter(parent, armRig, prefab, PairedProfile) != null) return;
             }
 
             BuildCapsuleOpponent(parent);
@@ -570,27 +581,21 @@ namespace ArmWrestlingVR
 
         /// <summary>
         /// 生成导入的人物模型，放在桌子对面，用 IK 摆成坐姿。
-        /// 返回 false 表示模型不可用（调用方回退到胶囊体）。
+        /// 切换外观时沿用原对手的设备坐标系 IK 提示点。
         /// </summary>
-        private static bool SpawnCharacter(Transform parent, VirtualArmRig armRig)
+        internal static OpponentAvatar SpawnCharacter(Transform parent, VirtualArmRig armRig,
+            GameObject prefab, GripAvatarProfile profile, OpponentAvatar reuseTargets = null)
         {
-            GameObject prefab = PairedAvatar != null ? PairedAvatar : Resources.Load<GameObject>("Characters/Ch03");
-            if (prefab == null)
-            {
-                Debug.LogWarning("[ArmWrestling] 找不到人物模型 Resources/Characters/Ch03");
-                return false;
-            }
-
             GameObject model = Object.Instantiate(prefab, parent);
-            bool rocketbox = prefab == PairedAvatar;
-            model.name = PairedProfile != null ? "Opponent Character ("+PairedProfile.name+")" : rocketbox ? "Opponent Character (Rocketbox)" : "Opponent Character (Ch03)";
+            bool rocketbox = profile != null || prefab == PairedAvatar;
+            model.name = "Opponent Character (" + prefab.name + ")";
 
-            float scale = PairedProfile != null ? PairedProfile.modelScale : rocketbox ? PairedGripPose.AvatarScale : 1.12f;
-            float feetY = -TableHeight + (PairedProfile != null ? PairedProfile.footLift : rocketbox ? 0.08f : 0f);
+            float scale = profile != null ? profile.modelScale : rocketbox ? PairedGripPose.AvatarScale : 1.12f;
+            float feetY = -TableHeight + (profile != null ? profile.footLift : rocketbox ? 0.08f : 0f);
 
             // Offset each model's imported origin to the existing demo seat.
-            model.transform.localPosition = PairedProfile != null
-                ? new Vector3(0f,0f,OpponentSeatZ) + PairedProfile.originFromSeat
+            model.transform.localPosition = profile != null
+                ? new Vector3(0f,0f,OpponentSeatZ) + profile.originFromSeat
                 : rocketbox
                 ? new Vector3(0f, -0.09f, OpponentSeatZ - 0.10f)
                 : new Vector3(0f, -0.22f, OpponentSeatZ - 0.08f);
@@ -614,16 +619,16 @@ namespace ArmWrestlingVR
                 Debug.LogWarning("[ArmWrestling] 找不到 IK 控制器 Resources/Characters/OpponentIK");
             }
 
-            Transform leftHand = new GameObject("Left Hand Rest").transform;
+            Transform leftHand = reuseTargets != null ? reuseTargets.leftHandTarget : new GameObject("Left Hand Rest").transform;
             leftHand.SetParent(parent, false);
             leftHand.localPosition = new Vector3(0.38f, 0.065f, 0.25f);
             leftHand.localRotation = Quaternion.LookRotation(Vector3.back, Vector3.up);
 
-            Transform rightElbow = new GameObject("Right Elbow Hint").transform;
+            Transform rightElbow = reuseTargets != null ? reuseTargets.rightElbowHint : new GameObject("Right Elbow Hint").transform;
             rightElbow.SetParent(parent, false);
             rightElbow.localPosition = new Vector3(-0.17f, 0.065f, -ElbowPadZ - 0.02f);
 
-            Transform leftElbow = new GameObject("Left Elbow Hint").transform;
+            Transform leftElbow = reuseTargets != null ? reuseTargets.leftElbowHint : new GameObject("Left Elbow Hint").transform;
             leftElbow.SetParent(parent, false);
             leftElbow.localPosition = new Vector3(0.31f, 0.10f, 0.49f);
 
@@ -672,7 +677,7 @@ namespace ArmWrestlingVR
             Debug.Log("[ArmWrestling] 对手模型: 根位置=" + model.transform.position.ToString("F2")
                       + " 缩放=" + model.transform.lossyScale.x.ToString("F3")
                       + " 控制器=" + (animator.runtimeAnimatorController != null));
-            return true;
+            return driver;
         }
 
         /// <summary>没有模型时的兜底：原来的胶囊体对手。</summary>

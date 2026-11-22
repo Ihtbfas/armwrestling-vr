@@ -1,5 +1,17 @@
 # TASKS
 
+## P2-F 多人物与多场景（已接入主场景）
+
+- [x] 保留条纹衫男士，导入日常装女士、运动装女士和成熟外貌的灰发绅士。四位均为 Microsoft Rocketbox；灰发绅士使用 Male_Adult_03。
+- [x] 原科技竞技场、日光训练馆和锦标赛场馆可在大厅切换，沿用同一套比赛几何。
+- [x] 大厅可独立选择外观、场馆、策略和力量。两种握姿分别检查 36 种组合。
+- [x] 验证右手 15 个带权重指骨、Humanoid IK、准备/对抗和每人 181 帧往返；记录多人比赛、Windows 鼠标输入及公开 PNG/GIF。
+- [x] 核对导入资源、许可与公开版本。头显实测仍由独立阶段跟进。
+
+[运行结果与限制](docs/P2F-opponent-scenes-result.md) · [图片与 GIF](docs/validation/p2f-visual/README.md)
+
+[完整实施任务](docs/tasks/P2F-opponents-and-scene-presets.md) · [人物来源与场景资料](docs/research/P2F-character-scene-options.md)
+
 ## P2 阶段收口
 
 - [x] 将 PR #8～#11 的原始提交整合到 `main`，冻结 P2-D 默认与 P2-E 可选美术稿。

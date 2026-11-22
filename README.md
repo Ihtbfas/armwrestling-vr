@@ -8,14 +8,18 @@
 
 1. 用 **Unity 中国版编辑器 `2022.3.62f3c1`** 从 Hub 添加本仓库目录。本机需有 Git 命令行；首次导入需联网下载 Unity 包和固定版本 PICO SDK，本轮首次导入约数分钟。
 2. 打开 **`Assets/Scenes/ArmWrestlingMain.unity`**，等待编译后点 **Play**。编辑状态下主场景只有 Runtime Bootstrap，运行时会搭出原有桌面、手臂、对手和 UI，属于原工程设计。
-3. 在面板依次选择 **下一步：空间标定 → 跳过标定 → 角色 → 准备对战**。准备和倒计时后进入比赛。
+3. 在面板选择 **下一步：空间标定 → 跳过标定**。在选择页点击左栏的 **对手外观** 和 **对战场景** 名称可轮换预览，右栏单独选择对抗策略和力量。点击 **准备对战**，倒计时后进入比赛。
 4. **空格**切换自动演示；**A / ←** 我方发力，**D / →** 对手发力；**Esc** 暂停。也可使用面板上的暂停、继续和再来一局。
 
 默认使用离线模拟，运行不需要 PC 控制程序、STM32 或头显。桌面自动 OpenXR 初始化默认关闭；PCVR 需自行在 Standalone XR 设置中启用并配置运行时，本轮未验证。
 
-**胶囊回退**：关闭 Runtime Bootstrap 的 **Use Humanoid Grip**、**Use Paired Grip** 和 **Use Original Art**。原 Ch03 人物 FBX、HDRI、字体许可未确认，文件及其原 `.meta` 保留在本机、不上传；有原 ZIP 可按 [恢复说明](docs/third-party-assets.md)还原美术资源，并在关闭 **Use Humanoid Grip** 与 **Use Paired Grip** 后勾选 **Use Original Art** 查看原人物/HDRI。原人物的姿态和材质仍需调整，默认关闭此开关。Windows 内置动态字体回退已在本机检查，其他机器/Android 的中文字形仍需复核。
+**胶囊回退**：关闭 Runtime Bootstrap 的 **Use Humanoid Grip**、**Use Paired Grip** 和 **Use Original Art**。原 Ch03 人物 FBX、HDRI、字体许可未确认，文件及其原 `.meta` 保留在本机、不上传；有原 ZIP 可按 [恢复说明](docs/third-party-assets.md)还原美术资源，并在关闭 **Use Humanoid Grip** 与 **Use Paired Grip** 后勾选 **Use Original Art** 查看原人物/HDRI。原人物的姿态和材质仍需调整，默认关闭此开关。公开版含 OFL 许可的界面字形子集，随仓库提供中文菜单；Android 端的字号和可读性待真机复核。
 
 `ArmWrestlingPreview.unity` 保留作静态摆位参考；它的部分按钮回调未随场景保存，不能代替主场景做完整 Play 演示。不要为了首次运行执行“一键初始化”或重新生成全部场景。
+
+## P2-F 人物和场景
+
+默认开局是条纹衫男士和科技竞技场。Lobby 可切换日常装女士、运动装女士或灰发绅士，也可把场景换成日光训练馆或锦标赛场馆。结算后点 **返回选择** 可换下一组，**再来一局** 沿用当前组合。切换外观保留玩家手臂、机械握点、所选策略与力量。[人物与场景实测](docs/P2F-opponent-scenes-result.md) · [真实 Editor 图片和 GIF](docs/validation/p2f-visual/README.md)
 
 ## P1-A 人物动画对照
 

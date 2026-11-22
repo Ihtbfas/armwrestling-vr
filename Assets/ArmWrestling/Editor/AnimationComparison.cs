@@ -296,7 +296,7 @@ namespace ArmWrestlingVR.EditorTools
             Debug.Log("[P1] " + Application.unityVersion + " | " + SystemInfo.graphicsDeviceType + " | " + output);
         }
 
-        private static Camera View(Transform root, Vector3 from, Vector3 look)
+        internal static Camera View(Transform root, Vector3 from, Vector3 look)
         {
             var camera = new GameObject("P1 comparison camera").AddComponent<Camera>();
             camera.enabled = false;
@@ -533,20 +533,29 @@ namespace ArmWrestlingVR.EditorTools
 
         private static void Capture(Camera camera, string path, AvatarCollisionExperiment.Region? overlay = null)
         {
+            Action<Camera, Texture2D> annotate = null;
+            if (overlay.HasValue) annotate = (view, image) => collisionCapture.DrawOverlay(view, image, overlay.Value);
+            Capture(camera, path, target, pixels, annotate);
+        }
+
+        internal static void Capture(Camera camera, string path, RenderTexture buffer, Texture2D image,
+            Action<Camera, Texture2D> annotate = null)
+        {
             var previous = RenderTexture.active;
-            camera.targetTexture = target;
+            var previousTarget = camera.targetTexture;
+            camera.targetTexture = buffer;
             try
             {
                 camera.Render();
-                RenderTexture.active = target;
-                pixels.ReadPixels(new Rect(0, 0, target.width, target.height), 0, 0);
-                if (overlay.HasValue) collisionCapture.DrawOverlay(camera, pixels, overlay.Value);
-                pixels.Apply();
-                File.WriteAllBytes(path, path.EndsWith(".png") ? pixels.EncodeToPNG() : pixels.EncodeToJPG(88));
+                RenderTexture.active = buffer;
+                image.ReadPixels(new Rect(0, 0, buffer.width, buffer.height), 0, 0);
+                annotate?.Invoke(camera, image);
+                image.Apply();
+                File.WriteAllBytes(path, path.EndsWith(".png") ? image.EncodeToPNG() : image.EncodeToJPG(88));
             }
             finally
             {
-                camera.targetTexture = null;
+                camera.targetTexture = previousTarget;
                 RenderTexture.active = previous;
             }
         }
