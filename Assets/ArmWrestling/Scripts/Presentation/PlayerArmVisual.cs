@@ -202,6 +202,7 @@ namespace ArmWrestlingVR
         }
 
         internal void RestorePairedFingers() => pairedGrip?.Apply(fingers);
+        internal void SetPairedGrip(PairedGripPose.Hand pose) => pairedGrip = pose;
 
         // Both palms use this side vector. The cross product keeps it nearly
         // perpendicular to both hands while preserving the world-space wrist goals.

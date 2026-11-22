@@ -22,6 +22,7 @@ namespace ArmWrestlingVR
                 }
 
                 cached = Resources.Load<Font>(ResourcePath);
+                if (cached == null) cached = Resources.Load<Font>("Fonts/MatchUI-Regular");
                 if (cached == null)
                 {
                     cached = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");

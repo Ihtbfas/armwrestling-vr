@@ -7,13 +7,43 @@ namespace ArmWrestlingVR.EditorTools
 {
     public static class RocketboxAssets
     {
-        private const string Folder = "Assets/ArmWrestling/Resources/P2A/";
-        private const string ModelPath = Folder + "Male_Adult_01.fbx";
+        private const string ResourceRoot = "Assets/ArmWrestling/Resources/";
 
         [MenuItem("扳手腕/P2-A/Prepare Rocketbox Model")]
-        public static void Prepare()
+        public static void Prepare() => PrepareModel("P2A/", "Male_Adult_01", "m002");
+
+        [MenuItem("扳手腕/P2-F/Prepare Rocketbox Opponents")]
+        public static void PrepareOpponents()
         {
-            var importer = (ModelImporter)AssetImporter.GetAtPath(ModelPath);
+            PrepareOpponent("Female_Adult_01", "f001");
+            PrepareOpponent("Sports_Female_02", "f013");
+            PrepareOpponent("Male_Adult_03", "m004");
+            AssetDatabase.SaveAssets();
+        }
+
+        private static void PrepareOpponent(string modelName, string materialPrefix)
+        {
+            string folder = "P2F/" + modelName + "/";
+            var model = PrepareModel(folder, modelName, materialPrefix);
+            string profilePath = ResourceRoot + folder + "Profile.asset";
+            var profile = AssetDatabase.LoadAssetAtPath<GripAvatarProfile>(profilePath);
+            if (profile == null)
+            {
+                profile = ScriptableObject.CreateInstance<GripAvatarProfile>();
+                profile.modelScale = 0.94f;
+                AssetDatabase.CreateAsset(profile, profilePath);
+            }
+            profile.prefab = model;
+            EditorUtility.SetDirty(profile);
+            if (!profile.IsUsable)
+                throw new InvalidOperationException("Unusable Rocketbox profile: " + profilePath);
+        }
+
+        private static GameObject PrepareModel(string relativeFolder, string modelName, string materialPrefix)
+        {
+            string folder = ResourceRoot + relativeFolder;
+            string modelPath = folder + modelName + ".fbx";
+            var importer = (ModelImporter)AssetImporter.GetAtPath(modelPath);
             importer.animationType = ModelImporterAnimationType.Human;
             importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
             importer.importAnimation = false;
@@ -47,13 +77,13 @@ namespace ArmWrestlingVR.EditorTools
             }
             description.human = humanoid.ToArray();
             importer.humanDescription = description;
-            Remap(importer, "body", ".jpg");
-            Remap(importer, "head", ".jpg");
-            Remap(importer, "opacity", ".png");
+            Remap(importer, folder, materialPrefix, "body", ".jpg");
+            Remap(importer, folder, materialPrefix, "head", ".jpg");
+            Remap(importer, folder, materialPrefix, "opacity", ".png");
             AssetDatabase.SaveAssets();
             importer.SaveAndReimport();
 
-            var model = AssetDatabase.LoadAssetAtPath<GameObject>(ModelPath);
+            var model = AssetDatabase.LoadAssetAtPath<GameObject>(modelPath);
             var sample = UnityEngine.Object.Instantiate(model);
             try
             {
@@ -74,23 +104,24 @@ namespace ArmWrestlingVR.EditorTools
                 }
                 if (skin.sharedMaterials.Any(m => m == null || m.mainTexture == null))
                     throw new InvalidOperationException("Rocketbox material remap failed.");
-                Debug.Log($"[Rocketbox] Valid Humanoid; 15/15 weighted right-hand joints; {skin.sharedMesh.vertexCount} vertices; "
+                Debug.Log($"[Rocketbox] {modelName}: valid Humanoid; 15/15 weighted right-hand joints; {skin.sharedMesh.vertexCount} vertices; "
                     + string.Join(", ", skin.sharedMaterials.Select(m => m.mainTexture.name)));
             }
             finally { UnityEngine.Object.DestroyImmediate(sample); }
+            return model;
         }
 
-        private static void Remap(ModelImporter importer, string part, string extension)
+        private static void Remap(ModelImporter importer, string folder, string materialPrefix, string part, string extension)
         {
-            string name = "m002_" + part;
-            string path = Folder + name + ".mat";
+            string name = materialPrefix + "_" + part;
+            string path = folder + name + ".mat";
             var material = AssetDatabase.LoadAssetAtPath<Material>(path);
             if (material == null)
             {
                 material = new Material(Shader.Find("Standard")) { name = name };
                 AssetDatabase.CreateAsset(material, path);
             }
-            material.mainTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(Folder + name + "_color" + extension);
+            material.mainTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(folder + name + "_color" + extension);
             material.SetFloat("_Glossiness", 0.19f);
             if (part == "opacity")
             {

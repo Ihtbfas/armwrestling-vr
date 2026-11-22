@@ -36,6 +36,8 @@ namespace ArmWrestlingVR
         public VrButton strengthDownButton;
         public VrButton strengthUpButton;
         public VrButton[] roleButtons = new VrButton[3];
+        private GameObject presentationGroup;
+        internal VrButton appearanceNext, arenaNext;
 
         [Header("标定微调工具（仅标定页显示）")]
         public GameObject roleGroup;
@@ -87,6 +89,7 @@ namespace ArmWrestlingVR
             calibrationGroup = CreateGroup(canvasTransform, "Calibration Group");
 
             BuildRoleGroup((RectTransform)roleGroup.transform);
+            BuildPresentationGroup(canvasTransform);
             BuildCalibrationGroup((RectTransform)calibrationGroup.transform);
 
             hintText = UiFactory.CreateLabel(canvasTransform, "Hint", "", 26, BodyColor, TextAnchor.MiddleCenter,
@@ -127,7 +130,7 @@ namespace ArmWrestlingVR
 
         private void BuildRoleGroup(RectTransform parent)
         {
-            roleHeaderText = UiFactory.CreateLabel(parent, "Role Header", "虚拟对手", 34, HeaderColor,
+            roleHeaderText = UiFactory.CreateLabel(parent, "Role Header", "对抗策略", 34, HeaderColor,
                 TextAnchor.MiddleCenter, new Vector2(360f, 46f), new Vector2(376f, 168f));
 
             string[] roleNames = { "均衡型", "防守型", "节奏型" };
@@ -156,7 +159,31 @@ namespace ArmWrestlingVR
             strengthUpButton.Clicked += () => { if (StrengthStepped != null) StrengthStepped(1); };
 
             strengthLabel = UiFactory.CreateLabel(parent, "Strength", "力量 100%", 28, BodyColor,
-                TextAnchor.MiddleCenter, new Vector2(88f, 46f), new Vector2(376f, -128f));
+                TextAnchor.MiddleCenter, new Vector2(118f, 46f), new Vector2(376f, -128f));
+        }
+
+        private void BuildPresentationGroup(Transform canvasTransform)
+        {
+            presentationGroup = CreateGroup(canvasTransform, "Presentation Choices");
+            var parent = presentationGroup.transform;
+            var size = new Vector2(480f, 70f);
+            UiFactory.CreateLabel(parent, "Appearance Label", "对手外观", 30, HeaderColor,
+                TextAnchor.MiddleLeft, size, new Vector2(-296f, 164f));
+            appearanceNext = UiFactory.CreateButton(parent, "AppearanceNext", "", size,
+                new Vector2(-296f, 94f), 36, AccentColor);
+            UiFactory.CreateLabel(parent, "Venue Label", "对战场景", 30, HeaderColor,
+                TextAnchor.MiddleLeft, size, new Vector2(-296f, -4f));
+            arenaNext = UiFactory.CreateButton(parent, "ArenaNext", "", size,
+                new Vector2(-296f, -74f), 36, AccentColor);
+            presentationGroup.SetActive(false);
+        }
+
+        internal void ShowPresentationChoices(bool visible)
+        {
+            // Older baked scenes may still contain the original HUD.
+            if (presentationGroup == null) return;
+            presentationGroup.SetActive(visible);
+            metricsText.gameObject.SetActive(!visible);
         }
 
         /// <summary>

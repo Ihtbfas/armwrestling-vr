@@ -68,14 +68,7 @@ namespace ArmWrestlingVR
             {
                 try
                 {
-                    var definition = !useGripSurfaceTargets && legacyHumanoidGrip != null ? legacyHumanoidGrip : humanoidGrip;
-                    bool surface = useGripSurfaceTargets;
-                    if (useAuthoredGrip)
-                    {
-                        surface = false;
-                        definition = authoredGrip != null && authoredGrip.HasAuthoredPair ? authoredGrip : legacyHumanoidGrip;
-                    }
-                    resolvedGrip = HumanoidGripBuilder.Build(definition, playerAvatar, opponentAvatar, out _, out _, surface);
+                    resolvedGrip = ResolveGrip(opponentAvatar);
                     pair = resolvedGrip;
                     ArenaFactory.PairedProfile = opponentAvatar;
                     effectiveCollisions = PairedCollisionMode.ContactGrip;
@@ -98,6 +91,7 @@ namespace ArmWrestlingVR
 
             ArmWrestlingConfig config = ArmWrestlingConfig.Load();
             ArmWrestlingApp app = ArenaFactory.Build(config);
+            app.presentation = this;
             if (ArenaFactory.PairedAvatar != null)
             {
                 var opponent = app.deviceRoot.GetComponentInChildren<OpponentAvatar>();
@@ -107,15 +101,7 @@ namespace ArmWrestlingVR
                     ArenaFactory.PairedProfile != null ? playerAvatar : null);
                 if (opponent != null && app.armRig.playerVisual != null)
                 {
-                    opponent.EnableCharacterMotion(app, false);
-                    opponent.SetPairedGrip(pair.opponent);
-                    if (ArenaFactory.PairedProfile != null) opponent.SetGripProfile(opponentAvatar);
-                    if (effectiveCollisions != PairedCollisionMode.Off)
-                    {
-                        opponent.EnableCollisionExperiment(app.armRig, effectiveCollisions, showCollisionGizmos, resolvedGrip);
-                        if (resolvedGrip != null && resolvedGrip.usesAuthoredEndpoints)
-                            opponent.CollisionExperiment.AuthoredMatch = app;
-                    }
+                    BindOpponent(app, opponent, pair, ArenaFactory.PairedProfile, effectiveCollisions);
                 }
                 app.armRig.ApplyAngle(0f);
             }
@@ -139,6 +125,73 @@ namespace ArmWrestlingVR
             {
                 Debug.Log("[ArmWrestling] 已在运行时构建场景：" + app.name + "（数据源 " + config.defaultDataSource + "）");
             }
+        }
+
+        internal bool CanSelectAppearance => resolvedGrip != null;
+
+        private PairedGripPose ResolveGrip(GripAvatarProfile opponent)
+        {
+            var definition = useGripSurfaceTargets || legacyHumanoidGrip == null ? humanoidGrip : legacyHumanoidGrip;
+            if (useAuthoredGrip)
+                definition = authoredGrip != null && authoredGrip.HasAuthoredPair ? authoredGrip : legacyHumanoidGrip;
+            return HumanoidGripBuilder.Build(definition, playerAvatar, opponent, out _, out _,
+                useGripSurfaceTargets && !useAuthoredGrip);
+        }
+
+        private void BindOpponent(ArmWrestlingApp app, OpponentAvatar opponent, PairedGripPose pair,
+            GripAvatarProfile profile, PairedCollisionMode mode)
+        {
+            opponent.EnableCharacterMotion(app, false);
+            opponent.SetPairedGrip(pair.opponent);
+            opponent.SetGripProfile(profile);
+            if (mode == PairedCollisionMode.Off) return;
+            opponent.EnableCollisionExperiment(app.armRig, mode, showCollisionGizmos, profile != null ? pair : null);
+            if (profile != null && pair.usesAuthoredEndpoints) opponent.CollisionExperiment.AuthoredMatch = app;
+        }
+
+        internal bool TryChangeOpponent(ArmWrestlingApp app, GripAvatarProfile profile)
+        {
+            if (!CanSelectAppearance || profile == null || !profile.IsUsable) return false;
+            if (profile == ArenaFactory.PairedProfile) return true;
+            var previous = app.deviceRoot.GetComponentInChildren<OpponentAvatar>();
+            if (previous == null || app.armRig.playerVisual == null) return false;
+
+            PairedGripPose nextPose = null;
+            OpponentAvatar next = null;
+            try
+            {
+                nextPose = ResolveGrip(profile);
+                next = ArenaFactory.SpawnCharacter(app.deviceRoot, app.armRig, profile.prefab, profile, previous);
+                BindOpponent(app, next, nextPose, profile, PairedCollisionMode.ContactGrip);
+            }
+            catch (System.Exception error)
+            {
+                RetireOpponent(next);
+                if (nextPose != null) Destroy(nextPose);
+                Debug.LogWarning("[P2-F] 对手外观绑定失败：" + error.Message);
+                return false;
+            }
+
+            RetireOpponent(previous);
+            Destroy(resolvedGrip);
+            resolvedGrip = nextPose;
+            ArenaFactory.PairedProfile = profile;
+            ArenaFactory.PairedAvatar = profile.prefab;
+            app.armRig.playerVisual.SetPairedGrip(nextPose.player);
+            app.armRig.ApplyAngle(app.armRig.VisualAngleDeg);
+            return true;
+        }
+
+        private static void RetireOpponent(OpponentAvatar opponent)
+        {
+            if (opponent == null) return;
+            if (opponent.CollisionExperiment != null)
+            {
+                opponent.CollisionExperiment.gameObject.SetActive(false);
+                Destroy(opponent.CollisionExperiment.gameObject);
+            }
+            opponent.gameObject.SetActive(false);
+            Destroy(opponent.gameObject);
         }
 
         /// <summary>命令行 -skyrot 200 可以现场调整天空盒朝向，不用重新打包。</summary>
