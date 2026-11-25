@@ -13,6 +13,10 @@
 
 默认使用离线模拟，运行不需要 PC 控制程序、STM32 或头显。桌面自动 OpenXR 初始化默认关闭；PCVR 需自行在 Standalone XR 设置中启用并配置运行时，本轮未验证。
 
+## P3.0 与 PC 联合仿真
+
+与同机 PC 控制仓库联调时，先启动 PC 桥接和软件 STM32，再在主场景的设备检查页选择 **改用网络数据**。默认连 `127.0.0.1:9102`。联网选择对应 PC 的三个虚构人物，进入准备前可以先跑默认 demo 基线。启动命令、施力按键、实际验收和截图见 [P3.0 联调结果](docs/P3-0-pc-integration.md)。
+
 **胶囊回退**：关闭 Runtime Bootstrap 的 **Use Humanoid Grip**、**Use Paired Grip** 和 **Use Original Art**。原 Ch03 人物 FBX、HDRI、字体许可未确认，文件及其原 `.meta` 保留在本机、不上传；有原 ZIP 可按 [恢复说明](docs/third-party-assets.md)还原美术资源，并在关闭 **Use Humanoid Grip** 与 **Use Paired Grip** 后勾选 **Use Original Art** 查看原人物/HDRI。原人物的姿态和材质仍需调整，默认关闭此开关。Windows 内置动态字体回退已在本机检查，其他机器/Android 的中文字形仍需复核。
 
 `ArmWrestlingPreview.unity` 保留作静态摆位参考；它的部分按钮回调未随场景保存，不能代替主场景做完整 Play 演示。不要为了首次运行执行“一键初始化”或重新生成全部场景。
@@ -74,7 +78,7 @@
 
 - **P2 主场景回归**。默认 Rocketbox、可选美术稿、本机 Ch03、混合角色及历史模式的实测清单见 [P2 阶段交接](docs/P2-closeout.md)。
 - **P1 收口已验证**。Unity 中国版 `2022.3.62f3c1`、Windows Direct3D11 下，默认胶囊和本地 P1-E 均进入主场景 Editor Play，通过现有按钮回调完成选角、倒计时、暂停、继续和结算，运行错误为 0。P1-E 对抗片段、玩家蒙皮和短袖、对手肘部求解均通过检查。
-- **仍待验证**。PCVR、PICO 真机、真实鼠标与头显输入、机械握点和零位标定、STM32 及 PC UDP 联调（含角色 ID 和序号兼容）。Windows 独立构建的既有冒烟证据来自 P0。
+- **仍待验证**。PCVR、PICO 真机、真实鼠标与头显输入、机械握点和零位标定、实体 STM32。Windows 独立构建的既有冒烟证据来自 P0。正式主场景与软件下位机的 UDP 结果见 [P3.0 联调结果](docs/P3-0-pc-integration.md)。
 - 测试结果、限制及下一步：[P0 交接](docs/P0-handover-result.md)。资产边界与 ZIP 基线：[许可清单](docs/third-party-assets.md)。阶段状态：[TASKS](TASKS.md)。
 
 复现自动 Editor Play 检查（关闭其他使用本工程的 Editor，**不加 `-quit` / `-autotest`**）：
@@ -87,6 +91,6 @@ python tools/check_import.py
 
 直接打开主场景会使用 P2-D 稳定人物。上述验证命令无额外参数时专测胶囊；追加 `-p0crossdefault` 测主场景默认握姿，`-p0authored` 测可选美术握姿，`-p0contact` 跑主场景 ContactGrip。准备好本地人物资源后，追加 `-p0handcontact` 可重跑 P1-E。工具进入实际 Play、调用现有 UI 按钮并检查角度与结算，失败时返回非零退出码。日志和截图保存在 `.p0-local/`。静态 GUID 检查需要先让 UPM 完成解析。
 
-PC 控制仓库独立维护：[Ihtbfas/armwrestling](https://github.com/Ihtbfas/armwrestling)。UDP 以其 [V0.1 文档](https://github.com/Ihtbfas/armwrestling/blob/main/docs/vr-udp-v01.md)为准。本轮不修改控制仓库或协议。原网络客户端的角色 ID 与当前 PC 人物库尚需对齐，正式联网前先处理交接文档中的问题。
+PC 控制由独立仓库 [Ihtbfas/armwrestling](https://github.com/Ihtbfas/armwrestling) 维护。正式 VR 客户端按 [UDP V0.1](https://github.com/Ihtbfas/armwrestling/blob/main/docs/vr-udp-v01.md) 收发比赛状态与机械角度。
 
 参考 [架构建议](docs/architecture-reference.md)、[P0 任务书](docs/tasks/P0-import-and-run.md)及 [AGENTS](AGENTS.md)。根部 MIT 不覆盖第三方素材或 SDK。

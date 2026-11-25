@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.XR;
 
 namespace ArmWrestlingVR
@@ -28,7 +28,18 @@ namespace ArmWrestlingVR
         public AppState state = AppState.Boot;
         public MatchOutcome outcome = MatchOutcome.None;
 
+        // -1 is the demo baseline, 0..2 identify the fictional PC characters.
+        public int NetworkPersonIndex { get; private set; } = -1;
+        private string NetworkCharacterId => NetworkPersonIndex < 0 ? "demo"
+            : "person_0" + (NetworkPersonIndex + 1);
+
         private IDeviceConnection connection;
+        private string networkPauseDetail = "";
+        private double runningRequestedAt;
+        private bool networkRunningConfirmed;
+        private bool newRunningSample;
+        private double lastJudgedSample = double.NegativeInfinity;
+        private int lastJudgedSide;
         private HandSkeletonView handSkeleton;
         private ArmAnglePipeline pipeline;
         private SessionLogger logger;
@@ -106,6 +117,10 @@ namespace ArmWrestlingVR
                 logger = new SessionLogger(config.logIntervalSeconds);
             }
 
+            string character = GetCommandLineValue("-character");
+            if (character == "person_01") NetworkPersonIndex = 0;
+            if (character == "person_02") NetworkPersonIndex = 1;
+            if (character == "person_03") NetworkPersonIndex = 2;
             EnsureHandSkeleton();
             OpenConnection(dataSource);
             UpdateHandSkeleton(dataSource);
@@ -118,6 +133,7 @@ namespace ArmWrestlingVR
             if (hud != null)
             {
                 hud.RoleSelected += OnRoleSelected;
+                hud.NetworkPersonSelected += OnNetworkPersonSelected;
                 hud.StrengthStepped += OnStrengthStepped;
                 hud.NudgeRequested += OnNudgeRequested;
                 hud.RecenterRequested += OnRecenterRequested;
@@ -208,6 +224,24 @@ namespace ArmWrestlingVR
             }
         }
 
+        private void OnApplicationPause(bool paused)
+        {
+            if (paused && connection is VrUdpClient)
+            {
+                if (state == AppState.Fighting) PauseForNetwork("应用已暂停");
+                connection.Shutdown();
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (connection is VrUdpClient)
+            {
+                if (state == AppState.Fighting) PauseForNetwork("已停止发送比赛心跳");
+                connection.Shutdown();
+            }
+        }
+
         private void OnApplicationQuit()
         {
             if (logger != null)
@@ -224,7 +258,6 @@ namespace ArmWrestlingVR
         private void Update()
         {
             float deltaTime = Time.deltaTime;
-            bool matchActive = state == AppState.Fighting;
             double now = Time.unscaledTimeAsDouble;
             bootTime += deltaTime;
 
@@ -237,12 +270,13 @@ namespace ArmWrestlingVR
 
             if (connection != null)
             {
-                UpdateVrSessionState();
-            connection.Tick(deltaTime, matchActive);
+                connection.Tick(deltaTime, state == AppState.Fighting);
             }
 
             PumpSamples();
-            float visualAngle = pipeline.Evaluate(now, deltaTime);
+            var network = connection as VrUdpClient;
+            bool angleUsable = network == null || (network.IsDataAvailable && !pipeline.IsStale(now));
+            float visualAngle = angleUsable ? pipeline.Evaluate(now, deltaTime) : pipeline.VisualAngleDeg;
             lastSampleAge = pipeline.SecondsSinceSample(now);
 
             if (armRig != null)
@@ -250,7 +284,7 @@ namespace ArmWrestlingVR
                 armRig.ApplyAngle(visualAngle);
             }
 
-            UpdateSimulationTarget(matchActive);
+            UpdateSimulationTarget();
             UpdateStateMachine(deltaTime, visualAngle, now);
             UpdateHud(visualAngle);
             UpdateLogging(visualAngle);
@@ -258,6 +292,7 @@ namespace ArmWrestlingVR
 
         private void PumpSamples()
         {
+            newRunningSample = false;
             if (connection == null)
             {
                 return;
@@ -267,11 +302,21 @@ namespace ArmWrestlingVR
             int guard = 0;
             while (connection.TryConsumeSample(out sample) && guard++ < 8)
             {
-                pipeline.Push(sample);
+                bool accepted = pipeline.Push(sample);
+                if (connection is VrUdpClient)
+                {
+                    newRunningSample = accepted && sample.deviceState == DeviceState.Running;
+                    if (!newRunningSample)
+                    {
+                        playerHoldTimer = 0f;
+                        opponentHoldTimer = 0f;
+                        lastJudgedSample = double.NegativeInfinity;
+                    }
+                }
             }
         }
 
-        private void UpdateSimulationTarget(bool matchActive)
+        private void UpdateSimulationTarget()
         {
             ISimulationControl simulation = connection as ISimulationControl;
             if (simulation == null)
@@ -320,6 +365,10 @@ namespace ArmWrestlingVR
                     break;
 
                 case AppState.Fighting:
+                    networkPauseDetail = "";
+                    networkRunningConfirmed = false;
+                    runningRequestedAt = Time.realtimeSinceStartupAsDouble;
+                    lastJudgedSample = double.NegativeInfinity;
                     if (previous != AppState.Paused)
                     {
                         matchTimer = 0f;
@@ -336,6 +385,11 @@ namespace ArmWrestlingVR
                     break;
 
                 case AppState.Paused:
+                    if (connection is VrUdpClient)
+                    {
+                        playerHoldTimer = 0f;
+                        opponentHoldTimer = 0f;
+                    }
                     SendEvent(SessionEventCode.Pause, 0, 0f);
                     break;
 
@@ -343,6 +397,8 @@ namespace ArmWrestlingVR
                     SendEvent(SessionEventCode.MatchEnd, (byte)outcome, 0f);
                     break;
             }
+
+            UpdateVrSessionState();
 
             if (logger != null)
             {
@@ -437,7 +493,7 @@ namespace ArmWrestlingVR
                     linkUsable ? (System.Action)(() => EnterState(AppState.Calibration)) : null,
                     "改用模拟数据",
                     () => SwitchSource(DataSourceMode.Simulated),
-                    "重新搜索控制端",
+                    "重新连接控制端",
                     () => { if (connection != null) connection.Reconnect(); });
             }
             else if (controller)
@@ -547,9 +603,9 @@ namespace ArmWrestlingVR
                 () => EnterState(AppState.Calibration));
 
             hud.SetRoleInteractable(true);
-            hud.SetRoleHighlight(role);
-            hud.SetStrength(opponentScale);
-            hud.SetHint("选择角色后点“准备对战”，角色与力量会发给控制端");
+            hud.SetHint(dataSource == DataSourceMode.Network
+                ? "选择联网人物后点准备。当前模型用于演示动作。"
+                : "选择离线对抗策略与力量后点准备。");
             hud.SetState("角色选择", false);
         }
 
@@ -596,13 +652,17 @@ namespace ArmWrestlingVR
 
             if (countdown <= -0.35f)
             {
-                EnterState(AppState.Fighting);
+                if (connection is VrUdpClient client && !client.IsReadyToRun)
+                {
+                    EnterState(AppState.Lobby);
+                    ShowMessage("等待 PC 的有效角度及准备状态，请重新准备");
+                }
+                else EnterState(AppState.Fighting);
             }
         }
 
         private void UpdateFighting(float deltaTime, float visualAngle, double now)
         {
-            matchTimer += deltaTime;
 
             if (hud != null)
             {
@@ -612,6 +672,45 @@ namespace ArmWrestlingVR
                 hud.SetHint("保持对抗，把对手手臂压到判定线。");
             }
 
+            if (connection is VrUdpClient client)
+            {
+                if (!client.IsRunning || pipeline.IsStale(now))
+                {
+                    // The first reply after entering Fighting may still describe waiting/paused.
+                    if (!networkRunningConfirmed && client.IsReadyToRun && !pipeline.IsStale(now)
+                        && Time.realtimeSinceStartupAsDouble - runningRequestedAt < 0.4) return;
+                    PauseForNetwork(pipeline.IsStale(now) && client.SecondsSinceLastData > config.dataTimeoutSeconds
+                        ? "上位机状态超时" : client.Detail);
+                    return;
+                }
+                networkRunningConfirmed = true;
+                matchTimer += deltaTime;
+                if (!newRunningSample)
+                {
+                    if (config.matchTimeLimitSeconds > 0f && matchTimer >= config.matchTimeLimitSeconds)
+                        FinishMatch(MatchOutcome.Draw);
+                    return;
+                }
+                double sampleTime = pipeline.LastSampleTime;
+                if (sampleTime <= lastJudgedSample) return;
+                float measuredAngle = config.ToVisualDegrees(pipeline.MechanicalAngleDeg);
+                int side = measuredAngle >= config.playerWinVisualDeg ? 1
+                    : measuredAngle <= config.opponentWinVisualDeg ? -1 : 0;
+                float sampleInterval = (float)(sampleTime - lastJudgedSample);
+                lastJudgedSample = sampleTime;
+                // Count only continuous observations on the same side of the threshold.
+                if (side != lastJudgedSide || sampleInterval > 0.2f)
+                {
+                    playerHoldTimer = 0f;
+                    opponentHoldTimer = 0f;
+                    sampleInterval = 0f;
+                }
+                lastJudgedSide = side;
+                JudgeAngle(measuredAngle, sampleInterval);
+                return;
+            }
+
+            matchTimer += deltaTime;
             // 数据过期：停止正常对战，避免继续用旧数据做判定。
             if (pipeline.SecondsSinceSample(now) > config.dataTimeoutSeconds)
             {
@@ -634,6 +733,11 @@ namespace ArmWrestlingVR
                 return;
             }
 
+            JudgeAngle(visualAngle, deltaTime);
+        }
+
+        private void JudgeAngle(float visualAngle, float deltaTime)
+        {
             if (visualAngle >= config.playerWinVisualDeg)
             {
                 playerHoldTimer += deltaTime;
@@ -675,20 +779,36 @@ namespace ArmWrestlingVR
                 return;
             }
 
-            string reason = pipeline.IsStale(Time.unscaledTimeAsDouble) ? "数据超时 / 链路异常" : "手动暂停";
+            var client = connection as VrUdpClient;
+            bool ready = client == null || client.IsReadyToRun;
+            bool stale = client == null ? pipeline.IsStale(Time.unscaledTimeAsDouble) : !ready;
+            string reason = !string.IsNullOrEmpty(networkPauseDetail) ? "链路或设备异常"
+                : stale ? "等待数据" : "手动暂停";
 
             hud.SetButtons(
                 "继续",
-                () => EnterState(AppState.Fighting),
+                ready ? (System.Action)ResumeMatch : null,
                 "结束本局",
                 () => FinishMatch(MatchOutcome.Draw),
                 "重新标定",
                 () => EnterState(AppState.Calibration));
 
-            hud.SetState("已暂停（" + reason + "）", pipeline.IsStale(Time.unscaledTimeAsDouble));
-            hud.SetHint(pipeline.IsStale(Time.unscaledTimeAsDouble)
-                ? "等待控制端数据恢复。超过 " + config.linkLostSeconds.ToString("F1") + " s 仍未收到报文将断开连接。"
-                : "已暂停。点击“继续”回到对战。");
+            hud.SetState("已暂停（" + reason + "）", stale);
+            hud.SetHint(stale ? "等待有效角度及 PC 暂停状态。"
+                : "数据已就绪，点击“继续”回到对战。");
+        }
+
+        private void PauseForNetwork(string detail)
+        {
+            networkPauseDetail = detail;
+            ShowMessage("联网对抗已暂停：" + detail);
+            EnterState(AppState.Paused);
+        }
+
+        private void ResumeMatch()
+        {
+            if (connection is VrUdpClient client && !client.IsReadyToRun) return;
+            EnterState(AppState.Fighting);
         }
 
         private void UpdateFinished()
@@ -752,7 +872,9 @@ namespace ArmWrestlingVR
                 sourceName,
                 linkStatus,
                 linkDetail,
-                deviceState));
+                deviceState,
+                connection is VrUdpClient,
+                !(connection is VrUdpClient udp) || (udp.IsDataAvailable && !pipeline.IsStale(Time.unscaledTimeAsDouble))));
 
             if (dataSource == DataSourceMode.Simulated)
             {
@@ -770,8 +892,12 @@ namespace ArmWrestlingVR
 
             if (state != AppState.Finished && state != AppState.Countdown)
             {
-                hud.SetRoleHighlight(role);
-                hud.SetStrength(opponentScale);
+                if (connection is VrUdpClient) hud.SetPersonHighlight(NetworkPersonIndex);
+                else
+                {
+                    hud.SetRoleHighlight(role);
+                    hud.SetStrength(opponentScale);
+                }
             }
         }
 
@@ -789,7 +915,7 @@ namespace ArmWrestlingVR
                 pipeline.AngularVelocityDegPerSecond,
                 connection != null ? connection.LastTorqueNm : 0f,
                 connection != null ? connection.LastDeviceState.ToString() : string.Empty,
-                role.ToString(),
+                connection is VrUdpClient ? NetworkCharacterId : role.ToString(),
                 transientMessage,
                 false);
         }
@@ -840,7 +966,7 @@ namespace ArmWrestlingVR
                 }
                 else if (state == AppState.Paused)
                 {
-                    EnterState(AppState.Fighting);
+                    ResumeMatch();
                 }
             }
 
@@ -873,6 +999,14 @@ namespace ArmWrestlingVR
                 SendEvent(SessionEventCode.CalibrationDone, 0, calibration.LastRepeatabilityMeters);
                 ShowMessage("标定完成，重复定位偏差 " + residualMillimeters + " mm", 5f);
             }
+        }
+
+        private void OnNetworkPersonSelected(int selected)
+        {
+            if (!(connection is VrUdpClient) || state != AppState.Lobby) return;
+            NetworkPersonIndex = selected;
+            hud.SetPersonHighlight(selected);
+            UpdateVrSessionState();
         }
 
         private void OnRoleSelected(OpponentRole selected)
@@ -984,8 +1118,6 @@ namespace ArmWrestlingVR
                     return "paused";
                 case AppState.Finished:
                     return "finished";
-                case AppState.Ready:
-                case AppState.Countdown:
                 case AppState.Fighting:
                     return "running";
                 default:
@@ -1001,8 +1133,7 @@ namespace ArmWrestlingVR
                 return;
             }
 
-            client.MatchState = ToVrMatchState(state);
-            client.CharacterId = "opponent_" + ((int)role).ToString("00");
+            client.SetSession(NetworkCharacterId, ToVrMatchState(state));
         }
 
         private static string SourceDisplayName(DataSourceMode mode)
@@ -1044,7 +1175,7 @@ namespace ArmWrestlingVR
                     // 上位机仓库 docs/vr-udp-v01.md：PC 监听 UDP 9102，收发同一个 socket。
                     string host = string.IsNullOrEmpty(config.manualHostIp) ? "127.0.0.1" : config.manualHostIp;
                     VrUdpClient vrClient = new VrUdpClient(config, host, config.hostPort);
-                    vrClient.CharacterId = "opponent_" + ((int)role).ToString("00");
+                    vrClient.SetSession(NetworkCharacterId, "waiting");
                     connection = vrClient;
                     break;
                 }
@@ -1063,6 +1194,7 @@ namespace ArmWrestlingVR
             }
 
             pipeline.Reset();
+            if (hud != null) hud.SetNetworkSelection(mode == DataSourceMode.Network);
         }
 
         private void TryAutoAlign()

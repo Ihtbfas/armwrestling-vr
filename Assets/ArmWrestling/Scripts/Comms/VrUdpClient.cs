@@ -1,504 +1,341 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
+using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.Serialization.Json;
 using System.Text;
+using System.Xml;
 using UnityEngine;
 
 namespace ArmWrestlingVR
 {
-    /// <summary>
-    /// 上位机 UDP V0.1 客户端（每个报文一个 UTF-8 JSON 对象）。
-    ///
-    /// 这些约定来自上位机仓库的 <c>docs/vr-udp-v01.md</c>，以那个文件为准：
-    ///   VR → PC，每 200 ms 一条：
-    ///     {"v":1,"type":"vr_update","seq":0,"character_id":"opponent_01","match_state":"running"}
-    ///   PC → VR，约 50 Hz：
-    ///     {"v":1,"type":"status","seq":20,"angle_rad":-0.4,"mode":"enabled","reason":"running"}
-    ///
-    /// 三个必须记住的细节：
-    ///   1. 角度单位是**弧度**，零位为 0，玩家往获胜侧下压时为**负**；
-    ///   2. <c>angle_rad</c> 为 null 表示没有有效角度，此时不能拿上一帧当正常数据用；
-    ///   3. 收发用同一个 socket，PC 只认最近一个有效发送端，1 秒收不到就释放会话。
-    /// </summary>
-    public class VrUdpClient : IDeviceConnection
+    /// <summary>UDP V0.1 status exchange on the Unity main loop.</summary>
+    public sealed class VrUdpClient : IDeviceConnection
     {
-        private const float HeartbeatIntervalSeconds = 0.2f;
-        private const float StatusTimeoutSeconds = 1.0f;
-
+        private const double HeartbeatSeconds = 0.2;
+        private const double StatusTimeoutSeconds = 1.0;
+        private const long MaxSequence = 9007199254740991L;
+        private static readonly UTF8Encoding Utf8 = new UTF8Encoding(false, true);
         private readonly ArmWrestlingConfig config;
-        private readonly string hostIp;
-        private readonly int hostPort;
-
+        private readonly string host;
+        private readonly int port;
         private UdpClient socket;
-        private IPEndPoint hostEndpoint;
-        private IPEndPoint broadcastEndpoint;
-        private IPEndPoint receiveEndpoint;
-        private bool autoDiscover;
-        private bool discovered;
-        private IPAddress discoveredAddress;
+        private long nextSequence;
+        private double lastTick = double.NegativeInfinity;
+        private double lastStatus = double.NegativeInfinity;
+        private double nextSend;
+        private double openAfter;
+        private string lastError = "";
+        private StatusMessage status;
+        private AngleSample sample;
+        private bool pendingSample;
 
-        private ushort outSequence;
-        private int lastInSequence;
-        private int hostPortActual;
-        private bool hasInSequence;
-
-        private double lastStatusTime = -999.0;
-        private bool haveEverReceived;
-        private string lastReason = string.Empty;
-        private string lastMode = string.Empty;
-        private bool hasValidAngle;
-        private float angleDeg;
-        private float angularVelocityDeg;
-        private bool hasNewSample;
-        private float lastSampleTime;
-        private AngleSample latestSample;
-
-        private string matchState = "waiting";
-        private string characterId = "opponent_01";
-
-        private string lastError = string.Empty;
-        private readonly object socketLock = new object();
-        private System.Threading.Timer heartbeatTimer;
-        private volatile bool running;
+        public string CharacterId { get; private set; } = "demo";
+        public string MatchState { get; private set; } = "waiting";
+        public long LastSequence => status?.seq ?? -1;
+        public string Reason => status?.reason ?? "";
+        public string Name => "上位机 UDP V0.1";
+        public float LastTorqueNm => float.NaN;
+        public float SecondsSinceLastData => (float)(Time.realtimeSinceStartupAsDouble - lastStatus);
+        public LinkStatus Status => socket == null ? LinkStatus.Disconnected
+            : status == null ? LinkStatus.Connecting
+            : SecondsSinceLastData >= StatusTimeoutSeconds ? LinkStatus.Stale : LinkStatus.Connected;
+        public bool IsDataAvailable => Status == LinkStatus.Connected && status.angle_rad.HasValue
+            && config.IsMechanicalAngleValid(ToDegrees(status.angle_rad.Value));
+        public bool IsRunning => IsDataAvailable && status.mode == "enabled" && Reason == "running";
+        public bool IsReadyToRun => IsDataAvailable && SecondsSinceLastData <= config.dataTimeoutSeconds && status.mode == "stop"
+            && (Reason == "match_waiting" || Reason == "match_paused");
+        public DeviceState LastDeviceState => Reason == "device_fault" ? DeviceState.Fault
+            : IsRunning ? DeviceState.Running : DeviceState.Idle;
+        public MatchPhase HostMatchPhase => MatchPhase.Fighting;
+        public string Detail => Status != LinkStatus.Connected
+            ? (string.IsNullOrEmpty(lastError) ? "等待上位机 " + host + ":" + port : lastError)
+            : (IsDataAvailable ? ToDegrees(status.angle_rad.Value).ToString("F1") + "°" : "角度无效")
+                + " | " + status.mode + " | " + status.reason;
 
         public VrUdpClient(ArmWrestlingConfig config, string hostIp, int hostPort)
         {
             this.config = config;
-            // 留空表示自动发现：先广播，谁回 status 就用谁的地址，换网络不用重新打包。
-            this.autoDiscover = string.IsNullOrEmpty(hostIp);
-            this.hostIp = this.autoDiscover ? "0.0.0.0" : hostIp;
-            this.hostPort = hostPort;
+            host = string.IsNullOrEmpty(hostIp) ? "127.0.0.1" : hostIp;
+            port = hostPort;
         }
 
-        /// <summary>由主流程每帧写入：waiting / running / paused / finished。</summary>
-        public string MatchState
+        public void SetSession(string character, string match)
         {
-            get { return matchState; }
-            set
-            {
-                if (!string.IsNullOrEmpty(value))
-                {
-                    matchState = value;
-                }
-            }
-        }
-
-        /// <summary>角色编号，1–64 字符，PC 目前只用于记录。</summary>
-        public string CharacterId
-        {
-            get { return characterId; }
-            set
-            {
-                if (!string.IsNullOrEmpty(value))
-                {
-                    characterId = value.Length > 64 ? value.Substring(0, 64) : value;
-                }
-            }
-        }
-
-        public string Name
-        {
-            get { return "上位机 UDP V0.1"; }
-        }
-
-        public LinkStatus Status
-        {
-            get
-            {
-                if (socket == null)
-                {
-                    return LinkStatus.Disconnected;
-                }
-
-                if (!haveEverReceived)
-                {
-                    return LinkStatus.Connecting;
-                }
-
-                if (SecondsSinceLastData > StatusTimeoutSeconds * 2f)
-                {
-                    return LinkStatus.Disconnected;
-                }
-
-                if (SecondsSinceLastData > StatusTimeoutSeconds)
-                {
-                    return LinkStatus.Stale;
-                }
-
-                return LinkStatus.Connected;
-            }
-        }
-
-        public string Detail
-        {
-            get
-            {
-                if (socket == null)
-                {
-                    return lastError.Length > 0 ? lastError : "未打开 socket";
-                }
-
-                if (!haveEverReceived)
-                {
-                    string target = discovered && discoveredAddress != null
-                        ? discoveredAddress.ToString() + ":" + hostPortActual
-                        : (autoDiscover ? "（广播搜索中）" : hostIp + ":" + hostPortActual);
-                    return "正在等上位机 " + target + " 的 status";
-                }
-
-                string angleText = hasValidAngle
-                    ? angleDeg.ToString("F1") + "°"
-                    : "无效";
-
-                return "角度 " + angleText + " ｜ " + (string.IsNullOrEmpty(lastMode) ? "?" : lastMode)
-                       + " ｜ " + (string.IsNullOrEmpty(lastReason) ? "?" : lastReason);
-            }
-        }
-
-        public bool IsDataAvailable
-        {
-            get { return hasValidAngle && SecondsSinceLastData <= StatusTimeoutSeconds; }
-        }
-
-        public float SecondsSinceLastData
-        {
-            get { return (float)(Time.unscaledTimeAsDouble - lastStatusTime); }
-        }
-
-        public float LastTorqueNm
-        {
-            get { return 0f; }
-        }
-
-        public DeviceState LastDeviceState
-        {
-            get
-            {
-                if (lastMode == "stop")
-                {
-                    return lastReason == "device_fault" ? DeviceState.Fault : DeviceState.Idle;
-                }
-
-                return DeviceState.Running;
-            }
-        }
-
-        public MatchPhase HostMatchPhase
-        {
-            get { return MatchPhase.Fighting; }
+            if (character == CharacterId && match == MatchState) return;
+            CharacterId = character;
+            MatchState = match;
+            nextSend = 0;
+            SendIfDue(Time.realtimeSinceStartupAsDouble);
         }
 
         public void Tick(float deltaTime, bool matchActive)
         {
-            EnsureSocket();
-            if (socket == null)
+            double now = Time.realtimeSinceStartupAsDouble;
+            bool loopInterrupted = now - lastTick >= config.dataTimeoutSeconds;
+            lastTick = now;
+            if (matchActive && (loopInterrupted || (status != null && now - lastStatus >= StatusTimeoutSeconds)))
             {
+                // Let the app enter Paused before it can send another running heartbeat.
+                Reconnect();
                 return;
             }
-
-            ReceivePending();
-
-            // 断流后不要把旧角度继续当有效数据，直接判为无效。
-            if (SecondsSinceLastData > StatusTimeoutSeconds)
-            {
-                hasValidAngle = false;
-            }
+            if (status != null && now - lastStatus >= StatusTimeoutSeconds) Reconnect();
+            if (socket == null && now >= openAfter) Open(now);
+            if (socket == null) return;
+            ReceivePending(now);
+            SendIfDue(now);
         }
 
-        public bool TryConsumeSample(out AngleSample sample)
+        public bool TryConsumeSample(out AngleSample result)
         {
-            sample = latestSample;
-            if (!hasNewSample)
-            {
-                return false;
-            }
-
-            hasNewSample = false;
-            return true;
+            result = sample;
+            bool pending = pendingSample;
+            pendingSample = false;
+            return pending;
         }
 
-        /// <summary>
-        /// V0.1 里没有一次性事件，比赛状态靠 <see cref="MatchState"/> 心跳携带。
-        /// 这里保留接口只是为了让上层不用改。
-        /// </summary>
         public void SendEvent(SessionEventCode code, byte parameter, float value)
         {
-            if (config.verboseComms)
-            {
-                Debug.Log("[ArmWrestling][上位机] 事件 " + code + " 并入心跳状态 " + matchState);
-            }
+            // UDP V0.1 sends complete match states, not one-shot events.
         }
 
         public void Reconnect()
         {
             Shutdown();
-            haveEverReceived = false;
-            hasInSequence = false;
-            lastStatusTime = -999.0;
-            EnsureSocket();
+            openAfter = 0;
         }
 
         public void Shutdown()
         {
-            if (socket == null)
-            {
-                return;
-            }
-
-            running = false;
-            if (heartbeatTimer != null)
-            {
-                heartbeatTimer.Dispose();
-                heartbeatTimer = null;
-            }
-
-            lock (socketLock)
-            {
-                try
-                {
-                    socket.Close();
-                }
-                catch (Exception)
-                {
-                    // 关不掉也无所谓，进程退出会回收。
-                }
-
-                socket = null;
-            }
+            socket?.Close();
+            socket = null;
+            status = null;
+            pendingSample = false;
+            lastStatus = double.NegativeInfinity;
+            nextSequence = 0;
+            nextSend = 0;
         }
 
-        private void EnsureSocket()
+        private void Open(double now)
         {
-            if (socket != null)
+            if (!IPAddress.TryParse(host, out var address) || address.AddressFamily != AddressFamily.InterNetwork
+                || address.Equals(IPAddress.Any) || address.Equals(IPAddress.Broadcast))
             {
+                lastError = "请填写明确的控制端 IPv4 地址";
+                openAfter = double.PositiveInfinity;
                 return;
             }
-
+            UdpClient created = null;
             try
             {
-                UdpClient created = new UdpClient(0);
+                created = new UdpClient(0);
+                created.Connect(new IPEndPoint(address, port));
                 created.Client.Blocking = false;
-                created.EnableBroadcast = true;
                 socket = created;
-                hostPortActual = hostPort;
-                broadcastEndpoint = new IPEndPoint(IPAddress.Broadcast, hostPort);
-                hostEndpoint = autoDiscover
-                    ? broadcastEndpoint
-                    : new IPEndPoint(IPAddress.Parse(hostIp), hostPort);
-                receiveEndpoint = new IPEndPoint(IPAddress.Any, 0);
-                lastError = string.Empty;
-
-                // 心跳放在后台线程：头显不戴时 Unity 主循环会降频甚至暂停，
-                // 光靠 Update 发心跳会让上位机误判"VR 掉线"。
-                running = true;
-                heartbeatTimer = new System.Threading.Timer(_ => HeartbeatTick(), null, 200, 200);
             }
-            catch (Exception exception)
+            catch (SocketException exception)
             {
-                lastError = exception.Message;
-                socket = null;
-                Debug.LogError("[ArmWrestling][上位机] 建立 UDP socket 失败: " + exception.Message);
+                created?.Close();
+                lastError = exception.SocketErrorCode.ToString();
+                openAfter = now + HeartbeatSeconds;
             }
         }
 
-        /// <summary>后台线程每 200 ms 调一次，发一条 vr_update。</summary>
-        private void HeartbeatTick()
+        private void SendIfDue(double now)
         {
-            if (!running)
+            if (socket == null || now < nextSend) return;
+            nextSend = now + HeartbeatSeconds;
+            if (nextSequence > MaxSequence)
             {
+                Reconnect();
                 return;
             }
-
-            SendHeartbeat();
+            var update = new UpdateMessage
+            {
+                seq = nextSequence, character_id = CharacterId, match_state = MatchState
+            };
+            byte[] bytes = Utf8.GetBytes(JsonUtility.ToJson(update));
+            try
+            {
+                if (socket.Send(bytes, bytes.Length) == bytes.Length) nextSequence++;
+            }
+            catch (SocketException exception)
+            {
+                lastError = exception.SocketErrorCode.ToString();
+            }
         }
 
-        private void SendHeartbeat()
+        private void ReceivePending(double now)
         {
-            string json = "{\"v\":1,\"type\":\"vr_update\",\"seq\":" + outSequence
-                          + ",\"character_id\":\"" + Escape(characterId)
-                          + "\",\"match_state\":\"" + matchState + "\"}";
-
-            outSequence++;
-
-            byte[] payload = Encoding.UTF8.GetBytes(json);
-            lock (socketLock)
+            for (int i = 0; i < 64; i++)
             {
-                if (socket == null)
-                {
-                    return;
-                }
-
                 try
                 {
-                    socket.Send(payload, payload.Length, hostEndpoint);
+                    if (!socket.Client.Poll(0, SelectMode.SelectRead)) break;
+                    IPEndPoint source = null;
+                    byte[] packet = socket.Receive(ref source);
+                    if (!TryDecode(packet, out var received) || received.seq <= LastSequence) continue;
 
-                    // 同时发一份广播：现场换网络后 IP 变了也能自动找到上位机，
-                    // 不用为了改一个 IP 重新打包。收到谁的回包就锁定谁。
-                    if (!discovered && broadcastEndpoint != null && hostEndpoint != broadcastEndpoint)
+                    bool previousValid = IsDataAvailable;
+                    double age = now - lastStatus;
+                    status = received;
+                    lastStatus = now;
+                    lastError = "";
+                    pendingSample = IsDataAvailable;
+                    if (!pendingSample) continue;
+                    float angle = ToDegrees(received.angle_rad.Value);
+                    // Estimated speed is for pose smoothing only.
+                    float speed = previousValid && age > 0.001 && age <= config.dataTimeoutSeconds
+                        ? (angle - sample.angleDeg) / (float)age : 0f;
+                    sample = new AngleSample
                     {
-                        socket.Send(payload, payload.Length, broadcastEndpoint);
-                    }
+                        localTime = Time.unscaledTimeAsDouble,
+                        angleDeg = angle,
+                        angularVelocityDegPerSecond = speed,
+                        torqueNm = float.NaN,
+                        deviceState = LastDeviceState,
+                        valid = true,
+                        frameCounter = (ulong)received.seq
+                    };
                 }
                 catch (SocketException exception)
                 {
                     if (exception.SocketErrorCode != SocketError.WouldBlock)
-                    {
-                        Debug.LogWarning("[ArmWrestling][上位机] 发送心跳失败: " + exception.SocketErrorCode);
-                    }
-                }
-                catch (ObjectDisposedException)
-                {
-                    // 正在关闭，忽略。
+                        lastError = exception.SocketErrorCode.ToString();
+                    break;
                 }
             }
         }
 
-        private void ReceivePending()
-        {
-            lock (socketLock)
-            {
-                ReceivePendingUnlocked();
-            }
-        }
-
-        private void ReceivePendingUnlocked()
-        {
-            // 每帧把积压的报文全部读完，避免延迟累积。
-            for (int guard = 0; guard < 32; guard++)
-            {
-                if (socket.Available <= 0)
-                {
-                    return;
-                }
-
-                byte[] payload;
-                try
-                {
-                    payload = socket.Receive(ref receiveEndpoint);
-                }
-                catch (SocketException exception)
-                {
-                    if (exception.SocketErrorCode == SocketError.WouldBlock)
-                    {
-                        return;
-                    }
-
-                    lastError = exception.SocketErrorCode.ToString();
-                    return;
-                }
-
-                HandleDatagram(payload);
-            }
-        }
-
-        private void HandleDatagram(byte[] payload)
-        {
-            if (payload == null || payload.Length == 0 || payload.Length > 8192)
-            {
-                return;
-            }
-
-            string json = Encoding.UTF8.GetString(payload);
-
-            StatusMessage message;
-            try
-            {
-                message = JsonUtility.FromJson<StatusMessage>(json);
-            }
-            catch (Exception)
-            {
-                return;
-            }
-
-            if (message == null || message.v != 1 || message.type != "status")
-            {
-                return;
-            }
-
-            // UDP 允许重复与乱序：只接受严格递增的 seq，新会话允许从 0 重新开始。
-            if (hasInSequence && message.seq <= lastInSequence)
-            {
-                return;
-            }
-
-            lastInSequence = message.seq;
-            hasInSequence = true;
-
-            if (!discovered && receiveEndpoint != null && receiveEndpoint.Address != null)
-            {
-                // 广播之后第一包从哪来，上位机就在哪。
-                discovered = true;
-                discoveredAddress = receiveEndpoint.Address;
-                hostEndpoint = new IPEndPoint(discoveredAddress, hostPortActual);
-                Debug.Log("[ArmWrestling][上位机] 自动发现控制端: " + discoveredAddress);
-            }
-            lastStatusTime = Time.unscaledTimeAsDouble;
-            haveEverReceived = true;
-
-            lastMode = message.mode ?? string.Empty;
-            lastReason = message.reason ?? string.Empty;
-
-            // JsonUtility 无法表达 null 数值，直接从原文判断。
-            bool nullAngle = json.IndexOf("\"angle_rad\":null", StringComparison.Ordinal) >= 0
-                             || json.IndexOf("\"angle_rad\": null", StringComparison.Ordinal) >= 0;
-
-            hasValidAngle = !nullAngle;
-
-            if (!hasValidAngle)
-            {
-                return;
-            }
-
-            // 上位机约定：玩家往获胜侧下压时角度为负；VR 内部约定"正 = 玩家占优"，
-            // 所以这里先取反，再交给配置里的方向系数。
-            float radians = message.angle_rad;
-            angleDeg = -radians * Mathf.Rad2Deg;
-
-            double now = Time.unscaledTimeAsDouble;
-            float dt = (float)(now - lastSampleTime);
-            if (dt > 0.0001f)
-            {
-                angularVelocityDeg = (angleDeg - latestSample.angleDeg) / dt;
-            }
-
-            lastSampleTime = (float)now;
-            hasNewSample = true;
-
-            latestSample = new AngleSample
-            {
-                localTime = now,
-                angleDeg = angleDeg,
-                angularVelocityDegPerSecond = angularVelocityDeg,
-                torqueNm = 0f,
-                // 上位机文档：mode=stop 时仍可能有有效角度，模型要继续跟着动，
-                // 只是不该把它当成"正常比赛数据"来判胜负——这一点由 DeviceState 区分。
-                deviceState = lastMode == "stop" ? DeviceState.Idle : DeviceState.Running,
-                valid = true,
-                faultCode = lastReason == "device_fault" ? (ushort)1 : (ushort)0,
-                frameCounter = (ulong)message.seq
-            };
-        }
-
-        private static string Escape(string text)
-        {
-            return text.Replace("\\", "\\\\").Replace("\"", "\\\"");
-        }
+        private static float ToDegrees(double radians) => -(float)radians * Mathf.Rad2Deg;
 
         [Serializable]
-        private class StatusMessage
+        private sealed class UpdateMessage
+        {
+            public int v = 1;
+            public string type = "vr_update";
+            public long seq;
+            public string character_id;
+            public string match_state;
+        }
+
+        public sealed class StatusMessage
         {
             public int v;
             public string type;
-            public int seq;
-            public float angle_rad;
+            public long seq;
+            public double? angle_rad;
             public string mode;
             public string reason;
         }
+
+        private static bool IsJsonSpace(byte value) => value == 32 || value == 9 || value == 10 || value == 13;
+
+        private static bool IsSingleObject(byte[] packet)
+        {
+            int first = 0;
+            while (first < packet.Length && IsJsonSpace(packet[first])) first++;
+            if (first == packet.Length || packet[first] != '{') return false;
+            bool quoted = false;
+            int depth = 0;
+            for (int i = first; i < packet.Length; i++)
+            {
+                byte value = packet[i];
+                if (quoted)
+                {
+                    if (value == 92) i++; // Skip an escaped string byte.
+                    else if (value == '"') quoted = false;
+                }
+                else if (value == '"') quoted = true;
+                else if (value == '{' || value == '[') depth++;
+                else if ((value == '}' || value == ']') && --depth == 0)
+                {
+                    if (value != '}') return false;
+                    while (++i < packet.Length)
+                        if (!IsJsonSpace(packet[i])) return false;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static bool TryDecode(byte[] packet, out StatusMessage result)
+        {
+            result = null;
+            // Mono's JSON reader can ignore trailing objects, so check datagram framing first.
+            if (packet == null || packet.Length == 0 || packet.Length > 8192 || !IsSingleObject(packet))
+                return false;
+            try
+            {
+                // The .NET JSON reader retains JSON types, including null vs. absent vs. zero.
+                Utf8.GetCharCount(packet);
+                using (var reader = JsonReaderWriterFactory.CreateJsonReader(packet, XmlDictionaryReaderQuotas.Max))
+                {
+                    if (reader.MoveToContent() != XmlNodeType.Element || reader.GetAttribute("type") != "object")
+                        return false;
+                    var value = new StatusMessage();
+                    int fields = 0;
+                    reader.ReadStartElement();
+                    while (reader.MoveToContent() == XmlNodeType.Element)
+                    {
+                        string field = reader.LocalName;
+                        string kind = reader.GetAttribute("type");
+                        int flag;
+                        switch (field)
+                        {
+                            case "v":
+                                if (kind != "number" || reader.ReadElementContentAsString() != "1") return false;
+                                value.v = 1; flag = 1; break;
+                            case "type":
+                                if (kind != "string" || reader.ReadElementContentAsString() != "status") return false;
+                                value.type = "status"; flag = 2; break;
+                            case "seq":
+                                if (kind != "number" || !long.TryParse(reader.ReadElementContentAsString(),
+                                    NumberStyles.None, CultureInfo.InvariantCulture, out value.seq)
+                                    || value.seq > MaxSequence) return false;
+                                flag = 4; break;
+                            case "angle_rad":
+                                if (kind == "null") reader.ReadElementContentAsString();
+                                else
+                                {
+                                    if (kind != "number" || !double.TryParse(reader.ReadElementContentAsString(),
+                                        NumberStyles.Float, CultureInfo.InvariantCulture, out double angle)
+                                        || double.IsNaN(angle) || double.IsInfinity(angle) || Math.Abs(angle) > 100)
+                                        return false;
+                                    value.angle_rad = angle;
+                                }
+                                flag = 8; break;
+                            case "mode":
+                                if (kind != "string") return false;
+                                value.mode = reader.ReadElementContentAsString();
+                                if (value.mode != "enabled" && value.mode != "stop") return false;
+                                flag = 16; break;
+                            case "reason":
+                                if (kind != "string") return false;
+                                value.reason = reader.ReadElementContentAsString();
+                                if (string.IsNullOrWhiteSpace(value.reason)) return false;
+                                flag = 32; break;
+                            default:
+                                reader.Skip();
+                                continue;
+                        }
+                        if ((fields & flag) != 0) return false;
+                        fields |= flag;
+                    }
+                    if (fields != 63) return false;
+                    reader.ReadEndElement();
+                    if (reader.MoveToContent() != XmlNodeType.None) return false;
+                    result = value;
+                    return true;
+                }
+            }
+            catch (Exception exception) when (exception is XmlException || exception is ArgumentException
+                || exception is FormatException || exception is InvalidOperationException)
+            {
+                return false;
+            }
+        }
     }
 }
-
-
-
-
 

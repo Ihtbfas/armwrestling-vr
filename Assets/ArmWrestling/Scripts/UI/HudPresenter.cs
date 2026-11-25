@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
@@ -43,6 +43,11 @@ namespace ArmWrestlingVR
         public Text calibrationHint;
 
         public event Action<OpponentRole> RoleSelected;
+        public event Action<int> NetworkPersonSelected;
+        private bool networkSelection;
+        private static readonly string[] OfflineNames = { "均衡型", "防守型", "节奏型" };
+        private static readonly string[] PersonNames = { "甲 · 24岁 女", "乙 · 38岁 男", "丙 · 52岁 女" };
+        private static readonly string[] PersonTraining = { "休闲运动", "规律力量训练", "有力量训练经历" };
         public event Action<int> StrengthStepped;
         public event Action<int, int> NudgeRequested;
         public event Action RecenterRequested;
@@ -130,14 +135,18 @@ namespace ArmWrestlingVR
             roleHeaderText = UiFactory.CreateLabel(parent, "Role Header", "虚拟对手", 34, HeaderColor,
                 TextAnchor.MiddleCenter, new Vector2(360f, 46f), new Vector2(376f, 168f));
 
-            string[] roleNames = { "均衡型", "防守型", "节奏型" };
             for (int i = 0; i < roleButtons.Length; i++)
             {
                 int index = i;
-                VrButton button = UiFactory.CreateButton(parent, "Role " + i, roleNames[i],
+                VrButton button = UiFactory.CreateButton(parent, "Role " + i, OfflineNames[i],
                     new Vector2(300f, 58f), new Vector2(376f, 100f - i * 70f), 34, AccentColor);
                 button.Clicked += () =>
                 {
+                    if (networkSelection)
+                    {
+                        NetworkPersonSelected?.Invoke(index);
+                        return;
+                    }
                     highlightedRole = (OpponentRole)(index + 1);
                     if (RoleSelected != null)
                     {
@@ -271,6 +280,24 @@ namespace ArmWrestlingVR
             }
         }
 
+        public void SetNetworkSelection(bool enabled)
+        {
+            networkSelection = enabled;
+            for (int i = 0; i < roleButtons.Length; i++)
+                roleButtons[i].Caption = enabled ? PersonNames[i] : OfflineNames[i];
+
+            strengthDownButton.gameObject.SetActive(!enabled);
+            strengthUpButton.gameObject.SetActive(!enabled);
+            strengthLabel.gameObject.SetActive(!enabled);
+            roleHeaderText.text = enabled ? "联网人物" : "虚拟对手";
+        }
+
+        public void SetPersonHighlight(int index)
+        {
+            roleHeaderText.text = index < 0 ? "联网 · demo 基线" : PersonTraining[index];
+            SetRoleHighlight((OpponentRole)(index + 1));
+        }
+
         public void SetStrength(float normalized)
         {
             if (strengthLabel != null)
@@ -348,13 +375,18 @@ namespace ArmWrestlingVR
             string sourceName,
             LinkStatus linkStatus,
             string linkDetail,
-            DeviceState deviceState)
+            DeviceState deviceState,
+            bool network = false,
+            bool validAngle = true)
         {
             builder.Length = 0;
-            builder.Append("机械角度    ").Append(mechanicalAngle.ToString("+0.0;-0.0;0.0")).Append("°\n");
+            builder.Append("机械角度    ").Append(validAngle
+                ? (network ? -mechanicalAngle : mechanicalAngle).ToString("+0.0;-0.0;0.0") + "°\n"
+                : "无效\n");
             builder.Append("虚拟旋转    ").Append(visualAngle.ToString("+0.0;-0.0;0.0")).Append("°\n");
-            builder.Append("角速度      ").Append(angularVelocity.ToString("0.0")).Append(" °/s\n");
-            builder.Append("对手阻力矩  ").Append(torque.ToString("0.0")).Append(" N·m\n");
+            builder.Append(network ? "估算速度    " : "角速度      ").Append(validAngle
+                ? (network ? -angularVelocity : angularVelocity).ToString("0.0") + " °/s\n" : "—\n");
+            builder.Append("对手阻力矩  ").Append(network ? "未提供\n" : torque.ToString("0.0") + " N·m\n");
             builder.Append("数据更新    ").Append(dataAgeSeconds < 90f ? (dataAgeSeconds * 1000f).ToString("0") + " ms" : "—").Append('\n');
             builder.Append("设备状态    ").Append(DisplayNames.Of(deviceState)).Append('\n');
             builder.Append("数据源      ").Append(sourceName).Append('\n');
